@@ -30,8 +30,31 @@ h.rd_wrangle <- function(df) {
   df <- h.rd_convert_TODAY_2_date(df)
   df <- h.rd_preprocess_end_column(df)
   df <- h.rd_preprocess_deadline_column(df)
+  h.check_section_id_unique(df)
   df
 }
+
+h.comma_list <- function(v){
+  paste0(v, collapse = ", ")
+}
+
+h.check_section_id_unique <- function(df){
+  id_in_multiple_sections <-
+    df %>%
+    dplyr::select(id, section) %>%
+    dplyr::distinct() %>%
+    dplyr::count(id) %>%
+    dplyr::filter(n > 1) %>% 
+    with(id)
+  
+  df <- df[order(df$id, df$section),]
+  h.log_every_row(
+    df,
+    df$id %in% id_in_multiple_sections,
+    warn_msg = glue::glue("The same id {h.comma_list(id_in_multiple_sections)} used in different 'sections' is probably an error")
+  )
+}
+
 
 h.rd_preprocess_deadline_column <- function(df){
   df$raw_deadline <- df$deadline
