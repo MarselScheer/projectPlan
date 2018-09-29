@@ -27,7 +27,38 @@ h.rd_wrangle <- function(df) {
   df <- h.rd_fill_with_default(df, "resource", "UNKNOWN")
   df <- h.rd_fill_with_default(df, "task", "UNKNOWN")
   df <- h.rd_fill_with_default(df, "progress", 0)
+  df <- h.rd_convert_TODAY_2_date(df)
+  df <- h.rd_preprocess_end_column(df)
   df
+}
+
+h.rd_preprocess_end_column <- function(df) {
+  df$waiting <- df$end == "WAIT"
+  df$est_days <- suppressWarnings(as.numeric(df$end))
+  df$fixed_end_date <- suppressWarnings(lubridate::ymd(df$end))
+
+  idx <- with(df, (is.na(est_days) & is.na(fixed_end_date)))
+  if (any(idx)) {
+    futile.logger::flog.warn(glue::glue("Entries in column 'end' must be 'WAIT', an integer, or a date using a ymd-format"))
+    h.log_every_row(df, idx)
+  }
+  df$end <- NULL
+}
+
+h.rd_convert_TODAY_2_date <- function(df) {
+  TODAY <- as.character(lubridate::as_date(lubridate::now()))
+
+  futile.logger::flog.info(glue::glue("Convert the 'TODAY' in column 'start' to the current date {TODAY}"))
+
+  df$start[df$start == "TODAY"] <- TODAY
+  df
+}
+
+h.log_every_row <- function(df, idx) {
+  for (i in which(idx)) {
+    futile.logger::flog.debug(glue::glue("Row {i}"))
+    futile.logger::flog.debug(str(df[i, ]))
+  }
 }
 
 h.rd_fill_with_default <- function(df, colname, def) {
@@ -35,10 +66,7 @@ h.rd_fill_with_default <- function(df, colname, def) {
 
   if (any(idx)) {
     futile.logger::flog.warn(glue::glue("Some entries in column '{colname}' are not specified. Set those entries to {def}."))
-    for (i in which(idx)) {
-      futile.logger::flog.debug(glue::glue("Row {i}"))
-      futile.logger::flog.debug(str(df[i, ]))
-    }
+    h.log_every_row(df, idx)
     df[[colname]][idx] <- def
   }
   df
