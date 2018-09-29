@@ -15,8 +15,47 @@
 
 #' Calls all necessary for wrangling a raw project plan
 #'
-#' @return No direct return value, i.e. call by reference
+#' @return tibble with all columns preprocessed for calculating time lines
 #'
 #' @examples
-h.wrangle_raw_data <- function(dt_ref) {
+h.rd_wrangle <- function(df) {
+  df <- h.rd_select_cols(df)
+  df <- h.rd_remove_unnessary_rows(df)
+  df <- h.rd_fill_with_default(df, "section", "0_SECTION_UNKNOWN")
+  df <- h.rd_fill_with_default(df, "id", "ID_UNKNOWN")
+  df <- h.rd_fill_with_default(df, "end", 1)
+  df <- h.rd_fill_with_default(df, "resource", "UNKNOWN")
+  df <- h.rd_fill_with_default(df, "task", "UNKNOWN")
+  df <- h.rd_fill_with_default(df, "progress", 0)
+  df
+}
+
+h.rd_fill_with_default <- function(df, colname, def) {
+  idx <- is.na(df[[colname]])
+
+  if (any(idx)) {
+    futile.logger::flog.warn(glue::glue("Some entries in column '{colname}' are not specified. Set those entries to {def}."))
+    for (i in which(idx)) {
+      futile.logger::flog.debug(glue::glue("Row {i}"))
+      futile.logger::flog.debug(str(df[i, ]))
+    }
+    df[[colname]][idx] <- def
+  }
+  df
+}
+
+h.rd_remove_unnessary_rows <- function(df) {
+  discard <- with(df, is.na(section) & is.na(id) & is.na(start) & is.na(end) & is.na(resource) & is.na(task))
+
+  futile.logger::flog.info(glue::glue("Remove rows where section, id, start, end, resource, task are empty"))
+  futile.logger::flog.debug(glue::glue("Remove {sum(discard)} rows"))
+
+  df[!discard, ]
+}
+
+h.rd_select_cols <- function(df) {
+  cols <- c("section", "id", "depends_on", "start", "end", "resource", "task", "progress", "deadline")
+
+  futile.logger::flog.info(glue::glue("Select the necessary columns {paste(cols, collapse =', ')}"))
+  df <- df[, cols]
 }
