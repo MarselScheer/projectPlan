@@ -21,7 +21,7 @@
 h.rd_wrangle <- function(df) {
   df <- h.rd_select_cols(df)
   df <- dplyr::mutate_all(df, as.character)
-  
+
   df <- h.rd_remove_unnessary_rows(df)
   df <- h.rd_fill_with_default(df, "project", "UNKNOWN")
   df <- h.rd_fill_with_default(df, "section", "UNKNOWN")
@@ -34,23 +34,27 @@ h.rd_wrangle <- function(df) {
   df <- h.rd_preprocess_end_column(df)
   df <- h.rd_preprocess_deadline_column(df)
   h.check_section_id_unique(df)
+
+
   df
 }
 
-h.comma_list <- function(v){
+h.SEPERATOR <- "::"
+
+h.comma_list <- function(v) {
   paste0(v, collapse = ", ")
 }
 
-h.check_section_id_unique <- function(df){
+h.check_section_id_unique <- function(df) {
   id_in_multiple_sections <-
     df %>%
     dplyr::select(id, section) %>%
     dplyr::distinct() %>%
     dplyr::count(id) %>%
-    dplyr::filter(n > 1) %>% 
+    dplyr::filter(n > 1) %>%
     with(id)
-  
-  df <- df[order(df$id, df$section),]
+
+  df <- df[order(df$id, df$section), ]
   h.log_every_row(
     df,
     df$id %in% id_in_multiple_sections,
@@ -59,14 +63,14 @@ h.check_section_id_unique <- function(df){
 }
 
 
-h.rd_preprocess_deadline_column <- function(df){
+h.rd_preprocess_deadline_column <- function(df) {
   df$raw_deadline <- df$deadline
   df$deadline <- suppressWarnings(lubridate::ymd(df$deadline))
   h.log_rows(
-    df, 
+    df,
     with(df, xor(!is.na(deadline), !is.na(raw_deadline))),
     warn_msg = glue::glue("Entries in column 'deadline' must be a ymd-format")
-    )
+  )
   df
 }
 
@@ -76,9 +80,10 @@ h.rd_preprocess_end_column <- function(df) {
   df$fixed_end_date <- suppressWarnings(lubridate::ymd(df$end))
 
   h.log_rows(
-    df, 
-    with(df, (is.na(est_days) & is.na(fixed_end_date))), 
-    warn_msg = glue::glue("Entries in column 'end' must be 'WAIT', an integer, or a date using a ymd-format"))
+    df,
+    with(df, (is.na(est_days) & is.na(fixed_end_date))),
+    warn_msg = glue::glue("Entries in column 'end' must be 'WAIT', an integer, or a date using a ymd-format")
+  )
   # if (any(idx)) {
   #   futile.logger::flog.warn(glue::glue("Entries in column 'end' must be 'WAIT', an integer, or a date using a ymd-format"))
   #   h.log_rows(df, idx)
@@ -94,7 +99,8 @@ h.rd_preprocess_start_column <- function(df) {
 
   df$start[df$start == "TODAY"] <- TODAY
   df$fixed_start_date <- suppressWarnings(lubridate::ymd(df$start))
-  
+  df$start[!is.na(df$fixed_start_date)] <- NA
+
   df
 }
 
