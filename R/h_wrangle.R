@@ -36,7 +36,7 @@ h.rd_wrangle <- function(df) {
 h.rd_preprocess_deadline_column <- function(df){
   df$raw_deadline <- df$deadline
   df$deadline <- suppressWarnings(lubridate::ymd(df$deadline))
-  h.log_every_row(
+  h.log_rows(
     df, 
     with(df, xor(!is.na(deadline), !is.na(raw_deadline))),
     warn_msg = glue::glue("Entries in column 'deadline' must be a ymd-format")
@@ -49,13 +49,13 @@ h.rd_preprocess_end_column <- function(df) {
   df$est_days <- suppressWarnings(as.numeric(df$end))
   df$fixed_end_date <- suppressWarnings(lubridate::ymd(df$end))
 
-  h.log_every_row(
+  h.log_rows(
     df, 
     with(df, (is.na(est_days) & is.na(fixed_end_date))), 
     warn_msg = glue::glue("Entries in column 'end' must be 'WAIT', an integer, or a date using a ymd-format"))
   # if (any(idx)) {
   #   futile.logger::flog.warn(glue::glue("Entries in column 'end' must be 'WAIT', an integer, or a date using a ymd-format"))
-  #   h.log_every_row(df, idx)
+  #   h.log_rows(df, idx)
   # }
   df$end <- NULL
   df
@@ -70,28 +70,22 @@ h.rd_convert_TODAY_2_date <- function(df) {
   df
 }
 
-h.log_every_row <- function(df, idx, warn_msg) {
+h.log_rows <- function(df, idx, warn_msg) {
   if (any(idx)) {
     futile.logger::flog.warn(warn_msg)
-    for (i in which(idx)) {
-      futile.logger::flog.debug(glue::glue("Row {i}"))
-      futile.logger::flog.debug(str(df[i, ]))
-    }
+    futile.logger::flog.debug("Rows:", df[idx, ], capture = TRUE)
   }
-  
 }
 
 h.rd_fill_with_default <- function(df, colname, def) {
   idx <- is.na(df[[colname]])
 
-  h.log_every_row(
+  h.log_rows(
     df,
     idx,
     warn_msg = glue::glue("Some entries in column '{colname}' are not specified. Set those entries to {def}.")
   )
   if (any(idx)) {
-    # futile.logger::flog.warn(glue::glue("Some entries in column '{colname}' are not specified. Set those entries to {def}."))
-    # h.log_every_row(df, idx)
     df[[colname]][idx] <- def
   }
   df
