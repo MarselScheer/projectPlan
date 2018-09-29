@@ -20,14 +20,17 @@
 #' @examples
 h.rd_wrangle <- function(df) {
   df <- h.rd_select_cols(df)
+  df <- dplyr::mutate_all(df, as.character)
+  
   df <- h.rd_remove_unnessary_rows(df)
-  df <- h.rd_fill_with_default(df, "section", "0_SECTION_UNKNOWN")
-  df <- h.rd_fill_with_default(df, "id", "ID_UNKNOWN")
-  df <- h.rd_fill_with_default(df, "end", 1)
+  df <- h.rd_fill_with_default(df, "project", "UNKNOWN")
+  df <- h.rd_fill_with_default(df, "section", "UNKNOWN")
+  df <- h.rd_fill_with_default(df, "id", "UNKNOWN")
+  df <- h.rd_fill_with_default(df, "end", "1")
   df <- h.rd_fill_with_default(df, "resource", "UNKNOWN")
   df <- h.rd_fill_with_default(df, "task", "UNKNOWN")
-  df <- h.rd_fill_with_default(df, "progress", 0)
-  df <- h.rd_convert_TODAY_2_date(df)
+  df <- h.rd_fill_with_default(df, "progress", "0")
+  df <- h.rd_preprocess_start_column(df)
   df <- h.rd_preprocess_end_column(df)
   df <- h.rd_preprocess_deadline_column(df)
   h.check_section_id_unique(df)
@@ -84,12 +87,14 @@ h.rd_preprocess_end_column <- function(df) {
   df
 }
 
-h.rd_convert_TODAY_2_date <- function(df) {
+h.rd_preprocess_start_column <- function(df) {
   TODAY <- as.character(lubridate::as_date(lubridate::now()))
 
   futile.logger::flog.info(glue::glue("Convert the 'TODAY' in column 'start' to the current date {TODAY}"))
 
   df$start[df$start == "TODAY"] <- TODAY
+  df$fixed_start_date <- suppressWarnings(lubridate::ymd(df$start))
+  
   df
 }
 
@@ -115,7 +120,7 @@ h.rd_fill_with_default <- function(df, colname, def) {
 }
 
 h.rd_remove_unnessary_rows <- function(df) {
-  discard <- with(df, is.na(section) & is.na(id) & is.na(start) & is.na(end) & is.na(resource) & is.na(task))
+  discard <- with(df, is.na(project) & is.na(section) & is.na(id) & is.na(start) & is.na(end) & is.na(resource) & is.na(task))
 
   futile.logger::flog.info(glue::glue("Remove rows where section, id, start, end, resource, task are empty"))
   futile.logger::flog.debug(glue::glue("Remove {sum(discard)} rows"))
@@ -124,8 +129,8 @@ h.rd_remove_unnessary_rows <- function(df) {
 }
 
 h.rd_select_cols <- function(df) {
-  cols <- c("section", "id", "depends_on", "start", "end", "resource", "task", "progress", "deadline")
+  cols <- c("project", "section", "id", "depends_on", "start", "end", "resource", "task", "progress", "deadline")
 
-  futile.logger::flog.info(glue::glue("Select the necessary columns {paste(cols, collapse =', ')}"))
+  futile.logger::flog.info(glue::glue("Select the necessary columns {h.comma_list(cols)}"))
   df <- df[, cols]
 }
