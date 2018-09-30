@@ -35,8 +35,8 @@ h.rd_wrangle <- function(df) {
   df <- h.rd_preprocess_end_column(df)
   df <- h.rd_preprocess_deadline_column(df)
   h.rd_check_project_section_id_unique(df)
-  
-  
+
+
 
   df <- h.rd_make_id_unique_within_project(df)
 
@@ -66,7 +66,6 @@ h.rd_make_id_unique_within_project <- function(df) {
 
   combined_entries <- dplyr::filter(ret, nmb_combined_entries > 1)
   if (nrow(combined_entries) > 0) {
-    futile.logger::flog.info("mes", list(before_combination = head(iris), after_combination = tail(iris)), capture = TRUE)
     futile.logger::flog.info(
       "The following id-entries were combined (within the project) into one entry, this means for instance that the estimated days are summed up:",
       list(
@@ -76,6 +75,27 @@ h.rd_make_id_unique_within_project <- function(df) {
       capture = TRUE
     )
   }
+
+  add_prefix_preserve_other_projects <- function(prefix, str) {
+    v <- h.split_comma_list(str)
+    if (v == "") {
+      return(NA)
+    }
+
+    idx <- which(!grepl(h.SEPERATOR, v))
+    v[idx] <- paste(prefix, v[idx], sep = h.SEPERATOR)
+    list(v)
+  }
+
+  ret <-
+    ret %>%
+    rowwise() %>%
+    dplyr::mutate(
+      section = paste(project, section, sep = h.SEPERATOR),
+      id = paste(project, id, sep = h.SEPERATOR),
+      depends_on = add_prefix_preserve_other_projects(project, depends_on),
+      start = add_prefix_preserve_other_projects(project, start)
+    )
   ret
 }
 
@@ -129,18 +149,18 @@ h.rd_preprocess_end_column <- function(df) {
 
 h.rd_preprocess_start_column <- function(df) {
   TODAY <- as.character(lubridate::as_date(lubridate::now()))
-  
+
   idx <- is.na(df$depends_on) & is.na(df$start)
   if (any(idx)) {
-    df$start[idx] <- "TODAY"    
+    df$start[idx] <- "TODAY"
     h.log_rows(
       df,
       idx,
       warn_msg = glue::glue("The following entries have empty -depends_on- AND -start- entries. Set -start- to 'TODAY'")
     )
   }
-  
-  
+
+
   futile.logger::flog.info(glue::glue("Convert the 'TODAY' in column 'start' to the current date -{TODAY}-"))
 
   df$start[df$start == "TODAY"] <- TODAY
