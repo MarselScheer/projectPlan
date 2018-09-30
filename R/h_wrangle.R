@@ -29,23 +29,84 @@ h.rd_wrangle <- function(df) {
   df <- h.rd_fill_with_default(df, "end", "1")
   df <- h.rd_fill_with_default(df, "resource", "UNKNOWN")
   df <- h.rd_fill_with_default(df, "task", "UNKNOWN")
-  df <- h.rd_fill_with_default(df, "progress", "0")
+  df <- h.rd_fill_with_default(df, "progress", "0") %>%
+    dplyr::mutate(progress = as.numeric(progress))
   df <- h.rd_preprocess_start_column(df)
   df <- h.rd_preprocess_end_column(df)
   df <- h.rd_preprocess_deadline_column(df)
-  h.check_project_section_id_unique(df)
+  h.rd_check_project_section_id_unique(df)
 
+  df <- h.rd_make_id_unique_within_project(df)
 
   df
 }
 
+h.unify_comma_list <- function(str) {
+  str %>%
+    stringr::str_split_fixed(pattern = ",", n = Inf) %>%
+    unlist() %>%
+    stringr::str_trim() %>%
+    unique()
+}
+
+h.combine_comma_list_cols <- function(v, w = "") {
+  ret <- h.unify_comma_list(v)
+  w <- h.unify_comma_list(w)
+  ret <- unique(c(ret, w))
+
+  h.comma_list(ret[ret != ""])
+}
+
+h.rd_make_id_unique_within_project <- function(df) {
+  df_grp <- dplyr::group_by_(df, "project", "id")
+
+  ret <-
+    df_grp %>%
+    dplyr::mutate(
+      depends_on = h.combine_comma_list_cols(depends_on),
+      prior_ids = h.combine_comma_list_cols(depends_on, start),
+      section = h.combine_comma_list_cols(section),
+      resource = h.combine_comma_list_cols(resource),
+      task = h.combine_comma_list_cols(task),
+      progress = mean(progress),
+      deadline = min(deadline, na.rm = TRUE),
+      fixed_start_date = min(fixed_start_date, na.rm = TRUE),
+      fixed_end_date = max(fixed_end_date, na.rm = TRUE),
+      est_days = sum(est_days, na.rm = TRUE),
+      waiting = any(waiting),
+      nmb_combined_entries = n()
+    ) %>%
+    dplyr::ungroup()
+
+  combined_entries <- dplyr::filter(ret, nmb_combined_entries > 1)
+  if (nrow(combined_entries) > 0) {
+    futile.logger::flog.info("mes", list(before_combination = head(iris), after_combination = tail(iris)), capture = TRUE)
+    futile.logger::flog.info(
+      "The following id-entries were combined (within the project) into one entry, this means for instance that the estimated days are summed up:",
+      list(
+        before_combining = dplyr::filter(df_grp, n() > 1),
+        after_combining = combined_entries
+      ),
+      capture = TRUE
+    )
+  }
+  ret
+}
+
+
+
 h.SEPERATOR <- "::"
 
 h.comma_list <- function(v) {
-  paste0(v, collapse = ", ")
+  v <- sort(unique(v))
+  ret <- paste0(v, collapse = ", ")
+  if (ret == "") {
+    ret <- NA
+  }
+  ret
 }
 
-h.check_project_section_id_unique <- function(df) {
+h.rd_check_project_section_id_unique <- function(df) {
   id_in_multiple_sections <-
     df %>%
     dplyr::select(project, id, section) %>%
