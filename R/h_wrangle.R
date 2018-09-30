@@ -36,11 +36,29 @@ h.rd_wrangle <- function(df) {
   df <- h.rd_preprocess_deadline_column(df)
   h.rd_check_project_section_id_unique(df)
 
-
-
   df <- h.rd_make_id_unique_within_project(df)
-
+  h.rd_check_start_time_available(df)
+  
   df
+}
+
+h.rd_check_start_time_available <- function(df) {
+  futile.logger::flog.info("Check that the start time is at least implicitly defined.")
+
+  # var is only for logger
+  df_log <- 
+    df %>% 
+    dplyr::rowwise() %>% 
+    dplyr::mutate(
+      depends_on = h.comma_list(depends_on),
+      start = h.comma_list(start))
+  
+  idx <- with(df, is.na(fixed_start_date) & is.null(prior_ids))
+  h.log_rows(
+    df_log,
+    idx,
+    warn_msg = glue::glue("Missing explicit or implicit start time for the following entries")
+  )
 }
 
 h.rd_make_id_unique_within_project <- function(df) {
@@ -77,10 +95,11 @@ h.rd_make_id_unique_within_project <- function(df) {
   }
 
   add_prefix_preserve_other_projects <- function(prefix, str) {
-    v <- h.split_comma_list(str)
-    if (v == "") {
+    if (is.na(str)) {
       return(NA)
     }
+
+    v <- h.split_comma_list(str)
 
     idx <- which(!grepl(h.SEPERATOR, v))
     v[idx] <- paste(prefix, v[idx], sep = h.SEPERATOR)
@@ -94,7 +113,8 @@ h.rd_make_id_unique_within_project <- function(df) {
       section = paste(project, section, sep = h.SEPERATOR),
       id = paste(project, id, sep = h.SEPERATOR),
       depends_on = add_prefix_preserve_other_projects(project, depends_on),
-      start = add_prefix_preserve_other_projects(project, start)
+      start = add_prefix_preserve_other_projects(project, start),
+      prior_ids = add_prefix_preserve_other_projects(project, prior_ids)
     )
   ret
 }
