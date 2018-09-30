@@ -143,7 +143,18 @@ h.rd_preprocess_end_column <- function(df) {
 
 h.rd_preprocess_start_column <- function(df) {
   TODAY <- as.character(lubridate::as_date(lubridate::now()))
-
+  
+  idx <- is.na(df$depends_on) & is.na(df$start)
+  if (any(idx)) {
+    df$start[idx] <- "TODAY"    
+    h.log_rows(
+      df,
+      idx,
+      warn_msg = glue::glue("The following entries have empty -depends_on- AND -start- entries. Set -start- to 'TODAY'")
+    )
+  }
+  
+  
   futile.logger::flog.info(glue::glue("Convert the 'TODAY' in column 'start' to the current date -{TODAY}-"))
 
   df$start[df$start == "TODAY"] <- TODAY
