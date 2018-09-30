@@ -94,18 +94,6 @@ h.rd_make_id_unique_within_project <- function(df) {
 }
 
 
-
-h.SEPERATOR <- "::"
-
-h.comma_list <- function(v) {
-  v <- sort(unique(v))
-  ret <- paste0(v, collapse = ", ")
-  if (ret == "") {
-    ret <- NA
-  }
-  ret
-}
-
 h.rd_check_project_section_id_unique <- function(df) {
   id_in_multiple_sections <-
     df %>%
@@ -163,13 +151,6 @@ h.rd_preprocess_start_column <- function(df) {
   df$start[!is.na(df$fixed_start_date)] <- NA
 
   df
-}
-
-h.log_rows <- function(df, idx, warn_msg) {
-  if (any(idx)) {
-    futile.logger::flog.warn(warn_msg)
-    futile.logger::flog.debug("Rows:", df[idx, ], capture = TRUE)
-  }
 }
 
 h.rd_fill_with_default <- function(df, colname, def) {
