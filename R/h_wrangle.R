@@ -35,26 +35,12 @@ h.rd_wrangle <- function(df) {
   df <- h.rd_preprocess_end_column(df)
   df <- h.rd_preprocess_deadline_column(df)
   h.rd_check_project_section_id_unique(df)
+  
+  
 
   df <- h.rd_make_id_unique_within_project(df)
 
   df
-}
-
-h.unify_comma_list <- function(str) {
-  str %>%
-    stringr::str_split_fixed(pattern = ",", n = Inf) %>%
-    unlist() %>%
-    stringr::str_trim() %>%
-    unique()
-}
-
-h.combine_comma_list_cols <- function(v, w = "") {
-  ret <- h.unify_comma_list(v)
-  w <- h.unify_comma_list(w)
-  ret <- unique(c(ret, w))
-
-  h.comma_list(ret[ret != ""])
 }
 
 h.rd_make_id_unique_within_project <- function(df) {
