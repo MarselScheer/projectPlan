@@ -33,7 +33,7 @@ h.rd_wrangle <- function(df) {
   df <- h.rd_preprocess_start_column(df)
   df <- h.rd_preprocess_end_column(df)
   df <- h.rd_preprocess_deadline_column(df)
-  h.check_section_id_unique(df)
+  h.check_project_section_id_unique(df)
 
 
   df
@@ -45,20 +45,20 @@ h.comma_list <- function(v) {
   paste0(v, collapse = ", ")
 }
 
-h.check_section_id_unique <- function(df) {
+h.check_project_section_id_unique <- function(df) {
   id_in_multiple_sections <-
     df %>%
-    dplyr::select(id, section) %>%
+    dplyr::select(project, id, section) %>%
     dplyr::distinct() %>%
-    dplyr::count(id) %>%
+    dplyr::count(project, id) %>%
     dplyr::filter(n > 1) %>%
     with(id)
 
-  df <- df[order(df$id, df$section), ]
-  h.log_every_row(
+  df <- df[order(df$project, df$id, df$section), ]
+  h.log_rows(
     df,
     df$id %in% id_in_multiple_sections,
-    warn_msg = glue::glue("The same id {h.comma_list(id_in_multiple_sections)} used in different 'sections' is probably an error")
+    warn_msg = glue::glue("The same id -{h.comma_list(id_in_multiple_sections)}- used in different 'sections' of the same 'project' is probably an error")
   )
 }
 
@@ -95,7 +95,7 @@ h.rd_preprocess_end_column <- function(df) {
 h.rd_preprocess_start_column <- function(df) {
   TODAY <- as.character(lubridate::as_date(lubridate::now()))
 
-  futile.logger::flog.info(glue::glue("Convert the 'TODAY' in column 'start' to the current date {TODAY}"))
+  futile.logger::flog.info(glue::glue("Convert the 'TODAY' in column 'start' to the current date -{TODAY}-"))
 
   df$start[df$start == "TODAY"] <- TODAY
   df$fixed_start_date <- suppressWarnings(lubridate::ymd(df$start))
@@ -117,7 +117,7 @@ h.rd_fill_with_default <- function(df, colname, def) {
   h.log_rows(
     df,
     idx,
-    warn_msg = glue::glue("Some entries in column '{colname}' are not specified. Set those entries to {def}.")
+    warn_msg = glue::glue("Some entries in column -{colname}- are not specified. Set those entries to -{def}-.")
   )
   if (any(idx)) {
     df[[colname]][idx] <- def
@@ -137,6 +137,6 @@ h.rd_remove_unnessary_rows <- function(df) {
 h.rd_select_cols <- function(df) {
   cols <- c("project", "section", "id", "depends_on", "start", "end", "resource", "task", "progress", "deadline")
 
-  futile.logger::flog.info(glue::glue("Select the necessary columns {h.comma_list(cols)}"))
+  futile.logger::flog.info(glue::glue("Select the necessary columns -{h.comma_list(cols)}-"))
   df <- df[, cols]
 }
