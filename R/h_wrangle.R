@@ -68,6 +68,7 @@ h.rd_make_id_unique_within_project <- function(df) {
     df_grp %>%
     dplyr::mutate(
       depends_on = h.combine_comma_list_cols(depends_on),
+      start = h.combine_comma_list_cols(start),
       prior_ids = h.combine_comma_list_cols(depends_on, start),
       section = h.combine_comma_list_cols(section),
       resource = h.combine_comma_list_cols(resource),
@@ -108,14 +109,15 @@ h.rd_make_id_unique_within_project <- function(df) {
 
   ret <-
     ret %>%
-    rowwise() %>%
+    dplyr::rowwise() %>%
     dplyr::mutate(
       section = paste(project, section, sep = h.SEPERATOR),
       id = paste(project, id, sep = h.SEPERATOR),
       depends_on = add_prefix_preserve_other_projects(project, depends_on),
       start = add_prefix_preserve_other_projects(project, start),
       prior_ids = add_prefix_preserve_other_projects(project, prior_ids)
-    )
+    ) %>% 
+    unique
   ret
 }
 

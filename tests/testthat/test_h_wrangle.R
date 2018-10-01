@@ -43,8 +43,52 @@ test_that(
   }
 )
 
+d_in <- dplyr::tibble(
+  project = "A", id = "I", section = "S",
+  depends_on = c("a", "a, B::b"), 
+  start = c("b, B::b", "c, d, C::h"),
+  task = letters[3:4],
+  resource = letters[5:6],
+  progress = c(10, 90),
+  deadline = lubridate::ymd(c("2018-09-20", "2018-09-21")),
+  fixed_start_date = lubridate::ymd(c("2018-09-10", "2018-09-11")),
+  fixed_end_date = lubridate::ymd(c("2018-09-15", "2018-09-16")),
+  est_days = c(2,3),
+  waiting = c(T, F))
 
-h.rd_preprocess_deadline_column
+d_expected <- dplyr::tibble(
+  project = "A", id = "A::I", section = "A::S",
+  depends_on = list(c("A::a", "B::b")), 
+  start = list(c("A::b", "B::b", "A::c", "C::h", "A::d")),
+  task = c("c, d"),
+  resource = c("e, f"),
+  progress = c(50),
+  deadline = lubridate::ymd(c("2018-09-20")),
+  fixed_start_date = lubridate::ymd(c("2018-09-10")),
+  fixed_end_date = lubridate::ymd(c("2018-09-16")),
+  est_days = c(5),
+  waiting = c(T),
+  prior_ids = list(c("A::a", "A::b", "B::b", "A::c", "C::h", "A::d")),
+  nmb_combined_entries = 2L)
+
+d_out <- h.rd_make_id_unique_within_project(d_in)
+test_that(
+  "combine ids within project in order to make them unique", {
+    expect_identical(d_out$depends_on, d_expected$depends_on)
+    expect_identical(d_out$start, d_expected$start)
+    expect_identical(d_out$prior_ids, d_expected$prior_ids)
+    d_out$depends_on <- NULL
+    d_out$start <- NULL
+    d_out$prior_ids <- NULL
+    d_expected$depends_on <- NULL
+    d_expected$start <- NULL
+    d_expected$prior_ids <- NULL
+    expect_identical(d_out, d_expected)
+  }
+)
+
+
+
 
 
 # dt <- readxl::read_xlsx("../../kaggle/xlsx_2_gantt.rep/prjplan.xlsx", sheet = "Ongoing")
