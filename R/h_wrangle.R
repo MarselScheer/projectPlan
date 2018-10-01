@@ -156,8 +156,9 @@ h.rd_preprocess_end_column <- function(df) {
 
   h.log_rows(
     df,
-    with(df, (is.na(est_days) & is.na(fixed_end_date))),
-    warn_msg = glue::glue("Entries in column 'end' must be 'WAIT', an integer, or a date using a ymd-format")
+    with(df, (!waiting & is.na(est_days) & is.na(fixed_end_date))),
+    warn_msg = glue::glue("Entries in column 'end' must be 'WAIT', an integer, or a date using a ymd-format"),
+    error = TRUE
   )
   # if (any(idx)) {
   #   futile.logger::flog.warn(glue::glue("Entries in column 'end' must be 'WAIT', an integer, or a date using a ymd-format"))

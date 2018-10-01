@@ -31,9 +31,15 @@ h.combine_comma_list_cols <- function(v, w = "") {
 }
 
 
-h.log_rows <- function(df, idx, warn_msg) {
+h.log_rows <- function(df, idx, warn_msg, error = FALSE) {
   if (any(idx)) {
-    futile.logger::flog.warn(warn_msg)
-    futile.logger::flog.debug("Rows:", df[idx, ], capture = TRUE)
+    if (error) {
+      futile.logger::flog.error(warn_msg)  
+      futile.logger::flog.error("Rows:", df[idx, ], capture = TRUE)
+      stop(warn_msg)
+    } else {
+      futile.logger::flog.warn(warn_msg)  
+      futile.logger::flog.debug("Rows:", df[idx, ], capture = TRUE)
+    }
   }
 }
