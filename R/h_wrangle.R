@@ -144,7 +144,8 @@ h.rd_preprocess_deadline_column <- function(df) {
   h.log_rows(
     df,
     with(df, xor(!is.na(deadline), !is.na(raw_deadline))),
-    warn_msg = glue::glue("Entries in column 'deadline' must be a ymd-format")
+    warn_msg = glue::glue("Entries in column 'deadline' must be a ymd-format"),
+    error = TRUE
   )
   df
 }
