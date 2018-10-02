@@ -4,7 +4,7 @@ h.comma_list <- function(v) {
   v <- sort(unique(v))
   ret <- paste0(v, collapse = ", ")
   if (ret == "") {
-    ret <- NA
+    ret <- NA_character_
   }
   ret
 }
