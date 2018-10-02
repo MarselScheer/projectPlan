@@ -56,46 +56,76 @@ d_in <- dplyr::tibble(
   est_days = c(2,3),
   waiting = c(T, F))
 
-d_expected <- dplyr::tibble(
-  project = "A", id = "A::I", section = "A::S",
+d_expected <- data.table::data.table(
+  project = "A", id = "A::I", 
   depends_on = list(c("A::a", "B::b")), 
   start = list(c("A::b", "B::b", "A::c", "C::h", "A::d")),
-  task = c("c, d"),
+  prior_ids = list(c("A::a", "A::b", "B::b", "A::c", "C::h", "A::d")),
+  section = "A::S",
   resource = c("e, f"),
+  task = c("c, d"),
   progress = c(50),
   deadline = lubridate::ymd(c("2018-09-20")),
   fixed_start_date = lubridate::ymd(c("2018-09-10")),
   fixed_end_date = lubridate::ymd(c("2018-09-16")),
   est_days = c(5),
   waiting = c(T),
-  prior_ids = list(c("A::a", "A::b", "B::b", "A::c", "C::h", "A::d")),
   nmb_combined_entries = 2L)
 
-d_out <- h.rd_make_id_unique_within_project(d_in)
+d_out <- 
 test_that(
   "combine ids within project in order to make them unique", {
-    expect_identical(d_out$depends_on, d_expected$depends_on)
-    expect_identical(d_out$start, d_expected$start)
-    expect_identical(d_out$prior_ids, d_expected$prior_ids)
-    d_out$depends_on <- NULL
-    d_out$start <- NULL
-    d_out$prior_ids <- NULL
-    d_expected$depends_on <- NULL
-    d_expected$start <- NULL
-    d_expected$prior_ids <- NULL
-    expect_identical(d_out, d_expected)
+    expect_identical(h.rd_make_id_unique_within_project(d_in), d_expected)
   }
+)
+
+
+d_in <- data.frame(
+  project = c("A"), 
+  section = NA_character_, 
+  id = NA_character_, 
+  depends_on = NA_character_, 
+  start = NA_character_, 
+  end = NA_character_, 
+  resource = NA_character_, 
+  task = NA_character_, 
+  progress = NA, 
+  deadline = NA_character_,
+  some_col = "JE"
+)
+d_expected <- data.frame(
+  project = c("A"), 
+  section = "A::UNKNOWN", 
+  id = "A::UNKNOWN", 
+  depends_on = NA_character_, 
+  start = NA_character_, 
+  resource = "UNKNOWN", 
+  task = "UNKNOWN", 
+  progress = 0, 
+  deadline = NA_character_,
+  fixed_start_date = lubridate::as_date(lubridate::now()),
+  waiting = FALSE,
+  est_days = 1,
+  fixed_end_date = NA,
+  raw_deadline = NA_character_,
+  prior_ids = NA,
+  nmb_combined_entries = 1
+)
+#debugonce(h.rd_make_id_unique_within_project)
+debugonce(h.combine_comma_list_cols)
+test_that(
+  "Complete raw data wrangling",
+  expect_identical(h.rd_wrangle(d_in), d_expected)
 )
 
 
 
 
-
-# dt <- readxl::read_xlsx("../../kaggle/xlsx_2_gantt.rep/prjplan.xlsx", sheet = "Ongoing")
+dt <- readxl::read_xlsx("../../kaggle/xlsx_2_gantt.rep/prjplan.xlsx", sheet = "Ongoing")
 # 
 # futile.logger::flog.threshold(futile.logger::TRACE)
 # # futile.logger::flog.threshold(futile.logger::WARN)
 # 
-# dtt <- h.rd_wrangle(dt)
+dtt <- h.rd_wrangle(dt)
 # 
 # dtt <- calculate_time_lines(dtt)

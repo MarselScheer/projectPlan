@@ -31,6 +31,7 @@ h.rd_wrangle <- function(df) {
   df <- h.rd_fill_with_default(df, "task", "UNKNOWN")
   df <- h.rd_fill_with_default(df, "progress", "0") %>%
     dplyr::mutate(progress = as.numeric(progress))
+  
   df <- h.rd_preprocess_start_column(df)
   df <- h.rd_preprocess_end_column(df)
   df <- h.rd_preprocess_deadline_column(df)
@@ -62,33 +63,28 @@ h.rd_check_start_time_available <- function(df) {
 }
 
 h.rd_make_id_unique_within_project <- function(df) {
-  df_grp <- dplyr::group_by_(df, "project", "id")
 
-  ret <-
-    df_grp %>%
-    dplyr::mutate(
-      depends_on = h.combine_comma_list_cols(depends_on),
-      start = h.combine_comma_list_cols(start),
-      prior_ids = h.combine_comma_list_cols(depends_on, start),
-      section = h.combine_comma_list_cols(section),
-      resource = h.combine_comma_list_cols(resource),
-      task = h.combine_comma_list_cols(task),
-      progress = mean(progress),
-      deadline = min(deadline, na.rm = TRUE),
-      fixed_start_date = min(fixed_start_date, na.rm = TRUE),
-      fixed_end_date = max(fixed_end_date, na.rm = TRUE),
-      est_days = sum(est_days, na.rm = TRUE),
-      waiting = any(waiting),
-      nmb_combined_entries = n()
-    ) %>%
-    dplyr::ungroup()
+  df <- data.table::data.table(df)
+  ret <- df[,.(depends_on = h.combine_comma_list_cols(depends_on),
+        start = h.combine_comma_list_cols(start),
+        prior_ids = h.combine_comma_list_cols(depends_on, start),
+        section = h.combine_comma_list_cols(section),
+        resource = h.combine_comma_list_cols(resource),
+        task = h.combine_comma_list_cols(task),
+        progress = mean(progress),
+        deadline = suppressWarnings(min(deadline, na.rm = TRUE)),
+        fixed_start_date = suppressWarnings(min(fixed_start_date, na.rm = TRUE)),
+        fixed_end_date = suppressWarnings(max(fixed_end_date, na.rm = TRUE)),
+        est_days = sum(est_days, na.rm = TRUE),
+        waiting = any(waiting),
+        nmb_combined_entries = .N), 
+     by = .(project, id)] 
 
   combined_entries <- dplyr::filter(ret, nmb_combined_entries > 1)
   if (nrow(combined_entries) > 0) {
     futile.logger::flog.info(
       "The following id-entries were combined (within the project) into one entry, this means for instance that the estimated days are summed up:",
       list(
-        before_combining = dplyr::filter(df_grp, n() > 1),
         after_combining = combined_entries
       ),
       capture = TRUE
@@ -106,19 +102,16 @@ h.rd_make_id_unique_within_project <- function(df) {
     v[idx] <- paste(prefix, v[idx], sep = h.SEPERATOR)
     list(v)
   }
+  vadd_prefix_preserve_other_projects <- Vectorize(add_prefix_preserve_other_projects)
 
-  ret <-
-    ret %>%
-    dplyr::rowwise() %>%
-    dplyr::mutate(
-      section = paste(project, section, sep = h.SEPERATOR),
-      id = paste(project, id, sep = h.SEPERATOR),
-      depends_on = add_prefix_preserve_other_projects(project, depends_on),
-      start = add_prefix_preserve_other_projects(project, start),
-      prior_ids = add_prefix_preserve_other_projects(project, prior_ids)
-    ) %>% 
-    unique
-  ret
+  
+  ret[, ':='(section = paste(project, section, sep = h.SEPERATOR),
+         id = paste(project, id, sep = h.SEPERATOR),
+         depends_on = vadd_prefix_preserve_other_projects(project, depends_on),
+         start = vadd_prefix_preserve_other_projects(project, start),
+         prior_ids = vadd_prefix_preserve_other_projects(project, prior_ids))]
+  
+  unique(ret)
 }
 
 
