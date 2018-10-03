@@ -91,31 +91,30 @@ d_in <- data.frame(
   task = NA_character_, 
   progress = NA, 
   deadline = NA_character_,
-  some_col = "JE"
+  some_col = "will get lost"
 )
-d_expected <- data.frame(
+d_expected <- data.table::data.table(
   project = c("A"), 
-  section = "A::UNKNOWN", 
   id = "A::UNKNOWN", 
   depends_on = NA_character_, 
   start = NA_character_, 
+  prior_ids = NA_character_,
+  section = "A::UNKNOWN", 
   resource = "UNKNOWN", 
   task = "UNKNOWN", 
   progress = 0, 
-  deadline = NA_character_,
+  deadline = lubridate::as_date(NA),
   fixed_start_date = lubridate::as_date(lubridate::now()),
-  waiting = FALSE,
+  fixed_end_date = lubridate::as_date(NA),
   est_days = 1,
-  fixed_end_date = NA,
-  raw_deadline = NA_character_,
-  prior_ids = NA,
-  nmb_combined_entries = 1
+  waiting = FALSE,
+  nmb_combined_entries = 1L
 )
-#debugonce(h.rd_make_id_unique_within_project)
-debugonce(h.combine_comma_list_cols)
+d_out <- h.rd_wrangle(d_in)
 test_that(
-  "Complete raw data wrangling",
-  expect_identical(h.rd_wrangle(d_in), d_expected)
+  "Complete raw data wrangling. check default values",{
+    expect_identical(d_out, d_expected)  
+  }
 )
 
 

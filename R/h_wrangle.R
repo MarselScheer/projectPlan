@@ -64,6 +64,22 @@ h.rd_check_start_time_available <- function(df) {
 
 h.rd_make_id_unique_within_project <- function(df) {
 
+  date_min <- function(v){
+    if(all(is.na(v))){
+      # strange behaviour if all NA then min (with na.rm = TRUE) will return Inf as expected, but NA is displayed.
+      return(lubridate::as_date(NA))
+    }
+    min(v, na.rm = TRUE)
+  }
+  
+  date_max <- function(v){
+    if(all(is.na(v))){
+      # strange behaviour if all NA then max (with na.rm = TRUE) will return -Inf as expected, but NA is displayed.
+      return(lubridate::as_date(NA))
+    }
+    max(v, na.rm = TRUE)
+  }
+  
   df <- data.table::data.table(df)
   ret <- df[,.(depends_on = h.combine_comma_list_cols(depends_on),
         start = h.combine_comma_list_cols(start),
@@ -72,9 +88,9 @@ h.rd_make_id_unique_within_project <- function(df) {
         resource = h.combine_comma_list_cols(resource),
         task = h.combine_comma_list_cols(task),
         progress = mean(progress),
-        deadline = suppressWarnings(min(deadline, na.rm = TRUE)),
-        fixed_start_date = suppressWarnings(min(fixed_start_date, na.rm = TRUE)),
-        fixed_end_date = suppressWarnings(max(fixed_end_date, na.rm = TRUE)),
+        deadline = date_min(deadline),
+        fixed_start_date = date_min(fixed_start_date),
+        fixed_end_date = date_max(fixed_end_date),
         est_days = sum(est_days, na.rm = TRUE),
         waiting = any(waiting),
         nmb_combined_entries = .N), 
@@ -93,7 +109,7 @@ h.rd_make_id_unique_within_project <- function(df) {
 
   add_prefix_preserve_other_projects <- function(prefix, str) {
     if (is.na(str)) {
-      return(NA)
+      return(NA_character_)
     }
 
     v <- h.split_comma_list(str)
