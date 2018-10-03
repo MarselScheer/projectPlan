@@ -14,9 +14,9 @@
 #   Test Package:              'Ctrl + Shift + T'
 
 #' Calls all necessary for wrangling a raw project plan
-#'
+#' 
 #' @return tibble with all columns preprocessed for calculating time lines
-#'
+#' 
 #' @examples
 h.rd_wrangle <- function(df) {
   df <- h.rd_select_cols(df)
@@ -31,7 +31,7 @@ h.rd_wrangle <- function(df) {
   df <- h.rd_fill_with_default(df, "task", "UNKNOWN")
   df <- h.rd_fill_with_default(df, "progress", "0") %>%
     dplyr::mutate(progress = as.numeric(progress))
-  
+
   df <- h.rd_preprocess_start_column(df)
   df <- h.rd_preprocess_end_column(df)
   df <- h.rd_preprocess_deadline_column(df)
@@ -39,7 +39,7 @@ h.rd_wrangle <- function(df) {
 
   df <- h.rd_make_id_unique_within_project(df)
   h.rd_check_start_time_available(df)
-  
+
   df
 }
 
@@ -47,13 +47,14 @@ h.rd_check_start_time_available <- function(df) {
   futile.logger::flog.info("Check that the start time is at least implicitly defined.")
 
   # var is only for logger
-  df_log <- 
-    df %>% 
-    dplyr::rowwise() %>% 
+  df_log <-
+    df %>%
+    dplyr::rowwise() %>%
     dplyr::mutate(
       depends_on = h.comma_list(depends_on),
-      start = h.comma_list(start))
-  
+      start = h.comma_list(start)
+    )
+
   idx <- with(df, is.na(fixed_start_date) & is.null(prior_ids))
   h.log_rows(
     df_log,
@@ -63,38 +64,40 @@ h.rd_check_start_time_available <- function(df) {
 }
 
 h.rd_make_id_unique_within_project <- function(df) {
-
-  date_min <- function(v){
-    if(all(is.na(v))){
+  date_min <- function(v) {
+    if (all(is.na(v))) {
       # strange behaviour if all NA then min (with na.rm = TRUE) will return Inf as expected, but NA is displayed.
       return(lubridate::as_date(NA))
     }
     min(v, na.rm = TRUE)
   }
-  
-  date_max <- function(v){
-    if(all(is.na(v))){
+
+  date_max <- function(v) {
+    if (all(is.na(v))) {
       # strange behaviour if all NA then max (with na.rm = TRUE) will return -Inf as expected, but NA is displayed.
       return(lubridate::as_date(NA))
     }
     max(v, na.rm = TRUE)
   }
-  
+
   df <- data.table::data.table(df)
-  ret <- df[,.(depends_on = h.combine_comma_list_cols(depends_on),
-        start = h.combine_comma_list_cols(start),
-        prior_ids = h.combine_comma_list_cols(depends_on, start),
-        section = h.combine_comma_list_cols(section),
-        resource = h.combine_comma_list_cols(resource),
-        task = h.combine_comma_list_cols(task),
-        progress = mean(progress),
-        deadline = date_min(deadline),
-        fixed_start_date = date_min(fixed_start_date),
-        fixed_end_date = date_max(fixed_end_date),
-        est_days = sum(est_days, na.rm = TRUE),
-        waiting = any(waiting),
-        nmb_combined_entries = .N), 
-     by = .(project, id)] 
+  ret <- df[, .(
+    depends_on = h.combine_comma_list_cols(depends_on),
+    start = h.combine_comma_list_cols(start),
+    prior_ids = h.combine_comma_list_cols(depends_on, start),
+    section = h.combine_comma_list_cols(section),
+    resource = h.combine_comma_list_cols(resource),
+    task = h.combine_comma_list_cols(task),
+    progress = mean(progress),
+    deadline = date_min(deadline),
+    fixed_start_date = date_min(fixed_start_date),
+    fixed_end_date = date_max(fixed_end_date),
+    est_days = sum(est_days, na.rm = TRUE),
+    waiting = any(waiting),
+    nmb_combined_entries = .N
+  ),
+  by = .(project, id)
+  ]
 
   combined_entries <- dplyr::filter(ret, nmb_combined_entries > 1)
   if (nrow(combined_entries) > 0) {
@@ -120,13 +123,13 @@ h.rd_make_id_unique_within_project <- function(df) {
   }
   vadd_prefix_preserve_other_projects <- Vectorize(add_prefix_preserve_other_projects)
 
-  
-  ret[, ':='(section = paste(project, section, sep = h.SEPERATOR),
-         id = paste(project, id, sep = h.SEPERATOR),
-         depends_on = vadd_prefix_preserve_other_projects(project, depends_on),
-         start = vadd_prefix_preserve_other_projects(project, start),
-         prior_ids = vadd_prefix_preserve_other_projects(project, prior_ids))]
-  
+
+  ret[, ":="(section = paste(project, section, sep = h.SEPERATOR),
+  id = paste(project, id, sep = h.SEPERATOR),
+  depends_on = vadd_prefix_preserve_other_projects(project, depends_on),
+  start = vadd_prefix_preserve_other_projects(project, start),
+  prior_ids = vadd_prefix_preserve_other_projects(project, prior_ids))]
+
   unique(ret)
 }
 

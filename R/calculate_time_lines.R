@@ -1,4 +1,5 @@
 #' @export
+#' @import data.table
 calculate_time_lines <- function(df) {
   df$time_start <- NA
   df$time_start <- lubridate::as_date(df$time_start)
@@ -34,11 +35,11 @@ h.exclude_weekends <- function(start, end) {
     start <- start + shift
     end <- end + shift
   }
-  
+
   tmp <- start + 1
   while (tmp <= end) {
     if (lubridate::wday(tmp) %in% c(7)) {
-      end <- end + 2 
+      end <- end + 2
       tmp <- tmp + 1
     }
     tmp <- tmp + 1
@@ -48,7 +49,6 @@ h.exclude_weekends <- function(start, end) {
 
 
 h.calculate_end_time <- function(earliest_start_time, is_waiting, est_days, fixed_end_date) {
-  
   if (!is.na(as.character(fixed_end_date))) {
     end <- fixed_end_date
     end <- h.turn_weekend_day_to_monday(end)
@@ -104,7 +104,7 @@ h.calculate_time_lines_at <- function(dt_ref, row) {
 
   dt_ref[row, time_start := earliest_start_time]
   dt_ref[row, time_end := end]
-  
+
   if (end < earliest_start_time) {
     futile.logger::flog.warn("-time_start- is before -time_end-", dt_ref[row, ], capture = TRUE)
   }

@@ -9,10 +9,10 @@ h.comma_list <- function(v) {
   ret
 }
 
-h.split_comma_list <- function(str){
-  str %>% 
+h.split_comma_list <- function(str) {
+  str %>%
     stringr::str_split_fixed(pattern = ",", n = Inf) %>%
-    unlist() %>% 
+    unlist() %>%
     stringr::str_trim()
 }
 
@@ -26,7 +26,7 @@ h.combine_comma_list_cols <- function(v, w = "") {
   ret <- h.comma_list_2_uniq_vec(v)
   w <- h.comma_list_2_uniq_vec(w)
   ret <- unique(c(ret, w))
-  
+
   h.comma_list(ret[ret != ""])
 }
 
@@ -34,11 +34,11 @@ h.combine_comma_list_cols <- function(v, w = "") {
 h.log_rows <- function(df, idx, warn_msg, error = FALSE) {
   if (any(idx)) {
     if (error) {
-      futile.logger::flog.error(warn_msg)  
+      futile.logger::flog.error(warn_msg)
       futile.logger::flog.error("Rows:", df[idx, ], capture = TRUE)
       stop(warn_msg)
     } else {
-      futile.logger::flog.warn(warn_msg)  
+      futile.logger::flog.warn(warn_msg)
       futile.logger::flog.debug("Rows:", df[idx, ], capture = TRUE)
     }
   }
