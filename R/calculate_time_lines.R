@@ -24,29 +24,33 @@ h.turn_weekend_day_to_monday <- function(day) {
   day
 }
 
-h.exclude_weekends <- function(start, end) {
+h.exclude_weekends <- function(start, end){
   if (end < start) {
-    stop(glue::glue("{end} is before {start}"))
+    msg <- glue::glue("Specified end time {end} is before the start time {start}")
+    futile.logger::flog.error(msg)
+    stop(msg)
   }
-
+  
   shift <- h.turn_weekend_day_to_monday(start) - start
   if (shift > 0) {
-    futile.logger::flog.debug(glue::glue("start {start} is on a weekend. shift start and end by {shift} day(s)."))
+    futile.logger::flog.warn(glue::glue("start {start} is on a weekend. shift start {start} and end {end} by {shift} day(s)."))
     start <- start + shift
     end <- end + shift
   }
-
-  tmp <- start + 1
-  while (tmp <= end) {
-    if (lubridate::wday(tmp) %in% c(7)) {
-      end <- end + 2
-      tmp <- tmp + 1
-    }
-    tmp <- tmp + 1
+  
+  nmb_workdays <- as.integer(end - start)
+  nmb_workweeks <- floor(nmb_workdays / 5)
+  nmb_days_remain <- nmb_workdays %% 5
+  
+  end <- start + 7 * nmb_workweeks + nmb_days_remain
+  
+  if (lubridate::wday(end) %in% c(1,7)) {
+    # if we stop working on saturday we actually have to work till monday
+    # if we stop working on sunday we actually have to work till tuesday
+    end <- end + 2
   }
   end
 }
-
 
 h.calculate_end_time <- function(earliest_start_time, is_waiting, est_days, fixed_end_date) {
   if (!is.na(as.character(fixed_end_date))) {
