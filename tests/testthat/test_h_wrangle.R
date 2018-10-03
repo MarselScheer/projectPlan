@@ -117,8 +117,44 @@ test_that(
   }
 )
 
+d_in <- data.frame(
+  project = c("A"), 
+  section = c("0_prep"), 
+  id = c("a", "a"), 
+  depends_on = c("b, B::b", "b, b"), 
+  start = c("2018-09-10", "2018-09-11"), 
+  end = c("2018-09-20", "2018-10-25"), 
+  resource = c("r1, r2", "r2"), 
+  task = c("t1", "t2"), 
+  progress = c(0, 50), 
+  deadline = c("2018-09-23", "2018-10-01"),
+  stringsAsFactors = FALSE
+)
+d_expected <- data.table::data.table(
+  project = c("A"), 
+  id = "A::a",
+  depends_on = list(c("A::b", "B::b")), 
+  start = NA_character_, 
+  prior_ids = list(c("A::b", "B::b")),
+  section = c("A::0_prep"), 
+  resource = c("r1, r2"), 
+  task = c("t1, t2"), 
+  progress = c(25), 
+  deadline = lubridate::as_date(c("2018-09-23")),
+  fixed_start_date = lubridate::as_date(c("2018-09-10")), 
+  fixed_end_date = lubridate::as_date(c("2018-10-25")), 
+  est_days = 0,
+  waiting = FALSE,
+  nmb_combined_entries = 2L,
+  stringsAsFactors = FALSE
+)
 
-
+d_out <- h.rd_wrangle(d_in)
+test_that(
+  "Complete raw data wrangling with combining ids",{
+    expect_identical(d_out, d_expected)  
+  }
+)
 
 dt <- readxl::read_xlsx("../../kaggle/xlsx_2_gantt.rep/prjplan.xlsx", sheet = "Ongoing")
 # 
