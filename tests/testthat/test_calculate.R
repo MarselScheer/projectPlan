@@ -33,29 +33,25 @@ test_that(
 )
 
 dt_in <- data.table::data.table(
-  id = c("a", "b"),
+  id = c("a", "b", "c"),
   prior_ids = list(NA),
   fixed_start_date = lubridate::ymd("2018-10-05"),
-  fixed_end_date = lubridate::as_date(NA),
-  time_start = lubridate::as_date(NA),
-  time_end = lubridate::as_date(NA),
-  est_days = c(21L, 6),
-  waiting = c(F, T)
+  fixed_end_date = c(lubridate::ymd("2018-10-07"), lubridate::as_date(NA), lubridate::as_date(NA)),
+  est_days = c(21L, 6, 21L),
+  waiting = c(F, T, F)
 )
 dt_out <- data.table::copy(dt_in)
 
-
 test_that(
   "Calculate time lines under no dependency", {
-    h.calculate_time_lines_at(dt_out, 1)
-    expect_identical(dt_out$time_start, c(lubridate::ymd("2018-10-05"), NA))
-    expect_identical(dt_out$time_end, c(lubridate::ymd("2018-11-05"), NA))
-    h.calculate_time_lines_at(dt_out, 2)
-    expect_identical(dt_out$time_start, c(lubridate::ymd("2018-10-05"), lubridate::ymd("2018-10-05")))
-    expect_identical(dt_out$time_end, c(lubridate::ymd("2018-11-05"), lubridate::as_date(lubridate::now())))
+    dt_out <- calculate_time_lines(dt_out)
+    # expect_identical(dt_out$time_start, c(lubridate::ymd("2018-10-05"), NA))
+    # expect_identical(dt_out$time_end, c(lubridate::ymd("2018-11-05"), NA))
+    # h.calculate_time_lines_at(dt_out, 2)
+    expect_identical(dt_out$time_start, c(lubridate::ymd("2018-10-05"), lubridate::ymd("2018-10-05"), lubridate::ymd("2018-10-05")))
+    expect_identical(dt_out$time_end, c(lubridate::ymd("2018-10-08"), lubridate::as_date(lubridate::now()), lubridate::ymd("2018-11-05")))
   }
 )
-
 
 dt_in <- data.table::data.table(
   id = c("a", "b", "c"),
@@ -69,13 +65,46 @@ dt_in <- data.table::data.table(
 )
 dt_out <- data.table::copy(dt_in)
 
-
+start_expected <- c(lubridate::ymd("2018-10-05"), lubridate::ymd("2018-10-02"), lubridate::ymd("2018-10-10"))
+end_expected <- c(lubridate::ymd("2018-10-08"), lubridate::ymd("2018-10-10"), lubridate::ymd("2018-10-12"))
 test_that(
   "Calculate time lines under first order dependency", {
     h.calculate_time_lines_at(dt_out, 3)
-    expect_identical(dt_out$time_start, 
-                     c(lubridate::ymd("2018-10-05"), lubridate::ymd("2018-10-02"), lubridate::ymd("2018-10-10")))
-    expect_identical(dt_out$time_end, 
-                     c(lubridate::ymd("2018-10-08"), lubridate::ymd("2018-10-10"), lubridate::ymd("2018-10-12")))
+    expect_identical(dt_out$time_start, start_expected)
+    expect_identical(dt_out$time_end, end_expected)
+  }
+)
+
+dt_in <- dt_in[3:1]
+dt_out <- data.table::copy(dt_in)
+
+test_that(
+  "Calculate time lines under first order dependency with non sorted entries", {
+    h.calculate_time_lines_at(dt_out, 1)
+    expect_identical(dt_out$time_start, start_expected[3:1])
+    expect_identical(dt_out$time_end, end_expected[3:1])
+  }
+)
+
+
+dt_in <- data.table::data.table(
+  id = c("a", "b", "c"),
+  prior_ids = list("b", "c", NA),
+  fixed_start_date = c(lubridate::as_date(NA), lubridate::as_date(NA), lubridate::ymd("2018-10-02")),
+  fixed_end_date = c(lubridate::as_date(NA), lubridate::as_date(NA), lubridate::ymd("2018-10-06")),
+  time_start = lubridate::as_date(NA),
+  time_end = lubridate::as_date(NA),
+  est_days = c(1, 6, 2),
+  waiting = c(F, F, F)
+)
+dt_out <- data.table::copy(dt_in)
+
+start_expected <- c(lubridate::ymd("2018-10-16"), lubridate::ymd("2018-10-08"), lubridate::ymd("2018-10-02"))
+end_expected <- c(lubridate::ymd("2018-10-17"), lubridate::ymd("2018-10-16"), lubridate::ymd("2018-10-08"))
+test_that(
+  "Calculate time lines under second order dependency with non sorted entries", {
+    h.calculate_time_lines_at(dt_out, 1)
+    expect_identical(dt_out$time_start, start_expected)
+    expect_identical(dt_out$time_end, end_expected)
   }
 )

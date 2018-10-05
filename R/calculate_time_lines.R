@@ -95,7 +95,7 @@ h.calculate_time_lines_at <- function(dt_ref, row) {
       dplyr::filter(is.na(time_end)) %>%
       dplyr::slice(1) %>%
       with(id)
-    futile.logger::flog.info(glue::glue("Complex dependencies -{dt_ref$id[row]}- must follow after -{na_id}-"))
+    futile.logger::flog.info(glue::glue("Nonsorted entry -{dt_ref$id[row]}- must follow after -{na_id}-"))
 
     first_na_idx <- which(dt_ref$id == na_id)[1]
     h.calculate_time_lines_at(dt_ref, first_na_idx)
