@@ -100,7 +100,7 @@ h.calculate_time_lines_at <- function(dt_ref, row) {
     first_na_idx <- which(dt_ref$id == na_id)[1]
     h.calculate_time_lines_at(dt_ref, first_na_idx)
 
-    prior_tasks <- dt_ref[id %in% prior_ids]
+    prior_tasks <- dt_ref[id %in% ids_prior]
     earliest_start_time <- max(prior_tasks$time_end)
   }
 

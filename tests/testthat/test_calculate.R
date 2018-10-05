@@ -32,26 +32,50 @@ test_that(
   }
 )
 
-dt <- data.frame(
+dt_in <- data.table::data.table(
   id = c("a", "b"),
   prior_ids = list(NA),
   fixed_start_date = lubridate::ymd("2018-10-05"),
+  fixed_end_date = lubridate::as_date(NA),
+  time_start = lubridate::as_date(NA),
+  time_end = lubridate::as_date(NA),
   est_days = c(21L, 6),
   waiting = c(F, T)
 )
+dt_out <- data.table::copy(dt_in)
 
-dt$time_start <- NA
-dt$time_start <- lubridate::as_date(dt$time_start)
-dt$time_end <- NA
-dt$time_end <- lubridate::as_date(dt$time_end)
-
-dt <- data.table::data.table(dt)
-
-debugonce(h.calculate_time_lines_at)
-h.calculate_time_lines_at(dt, 1)
 
 test_that(
   "Calculate time lines under no dependency", {
-      
+    h.calculate_time_lines_at(dt_out, 1)
+    expect_identical(dt_out$time_start, c(lubridate::ymd("2018-10-05"), NA))
+    expect_identical(dt_out$time_end, c(lubridate::ymd("2018-11-05"), NA))
+    h.calculate_time_lines_at(dt_out, 2)
+    expect_identical(dt_out$time_start, c(lubridate::ymd("2018-10-05"), lubridate::ymd("2018-10-05")))
+    expect_identical(dt_out$time_end, c(lubridate::ymd("2018-11-05"), lubridate::as_date(lubridate::now())))
+  }
+)
+
+
+dt_in <- data.table::data.table(
+  id = c("a", "b", "c"),
+  prior_ids = list(NA, NA, c("a", "b")),
+  fixed_start_date = c(lubridate::ymd("2018-10-05"), lubridate::ymd("2018-10-02"), lubridate::as_date(NA)),
+  fixed_end_date = lubridate::as_date(NA),
+  time_start = lubridate::as_date(NA),
+  time_end = lubridate::as_date(NA),
+  est_days = c(1, 6, 2),
+  waiting = c(F, F, F)
+)
+dt_out <- data.table::copy(dt_in)
+
+
+test_that(
+  "Calculate time lines under first order dependency", {
+    h.calculate_time_lines_at(dt_out, 3)
+    expect_identical(dt_out$time_start, 
+                     c(lubridate::ymd("2018-10-05"), lubridate::ymd("2018-10-02"), lubridate::ymd("2018-10-10")))
+    expect_identical(dt_out$time_end, 
+                     c(lubridate::ymd("2018-10-08"), lubridate::ymd("2018-10-10"), lubridate::ymd("2018-10-12")))
   }
 )
