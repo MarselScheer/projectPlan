@@ -17,8 +17,10 @@ calculate_time_lines <- function(df) {
 
 h.turn_weekend_day_to_monday <- function(day) {
   if (lubridate::wday(day) == 7) {
+    futile.logger::flog.debug(glue::glue("Change the saturday {day} to monday {day + 2}"))
     day <- day + 2
   } else if (lubridate::wday(day) == 1) {
+    futile.logger::flog.debug(glue::glue("Change the sunday {day} to monday {day + 1}"))
     day <- day + 1
   }
   day
@@ -47,6 +49,7 @@ h.exclude_weekends <- function(start, end){
   if (lubridate::wday(end) %in% c(1,7)) {
     # if we stop working on saturday we actually have to work till monday
     # if we stop working on sunday we actually have to work till tuesday
+    futile.logger::flog.debug(glue::glue("The task ends on {end} which is a weekend. Hence, the actual end is 2 days on {end + 2}"))
     end <- end + 2
   }
   end
@@ -71,7 +74,7 @@ h.calculate_end_time <- function(earliest_start_time, is_waiting, est_days, fixe
 
 
 h.calculate_time_lines_at <- function(dt_ref, row) {
-  futile.logger::flog.debug("Calculate time lines for", dt_ref[row, ], capture = TRUE)
+  futile.logger::flog.debug(glue::glue("Calculate time lines for row -{row}-"), dt_ref[row, ], capture = TRUE)
   if (!is.na(dt_ref$time_start[row]) & !is.na(dt_ref$time_end[row])) {
     return()
   }
@@ -88,9 +91,8 @@ h.calculate_time_lines_at <- function(dt_ref, row) {
     earliest_start_time <- fsd
   }
 
-
+  futile.logger::flog.debug(glue::glue("Try to calculate earliest start time for row -{row}- based on prior tasks"), prior_tasks, capture = TRUE)
   while (is.na(earliest_start_time)) {
-    futile.logger::flog.debug("Try to calculate earliest start time based on prior tasks", prior_tasks, capture = TRUE)
     na_id <- prior_tasks %>%
       dplyr::filter(is.na(time_end)) %>%
       dplyr::slice(1) %>%
@@ -101,15 +103,16 @@ h.calculate_time_lines_at <- function(dt_ref, row) {
     h.calculate_time_lines_at(dt_ref, first_na_idx)
 
     prior_tasks <- dt_ref[id %in% ids_prior]
+    futile.logger::flog.debug(glue::glue("Try to calculate earliest start time for row -{row}- based on prior tasks"), prior_tasks, capture = TRUE)
     earliest_start_time <- max(prior_tasks$time_end)
   }
-  futile.logger::flog.debug(glue::glue("Earliest start time found: {earliest_start_time}"))
+  futile.logger::flog.debug(glue::glue("Earliest start time found for row -{row}-: {earliest_start_time}"))
   
   end <- h.calculate_end_time(earliest_start_time, dt_ref$waiting[row], dt_ref$est_days[row], dt_ref$fixed_end_date[row])
 
   dt_ref[row, time_start := earliest_start_time]
   dt_ref[row, time_end := end]
-  futile.logger::flog.debug("Timelines for the current row -{row}-", dt_ref[row], capture = TRUE)
+  futile.logger::flog.debug(glue::glue("Timelines for the current row -{row}-"), dt_ref[row], capture = TRUE)
   
   
   if (end < earliest_start_time) {
