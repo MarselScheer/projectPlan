@@ -102,7 +102,7 @@ h.rd_make_id_unique_within_project <- function(df) {
   combined_entries <- dplyr::filter(ret, nmb_combined_entries > 1)
   if (nrow(combined_entries) > 0) {
     futile.logger::flog.info(
-      "The following id-entries were combined (within the project) into one entry, this means for instance that the estimated days are summed up:",
+      "Some id-entries were combined (within the project) into one entry, this means for instance that the estimated days are summed up.",
       list(
         after_combining = combined_entries
       ),
@@ -192,7 +192,7 @@ h.rd_preprocess_start_column <- function(df) {
     h.log_rows(
       df,
       idx,
-      warn_msg = glue::glue("The following entries have empty -depends_on- AND -start- entries. Set -start- to 'TODAY'")
+      warn_msg = glue::glue("Some entries have empty -depends_on- AND -start- entries. Set -start- to 'TODAY'")
     )
   }
 
@@ -233,5 +233,5 @@ h.rd_select_cols <- function(df) {
   cols <- c("project", "section", "id", "depends_on", "start", "end", "resource", "task", "progress", "deadline")
 
   futile.logger::flog.info(glue::glue("Select the necessary columns -{h.comma_list(cols)}-"))
-  df <- df[, cols]
+  df <- df[, .SD, .SDcols = cols]
 }

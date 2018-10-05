@@ -38,7 +38,7 @@ h.log_rows <- function(df, idx, warn_msg, error = FALSE) {
       futile.logger::flog.error("Rows:", df[idx, ], capture = TRUE)
       stop(warn_msg)
     } else {
-      futile.logger::flog.warn(warn_msg)
+      futile.logger::flog.warn(glue::glue("{warn_msg} (change logging-threshold to DEBUG to see which rows are affected)"))
       futile.logger::flog.debug("Rows:", df[idx, ], capture = TRUE)
     }
   }
