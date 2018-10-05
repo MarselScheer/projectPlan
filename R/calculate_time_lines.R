@@ -85,12 +85,12 @@ h.calculate_time_lines_at <- function(dt_ref, row) {
   if (is.na(as.character(fsd))) {
     earliest_start_time <- max(prior_tasks$time_end)
   } else {
-    futile.logger::flog.info("A fixed start date was provided. Use this start date irrespective any possible dependencies", dt_ref[row, ], capture = TRUE)
     earliest_start_time <- fsd
   }
 
 
   while (is.na(earliest_start_time)) {
+    futile.logger::flog.debug("Try to calculate earliest start time based on prior tasks", prior_tasks, capture = TRUE)
     na_id <- prior_tasks %>%
       dplyr::filter(is.na(time_end)) %>%
       dplyr::slice(1) %>%
@@ -103,12 +103,15 @@ h.calculate_time_lines_at <- function(dt_ref, row) {
     prior_tasks <- dt_ref[id %in% ids_prior]
     earliest_start_time <- max(prior_tasks$time_end)
   }
-
+  futile.logger::flog.debug(glue::glue("Earliest start time found: {earliest_start_time}"))
+  
   end <- h.calculate_end_time(earliest_start_time, dt_ref$waiting[row], dt_ref$est_days[row], dt_ref$fixed_end_date[row])
 
   dt_ref[row, time_start := earliest_start_time]
   dt_ref[row, time_end := end]
-
+  futile.logger::flog.debug("Timelines for the current row -{row}-", dt_ref[row], capture = TRUE)
+  
+  
   if (end < earliest_start_time) {
     futile.logger::flog.warn("-time_start- is before -time_end-", dt_ref[row, ], capture = TRUE)
   }
