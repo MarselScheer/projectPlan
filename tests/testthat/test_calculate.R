@@ -108,3 +108,23 @@ test_that(
     expect_identical(dt_out$time_end, end_expected)
   }
 )
+
+dt_in <- data.table::data.table(
+  id = c("a", "b", "c"),
+  prior_ids = list("c", "c", NA),
+  fixed_start_date = c(lubridate::as_date(NA), lubridate::as_date(NA), lubridate::ymd("2018-10-02")),
+  fixed_end_date = c(lubridate::as_date(NA), lubridate::as_date(NA), lubridate::ymd("2018-10-06")),
+  est_days = c(1, 6, 2),
+  waiting = c(F, F, F)
+)
+dt_out <- data.table::copy(dt_in)
+
+start_expected <- c(lubridate::ymd("2018-10-08"), lubridate::ymd("2018-10-08"), lubridate::ymd("2018-10-02"))
+end_expected <- c(lubridate::ymd("2018-10-09"), lubridate::ymd("2018-10-16"), lubridate::ymd("2018-10-08"))
+test_that(
+  "Calculate time lines, multiple entries depend on one entrie", {
+    dt_out <- calculate_time_lines(dt_out)
+    expect_identical(dt_out$time_start, start_expected)
+    expect_identical(dt_out$time_end, end_expected)
+  }
+)
