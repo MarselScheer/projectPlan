@@ -19,10 +19,11 @@
 #' 
 #' @examples
 h.rd_wrangle <- function(df) {
+  df <- data.table::data.table(df)
+  
   df <- h.rd_select_cols(df)
-  df <- dplyr::mutate_all(df, as.character)
-
   df <- h.rd_remove_unnessary_rows(df)
+  
   df <- h.rd_fill_with_default(df, "project", "UNKNOWN")
   df <- h.rd_fill_with_default(df, "section", "UNKNOWN")
   df <- h.rd_fill_with_default(df, "id", "UNKNOWN")
@@ -236,9 +237,10 @@ h.rd_fill_with_default <- function(df, colname, def) {
 }
 
 h.rd_remove_unnessary_rows <- function(df) {
+  futile.logger::flog.info(glue::glue("Remove rows where project, section, id, start, end, resource, task are empty"))
+  
   discard <- with(df, is.na(project) & is.na(section) & is.na(id) & is.na(start) & is.na(end) & is.na(resource) & is.na(task))
 
-  futile.logger::flog.info(glue::glue("Remove rows where section, id, start, end, resource, task are empty"))
   futile.logger::flog.debug(glue::glue("Remove {sum(discard)} rows"))
 
   df[!discard, ]
@@ -248,5 +250,5 @@ h.rd_select_cols <- function(df) {
   cols <- c("project", "section", "id", "depends_on", "start", "end", "resource", "task", "progress", "deadline")
 
   futile.logger::flog.info(glue::glue("Select the necessary columns -{h.comma_list(cols)}-"))
-  df <- df[, .SD, .SDcols = cols]
+  df <- df[, lapply(.SD, as.character), .SDcols = cols]
 }
