@@ -26,7 +26,7 @@ The aim of the package is to calculate time lines for different task that may de
 Imagine a simple 4-task-plan, where 
 
 * 1 task was already completed 
-* 1 task started on *2018-10-03* where it is estimated that it will take 10 days to be completed
+* 1 task started on *2018-10-02* where it is estimated that it will take 10 days to be completed
 * 2 tasks are depending somehow on the first two tasks
 
 ```{r raw_plan, echo=FALSE}
