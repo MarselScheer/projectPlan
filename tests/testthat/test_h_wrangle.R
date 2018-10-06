@@ -114,7 +114,7 @@ d_expected <- data.table::data.table(
   waiting = FALSE,
   nmb_combined_entries = 1L
 )
-d_out <- h.rd_wrangle(d_in)
+d_out <- wrangle_raw_plan(d_in)
 test_that(
   "Complete raw data wrangling. check default values", {
     expect_identical(d_out, d_expected)
@@ -153,7 +153,7 @@ d_expected <- data.table::data.table(
   stringsAsFactors = FALSE
 )
 
-d_out <- h.rd_wrangle(d_in)
+d_out <- wrangle_raw_plan(d_in)
 test_that(
   "Complete raw data wrangling with combining ids", {
     expect_identical(d_out, d_expected)
@@ -165,6 +165,6 @@ test_that(
 # futile.logger::flog.threshold(futile.logger::TRACE)
 # # futile.logger::flog.threshold(futile.logger::WARN)
 #
-# dtt <- h.rd_wrangle(dt)
+# dtt <- wrangle_raw_plan(dt)
 #
 # dtt <- calculate_time_lines(dtt)

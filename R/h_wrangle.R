@@ -17,8 +17,8 @@
 #' 
 #' @return tibble with all columns preprocessed for calculating time lines
 #' 
-#' @examples
-h.rd_wrangle <- function(df) {
+#' @export
+wrangle_raw_plan <- function(df) {
   df <- data.table::data.table(df)
   
   df <- h.rd_select_cols(df)

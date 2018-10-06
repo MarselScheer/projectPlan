@@ -2,4 +2,5 @@
 
 export(calculate_time_lines)
 export(import_xlsx)
+export(wrangle_raw_plan)
 import(data.table)
