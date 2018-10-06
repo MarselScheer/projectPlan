@@ -15,7 +15,7 @@ that may depend on each other.
 Imagine a simple 4-task-plan, where
 
   - 1 task was already completed
-  - 1 task started on *2018-10-03* where it is estimated that it will
+  - 1 task started on *2018-10-02* where it is estimated that it will
     take 10 days to be completed
   - 2 tasks are depending somehow on the first two tasks
 
