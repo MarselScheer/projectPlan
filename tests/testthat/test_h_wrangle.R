@@ -159,12 +159,3 @@ test_that(
     expect_identical(d_out, d_expected)
   }
 )
-
-# dt <- readxl::read_xlsx("../../kaggle/xlsx_2_gantt.rep/prjplan.xlsx", sheet = "Ongoing")
-#
-# futile.logger::flog.threshold(futile.logger::TRACE)
-# # futile.logger::flog.threshold(futile.logger::WARN)
-#
-# dtt <- wrangle_raw_plan(dt)
-#
-# dtt <- calculate_time_lines(dtt)
