@@ -49,7 +49,7 @@ test_that(
     # expect_identical(dt_out$time_end, c(lubridate::ymd("2018-11-05"), NA))
     # h.calculate_time_lines_at(dt_out, 2)
     expect_identical(dt_out$time_start, c(lubridate::ymd("2018-10-05"), lubridate::ymd("2018-10-05"), lubridate::ymd("2018-10-05")))
-    expect_identical(dt_out$time_end, c(lubridate::ymd("2018-10-08"), lubridate::as_date(lubridate::now()), lubridate::ymd("2018-11-05")))
+    expect_identical(dt_out$time_end, c(lubridate::ymd("2018-10-08"), h.turn_weekend_day_to_monday(lubridate::as_date(lubridate::now())), lubridate::ymd("2018-11-05")))
   }
 )
 
