@@ -39,9 +39,24 @@ h.rd_wrangle <- function(df) {
 
   df <- h.rd_make_id_unique_within_project(df)
   h.rd_check_start_time_available(df)
+  h.rd_check_id_deps(df)
 
   df
 }
+
+h.rd_check_id_deps <- function(df) {
+  id_col <- df$id
+  prior_ids <- unique(sort(unlist(df$prior_ids)))
+  
+  unknow_ids <- setdiff(prior_ids, id_col)
+  if (length(unknow_ids) > 0) {
+    futile.logger::flog.warn(
+      glue::glue("Dependencies to unknown ids were specified. Please check that the following ids are correct: "), data.frame(unknow_ids = unknow_ids),
+      capture = TRUE
+    )
+  }
+}
+
 
 h.rd_check_start_time_available <- function(df) {
   futile.logger::flog.info("Check that the start time is at least implicitly defined.")
