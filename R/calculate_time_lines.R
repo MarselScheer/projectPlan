@@ -12,7 +12,6 @@ calculate_time_lines <- function(df) {
     h.calculate_time_lines_at(df, i)
   }
   df
-  # h.mark_unmet_deadlines(df)
 }
 
 h.turn_weekend_day_to_monday <- function(day) {
