@@ -1,3 +1,4 @@
+#' @export
 gantt_by_sections <- function(dt, xlim, show_dependencies = FALSE, text_size = 3) {
   xmin <- min(dt$time_start, na.rm = TRUE)
   xmax <- max(dt$time_end, na.rm = TRUE)
