@@ -55,6 +55,22 @@ projectPlan::gantt_by_sections(plan)
 
 ![](README-gantt-1.png)<!-- -->
 
+## Other packages for visualization
+
+Once the time lines are calculated it is easy to leverage other
+visualization packages
+
+``` r
+plan %>% 
+  mutate(
+    id = 1:n(), content = task, start = as.character(time_start), end = as.character(time_end), 
+    group = as.numeric(as.factor(.$section))) %>% 
+  select(id, content, start, end, project, section, group) %>% 
+  timevis::timevis(groups = distinct(data.frame(id = as.numeric(as.factor(.$section)), content = .$section)))
+```
+
+![timevis](./README-timevis-1.png)
+
 ## Installation
 
 You can install projectPlan from github with:
