@@ -149,15 +149,13 @@ h.rd_make_id_unique_within_project <- function(df) {
 
 
 h.rd_check_project_section_id_unique <- function(df) {
-  id_in_multiple_sections <-
-    df %>%
-    dplyr::select(project, id, section) %>%
-    dplyr::distinct() %>%
-    dplyr::count(project, id) %>%
-    dplyr::filter(n > 1) %>%
-    with(id)
 
-  df <- df[order(df$project, df$id, df$section), ]
+  id_in_multiple_sections <- unique(df[, .(project, id, section)])
+  id_in_multiple_sections <- id_in_multiple_sections[, .(n = .N), by = c("project", "id")]
+  id_in_multiple_sections <- id_in_multiple_sections[n > 1]
+  id_in_multiple_sections <- id_in_multiple_sections$id
+
+  data.table::setorder(df, project, id, section)
   h.log_rows(
     df,
     df$id %in% id_in_multiple_sections,
