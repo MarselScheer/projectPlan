@@ -15,7 +15,7 @@ import_xlsx <- function(fName, sheets) {
            futile.logger::flog.info(glue::glue("Skip the empty sheet -{s}"))
            return(NULL)
          }
-         if (!("project" %in% names(dt))) {
+         if (!("project" %in% names(df))) {
            empty_rows <- with(df, is.na(section) & is.na(id) & is.na(start) & is.na(end) & is.na(resource) & is.na(task))
            futile.logger::flog.info(glue::glue("No project column found. Create one using the sheetname -{s}"))
            df$project <- NA_character_
