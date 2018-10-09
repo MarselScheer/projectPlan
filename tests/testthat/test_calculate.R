@@ -1,4 +1,4 @@
-context("Calculate")
+testthat::context("Calculate")
 
 futile.logger::flog.threshold(futile.logger::FATAL, name = futile.logger::flog.namespace())
 

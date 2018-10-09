@@ -31,7 +31,7 @@ wrangle_raw_plan <- function(df) {
   df <- h.rd_fill_with_default(df, "resource", "UNKNOWN")
   df <- h.rd_fill_with_default(df, "task", "UNKNOWN")
   df <- h.rd_fill_with_default(df, "progress", "0") 
-  df[, progress := as.numeric(progress)]
+  df$progress <- as.numeric(df$progress)
 
   df <- h.rd_preprocess_start_column(df)
   df <- h.rd_preprocess_end_column(df)
@@ -133,7 +133,8 @@ h.rd_make_id_unique_within_project <- function(df) {
 
     idx <- which(!grepl(h.SEPERATOR, v))
     v[idx] <- paste(prefix, v[idx], sep = h.SEPERATOR)
-    list(v)
+    # strange effect. without sort some of the testcase failed but only during devtools::check!!!
+    list(sort(v))
   }
   vadd_prefix_preserve_other_projects <- Vectorize(add_prefix_preserve_other_projects)
 

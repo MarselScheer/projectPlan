@@ -1,4 +1,4 @@
-context("Wrangle")
+testthat::context("Wrangle")
 # library(projectPlan)
 
 futile.logger::flog.threshold(futile.logger::FATAL, name = futile.logger::flog.namespace())
@@ -62,8 +62,8 @@ d_in <- data.table::data.table(
 d_expected <- data.table::data.table(
   project = "A", id = "A::I",
   depends_on = list(c("A::a", "B::b")),
-  start = list(c("A::b", "B::b", "A::c", "C::h", "A::d")),
-  prior_ids = list(c("A::a", "A::b", "B::b", "A::c", "C::h", "A::d")),
+  start = list(c("A::b", "A::c", "A::d", "B::b", "C::h")),
+  prior_ids = list(c("A::a", "A::b", "A::c", "A::d", "B::b", "C::h")),
   section = "A::S",
   resource = c("e, f"),
   task = c("c, d"),
@@ -76,12 +76,11 @@ d_expected <- data.table::data.table(
   nmb_combined_entries = 2L
 )
 
-d_out <-
-  test_that(
-    "combine ids within project in order to make them unique", {
-      expect_identical(h.rd_make_id_unique_within_project(d_in), d_expected)
-    }
-  )
+test_that(
+  "combine ids within project in order to make them unique", {
+    expect_identical(h.rd_make_id_unique_within_project(d_in), d_expected)
+  }
+)
 
 
 d_in <- data.frame(
