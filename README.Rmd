@@ -12,6 +12,7 @@ knitr::opts_chunk$set(
 
 ```{r badges, results='asis', echo=FALSE}
 suppressPackageStartupMessages(library(badgecreatr))
+cat(paste(badge_travis(ghaccount = "MarselScheer", ghrepo = "projectPlan", branch = "master"), ""))
 cat(paste(badge_projectstatus(status = "wip"), ""))
 cat(paste(badge_lifecycle(lifecycle = "experimental"), ""))
 cat(paste(badge_license(), ""))
