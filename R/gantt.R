@@ -16,7 +16,7 @@ gantt_by_sections <- function(dt, xlim, show_dependencies = FALSE, text_size = 3
   y <- "y"
   pf[, ":="(mean_y = mean(.SD), min_y = min(.SD), max_y = max(.SD)), by = "section", .SDcols = y]
    
-  prjf <- pf[, data.table::.(min_y = min(.SD), max_y = max(.SD)), by = "project", .SDcols = y]
+  prjf <- pf[, list(min_y = min(.SD), max_y = max(.SD)), by = "project", .SDcols = y]
   
   ret <- h.create_gantt(pf, xlim, xmin, xmax, text_size = text_size) +
     ggplot2::geom_rect(ggplot2::aes_string(fill = "resource")) +
