@@ -92,10 +92,9 @@ h.calculate_time_lines_at <- function(dt_ref, row) {
 
   futile.logger::flog.debug(glue::glue("Try to calculate earliest start time for row -{row}- based on prior tasks"), prior_tasks, capture = TRUE)
   while (is.na(earliest_start_time)) {
-    na_id <- prior_tasks %>%
-      dplyr::filter(is.na(time_end)) %>%
-      dplyr::slice(1) %>%
-      with(id)
+    
+    prior_tasks <- prior_tasks[is.na(time_end)]
+    na_id <- prior_tasks$id[1]
     futile.logger::flog.info(glue::glue("Nonsorted entry -{dt_ref$id[row]}- must follow after -{na_id}-"))
 
     first_na_idx <- which(dt_ref$id == na_id)[1]
