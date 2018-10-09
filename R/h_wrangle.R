@@ -30,8 +30,8 @@ wrangle_raw_plan <- function(df) {
   df <- h.rd_fill_with_default(df, "end", "1")
   df <- h.rd_fill_with_default(df, "resource", "UNKNOWN")
   df <- h.rd_fill_with_default(df, "task", "UNKNOWN")
-  df <- h.rd_fill_with_default(df, "progress", "0") %>%
-    dplyr::mutate(progress = as.numeric(progress))
+  df <- h.rd_fill_with_default(df, "progress", "0") 
+  df[, progress := as.numeric(progress)]
 
   df <- h.rd_preprocess_start_column(df)
   df <- h.rd_preprocess_end_column(df)
@@ -62,14 +62,12 @@ h.rd_check_id_deps <- function(df) {
 h.rd_check_start_time_available <- function(df) {
   futile.logger::flog.info("Check that the start time is at least implicitly defined.")
 
+  
   # var is only for logger
-  df_log <-
-    df %>%
-    dplyr::rowwise() %>%
-    dplyr::mutate(
-      depends_on = h.comma_list(depends_on),
-      start = h.comma_list(start)
-    )
+  h.comma_list = Vectorize(h.comma_list)
+  df_log <- data.table::copy(df)
+  cols <- c("depends_on", "start")
+  df_log[, (cols) := lapply(.SD, h.comma_list), .SDcols = cols]
 
   idx <- with(df, is.na(fixed_start_date) & is.null(prior_ids))
   h.log_rows(
@@ -115,7 +113,7 @@ h.rd_make_id_unique_within_project <- function(df) {
   by = .(project, id)
   ]
 
-  combined_entries <- dplyr::filter(ret, nmb_combined_entries > 1)
+  combined_entries <- ret[nmb_combined_entries > 1]
   if (nrow(combined_entries) > 0) {
     futile.logger::flog.info(
       "Some id-entries were combined (within the project) into one entry, this means for instance that the estimated days are summed up.",
