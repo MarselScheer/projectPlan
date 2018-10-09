@@ -9,18 +9,12 @@ gantt_by_sections <- function(dt, xlim, show_dependencies = FALSE, text_size = 3
     xlim <- lubridate::ymd(xlim)
   }
 
-  pf <-
-    dt %>%
-    dplyr::arrange(section, time_start) %>%
-    dplyr::mutate(y = n():1) %>%
-    dplyr::group_by(section) %>%
-    dplyr::mutate(mean_y = mean(y), min_y = min(y), max_y = max(y)) %>%
-    dplyr::ungroup()
+  pf <- data.table::copy(dt)
+  data.table::setorder(pf, section, time_start)
+  pf[, y := .N:1]
+  pf[, ":="(mean_y = mean(y), min_y = min(y), max_y = max(y)), by = "section"]
 
-  prjf <- pf %>%
-    dplyr::group_by(project) %>%
-    dplyr::summarise(min_y = min(y), max_y = max(y))
-
+  prjf <- pf[, .(min_y = min(y), max_y = max(y)), by = "project"]
 
   ret <- h.create_gantt(pf, xlim, xmin, xmax, text_size = text_size) +
     geom_rect(aes(fill = resource)) +
