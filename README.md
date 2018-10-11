@@ -52,7 +52,7 @@ And generate a gantt chart for it
 
 ``` r
 library(ggplot2)
-projectPlan::gantt_by_sections(plan)
+projectPlan::gantt_by_sections(plan, show_dependencies = TRUE)
 ```
 
 ![](README-gantt-1.png)<!-- -->
@@ -63,11 +63,11 @@ Once the time lines are calculated it is easy to leverage other
 visualization packages
 
 ``` r
-plan %>% 
-  mutate(
-    id = 1:n(), content = task, start = as.character(time_start), end = as.character(time_end), 
-    group = as.numeric(as.factor(.$section))) %>% 
-  select(id, content, start, end, project, section, group) %>% 
+plan %>%
+  dplyr::mutate(
+    id = 1:n(), content = task, start = as.character(time_start), end = as.character(time_end),
+    group = as.numeric(as.factor(.$section))) %>%
+  dplyr::select(id, content, start, end, project, section, group) %>%
   timevis::timevis(groups = distinct(data.frame(id = as.numeric(as.factor(.$section)), content = .$section)))
 ```
 

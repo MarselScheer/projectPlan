@@ -84,7 +84,7 @@ And generate a gantt chart for it
 
 ```{r gantt}
 library(ggplot2)
-projectPlan::gantt_by_sections(plan)
+projectPlan::gantt_by_sections(plan, show_dependencies = TRUE)
 ```
 
 ## Other packages for visualization

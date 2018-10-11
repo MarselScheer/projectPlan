@@ -26,27 +26,51 @@ gantt_by_sections <- function(dt, xlim, show_dependencies = FALSE, text_size = 3
       h.mark_completed_tasks(pf)
   )
 
-  # if (show_dependencies) {
-  #   arrowMatrix_section <- h.calculate_arrows(pf, start, end)
-  #   ret <-
-  #     ret +
-  #     geom_segment(data = arrowMatrix_section, aes(x = time_end_dep, y = y_dep - 0.25, xend = time_start_grp + 0.25, yend = y_grp - 0.25), arrow = arrow(length = unit(0.2, "cm")), alpha = 0.5)
-  # }
+  if (show_dependencies) {
+    arrowMatrix_section <- h.calculate_arrows(pf, xmin, xmax)
+    ret <-
+      ret +
+      ggplot2::geom_segment(data = arrowMatrix_section, ggplot2::aes(x = time_end_prior, y = y_prior - 0.25, xend = time_start_id + 0.25, yend = y_id - 0.25), arrow = arrow(length = unit(0.2, "cm")), alpha = 0.5)
+  }
 
   ret
 }
 
+
+h.one_row_for_every_dependency <- function(dt) {
+  ret <- data.table::copy(dt)
+  max_deps <- max(unlist(lapply(ret$depends_on, length)))
+  
+  if (max_deps == 0) {
+    stop("DEFINE")
+  }
+  
+  cols <- paste0("..col", 1:max_deps)
+  ret[, (cols) := data.table::transpose(ret$depends_on)]
+  ret <- data.table::melt(ret, id.vars = "id", measure.vars = cols, value.name = "prior_task")
+  
+  ret <- ret[!is.na(ret$prior_task)]
+  ret$variable <- NULL
+  ret
+}
+
+
 h.calculate_arrows <- function(sorted_dt, start, end) {
   one_row_dep <- h.one_row_for_every_dependency(sorted_dt)
 
-  # one_row_dep %>%
-  #   dplyr::left_join(dplyr::select(sorted_dt, grp, time_start, y), by = "grp") %>%
-  #   dplyr::rename(time_start_grp = time_start, y_grp = y) %>%
-  #   dplyr::left_join(dplyr::select(sorted_dt, grp, time_end, y), by = c("dep" = "grp")) %>%
-  #   dplyr::rename(time_end_dep = time_end, y_dep = y) %>%
-  #   dplyr::mutate(time_start = start, time_end = end, y = 0)
-}
+  time_start <- sorted_dt[, c("id", "time_start", "y")]
+  time_end <- sorted_dt[, c("id", "time_end", "y")]
+  
+  ret <- time_end[one_row_dep, on = c(id = "prior_task")]
+  data.table::setnames(ret, c("id", "time_end", "y", "i.id"), c("prior_task", "time_end_prior", "y_prior", "id"))
 
+  ret <- time_start[ret, on = "id"]
+  old_cols <- c("time_start", "y")
+  data.table::setnames(ret, old_cols, paste0(old_cols, "_id"))
+  
+  ret[, ':='(time_start = start, time_end = end, y = 0)]
+  ret
+}
 
 h.make_weekend_rows <- function(start, end) {
   wd <- lubridate::wday(start)
@@ -76,7 +100,7 @@ h.create_gantt <- function(pf, xlim, xmin, xmax, text_size = 3) {
   with(
     NULL,
     ggplot2::ggplot(pf, ggplot2::aes(xmin = time_start, xmax = time_end, ymin = y - 0.3, ymax = y + 0.3)) +
-      ggplot2::geom_text(ggplot2::aes(x = time_end, y = y, label = "task", hjust = 0), size = text_size) +
+      ggplot2::geom_text(ggplot2::aes(x = time_end, y = y, label = task, hjust = 0), size = text_size) +
       ggplot2::geom_rect(ggplot2::aes(xmin = max(xmin, xlim[1]), xmax = xmax, ymin = min_y - 0.4, ymax = max_y + 0.4), color = "black", alpha = 0, linetype = 3) +
       ggplot2::geom_vline(xintercept = lubridate::as_date(lubridate::now()), size = 2, color = "red", alpha = 0.2) +
       ggplot2::geom_rect(data = we, ggplot2::aes(xmin = time_start, xmax = time_end + 1, ymin = 0, ymax = nrow(pf)), alpha = 0.05) +
