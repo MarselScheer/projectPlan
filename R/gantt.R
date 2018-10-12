@@ -132,7 +132,7 @@ h.geom_progress <- function() {
 }
 
 h.mark_completed_tasks <- function(pf) {
-  sub <- dplyr::filter(pf, progress == 100)
+  sub <- with(NULL, pf[progress == 100])
   if (nrow(sub) == 0) {
     return(NULL)
   }
