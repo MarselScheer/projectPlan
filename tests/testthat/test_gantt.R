@@ -16,7 +16,7 @@ d_out <-
 test_that(
   "rearrange in a way that every dependency has its own row",{
     expect_identical(h.one_row_for_every_dependency(d_in), d_out)
-    expect_identical(h.one_row_for_every_dependency(d_nodeps), NULL)
+    expect_null(h.one_row_for_every_dependency(d_nodeps))
   }
 )
 
@@ -47,7 +47,7 @@ d_out <- data.table::data.table(
 test_that(
   "For every arrow one row",{
     expect_identical(h.calculate_arrows(d_in, lubridate::ymd("2017-01-01"), lubridate::ymd("2019-01-01")), d_out)
-    expect_identical(h.calculate_arrows(d_nodeps, lubridate::ymd("2017-01-01"), lubridate::ymd("2019-01-01")), NULL)
+    expect_null(h.calculate_arrows(d_nodeps, lubridate::ymd("2017-01-01"), lubridate::ymd("2019-01-01")))
   }
   
 )
@@ -102,7 +102,11 @@ d_in <- data.table::data.table(
   time_end   = c(lubridate::ymd("2018-01-11"), lubridate::ymd("2018-02-11"), lubridate::ymd("2018-03-11")),
   progress = 10 * 1:3)
 
-gantt_by_sections(d_in, show_dependencies = TRUE)
+test_that(
+  "Just run a plot without arrows",
+  expect_s3_class(gantt_by_sections(d_in, show_dependencies = TRUE), "ggplot")
+)
+
 
 d_in <- data.table::data.table(
   project = "A",
@@ -116,4 +120,7 @@ d_in <- data.table::data.table(
   time_end   = c(lubridate::ymd("2018-01-11"), lubridate::ymd("2018-02-11"), lubridate::ymd("2018-03-11")),
   progress = 10 * 8:10)
 
-gantt_by_sections(d_in, show_dependencies = TRUE)
+test_that(
+  "Just run a plot with arrows",
+  expect_s3_class(gantt_by_sections(d_in, show_dependencies = TRUE), "ggplot")
+)
