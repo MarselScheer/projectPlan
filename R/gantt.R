@@ -28,9 +28,11 @@ gantt_by_sections <- function(dt, xlim, show_dependencies = FALSE, text_size = 3
 
   if (show_dependencies) {
     arrowMatrix_section <- h.calculate_arrows(pf, xmin, xmax)
-    ret <-
-      ret +
-      ggplot2::geom_segment(data = arrowMatrix_section, ggplot2::aes(x = time_end_prior, y = y_prior - 0.25, xend = time_start_id + 0.25, yend = y_id - 0.25), arrow = arrow(length = unit(0.2, "cm")), alpha = 0.5)
+    if (!is.null(arrowMatrix_section)) {
+      ret <-
+        ret +
+        ggplot2::geom_segment(data = arrowMatrix_section, ggplot2::aes(x = time_end_prior, y = y_prior - 0.25, xend = time_start_id + 0.25, yend = y_id - 0.25), arrow = ggplot2::arrow(length = ggplot2::unit(0.2, "cm")), alpha = 0.5)
+    }
   }
 
   ret
@@ -38,18 +40,20 @@ gantt_by_sections <- function(dt, xlim, show_dependencies = FALSE, text_size = 3
 
 
 h.one_row_for_every_dependency <- function(dt) {
+  
+  if (all(is.na(unlist(dt$depends_on)))) {
+    return(NULL)
+  }
+  
   ret <- data.table::copy(dt)
   max_deps <- max(unlist(lapply(ret$depends_on, length)))
-  
-  if (max_deps == 0) {
-    stop("DEFINE")
-  }
   
   cols <- paste0("..col", 1:max_deps)
   ret[, (cols) := data.table::transpose(ret$depends_on)]
   ret <- data.table::melt(ret, id.vars = "id", measure.vars = cols, value.name = "prior_task")
   
   ret <- ret[!is.na(ret$prior_task)]
+  data.table::setorderv(ret, c("id", "prior_task"))
   ret$variable <- NULL
   ret
 }
@@ -57,6 +61,10 @@ h.one_row_for_every_dependency <- function(dt) {
 
 h.calculate_arrows <- function(sorted_dt, start, end) {
   one_row_dep <- h.one_row_for_every_dependency(sorted_dt)
+  
+  if (is.null(one_row_dep)) {
+    return(NULL)
+  }
 
   time_start <- sorted_dt[, c("id", "time_start", "y")]
   time_end <- sorted_dt[, c("id", "time_end", "y")]
@@ -124,6 +132,9 @@ h.geom_progress <- function() {
 }
 
 h.mark_completed_tasks <- function(pf) {
-  sub <- filter(pf, progress == 100)
+  sub <- dplyr::filter(pf, progress == 100)
+  if (nrow(sub) == 0) {
+    return(NULL)
+  }
   ggplot2::geom_rect(data = sub, fill = "grey")
 }
