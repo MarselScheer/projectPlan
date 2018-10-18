@@ -16,8 +16,11 @@ calculate_time_lines <- function(df) {
 }
 
 h.calc_dist_to_deadline <- function(df) {
-  df[!is.na(deadline), dist_end_to_deadline := deadline - time_end]
-  h.log_rows(df, df$dist_end_to_deadline <= 0, "DEADLINE TODAY OR ALREADY UNMET", warn_columns = c("project", "section", "id", "time_start", "time_end", "deadline", "progress", "resource", "task"))
+  idx <- !is.na(df$deadline)
+  if (any(idx)) {
+    df[idx, dist_end_to_deadline := deadline - time_end]
+    h.log_rows(df, df$dist_end_to_deadline <= 0, "DEADLINE TODAY OR ALREADY UNMET", warn_columns = c("project", "section", "id", "time_start", "time_end", "deadline", "progress", "resource", "task"))
+  }
 }
 
 h.turn_weekend_day_to_monday <- function(day) {
