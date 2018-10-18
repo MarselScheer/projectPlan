@@ -56,7 +56,7 @@ raw_plan <- data.table::rbindlist(
       resource = c("R1", "R2"),
       task = c("T3", "T4"),
       progress = c(0, 0),
-      deadline = NA
+      deadline = c(NA, "2018-10-18")
     )
   )
 )
@@ -70,17 +70,20 @@ raw_plan
 ```
 
 
-Then using this package one can easily calculate when a task will start and be finished (excluding weekends)
+Then using this package one can easily calculate when a task will start and be finished (excluding weekends).
+If a deadline is unmet or a task is due today a warning is logged.
 
 ```{r plan}
 plan <- 
   projectPlan::wrangle_raw_plan(raw_plan) %>% 
   projectPlan::calculate_time_lines()
-
-plan
 ```
 
-And generate a gantt chart for it
+```{r print_plan, echo=FALSE}
+print(plan)
+```
+
+With the calculated time lines a gantt chart can be plotted
 
 ```{r gantt}
 library(ggplot2)

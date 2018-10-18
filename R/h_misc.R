@@ -27,14 +27,14 @@ h.combine_comma_list_cols <- function(v, w = "") {
 }
 
 
-h.log_rows <- function(df, idx, warn_msg, error = FALSE) {
+h.log_rows <- function(df, idx, warn_msg, warn_columns = c("project", "section", "id"), error = FALSE) {
   if (any(idx)) {
     if (error) {
       futile.logger::flog.error(warn_msg)
       futile.logger::flog.error("Rows:", df[idx, ], capture = TRUE)
       stop(warn_msg)
     } else {
-      futile.logger::flog.warn(glue::glue("{warn_msg} (change logging-threshold to INFO to see which rows are affected)"), df[idx, c("project", "section", "id")], capture = TRUE)
+      futile.logger::flog.warn(glue::glue("{warn_msg} (change logging-threshold to INFO to see all columns)"), df[idx, .SD, .SDcols = warn_columns], capture = TRUE)
       futile.logger::flog.info("Rows:", df[idx, ], capture = TRUE)
     }
   }

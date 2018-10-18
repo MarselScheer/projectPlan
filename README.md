@@ -30,25 +30,46 @@ raw_plan
 #> 2:       A  0_prep  b       <NA> 2018-10-02         10       R2   T2
 #> 3:       A  1_impl  c          a       <NA>          5       R1   T3
 #> 4:       A  1_impl  d       a, b       <NA>          7       R2   T4
-#>    progress deadline
-#> 1:      100       NA
-#> 2:       50       NA
-#> 3:        0       NA
-#> 4:        0       NA
+#>    progress   deadline
+#> 1:      100       <NA>
+#> 2:       50       <NA>
+#> 3:        0       <NA>
+#> 4:        0 2018-10-18
 ```
 
 Then using this package one can easily calculate when a task will start
-and be finished (excluding weekends)
+and be finished (excluding weekends). If a deadline is unmet or a task
+is due today a warning is logged.
 
 ``` r
 plan <- 
   projectPlan::wrangle_raw_plan(raw_plan) %>% 
   projectPlan::calculate_time_lines()
-
-plan
+#> WARN [2018-10-19 01:02:00] DEADLINE TODAY OR ALREADY UNMET (change logging-threshold to INFO to see all columns)
+#> 
+#>    project   section   id time_start   time_end   deadline progress
+#> 1:       A A::1_impl A::d 2018-10-16 2018-10-25 2018-10-18        0
+#>    resource task
+#> 1:       R2   T4
 ```
 
-And generate a gantt chart for it
+    #>    project   id depends_on start prior_ids   section resource task
+    #> 1:       A A::a         NA  <NA>        NA A::0_prep       R1   T1
+    #> 2:       A A::b         NA  <NA>        NA A::0_prep       R2   T2
+    #> 3:       A A::c       A::a  <NA>      A::a A::1_impl       R1   T3
+    #> 4:       A A::d  A::a,A::b  <NA> A::a,A::b A::1_impl       R2   T4
+    #>    progress   deadline fixed_start_date fixed_end_date est_days waiting
+    #> 1:      100       <NA>       2018-10-01     2018-10-03        0   FALSE
+    #> 2:       50       <NA>       2018-10-02           <NA>       10   FALSE
+    #> 3:        0       <NA>             <NA>           <NA>        5   FALSE
+    #> 4:        0 2018-10-18             <NA>           <NA>        7   FALSE
+    #>    nmb_combined_entries time_start   time_end dist_deadline
+    #> 1:                    1 2018-10-01 2018-10-03       NA days
+    #> 2:                    1 2018-10-02 2018-10-16       NA days
+    #> 3:                    1 2018-10-03 2018-10-10       NA days
+    #> 4:                    1 2018-10-16 2018-10-25       -7 days
+
+With the calculated time lines a gantt chart can be plotted
 
 ``` r
 library(ggplot2)
