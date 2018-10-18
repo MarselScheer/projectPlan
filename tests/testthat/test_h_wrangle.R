@@ -14,7 +14,7 @@ test_that(
 d_in <- data.table::data.table(depends_on = c(NA, "A"), start = c(NA, "B"))
 d_expected <- data.table::data.table(depends_on = c(NA, "A"), start = c(NA, "B"), fixed_start_date = c(lubridate::as_date(lubridate::now()), NA))
 test_that(
-  "Current date is default if no dependency and start is defined",
+  "Current date is default if no dependency and no start is defined",
   expect_identical(h.rd_preprocess_start_column(d_in), d_expected)
 )
 
