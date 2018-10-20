@@ -14,23 +14,23 @@
 #   Test Package:              'Ctrl + Shift + T'
 
 #' Calls all necessary for wrangling a raw project plan
-#' 
+#'
 #' @return tibble with all columns preprocessed for calculating time lines
-#' 
+#'
 #' @export
 wrangle_raw_plan <- function(df) {
   df <- data.table::data.table(df)
-  
+
   df <- h.rd_select_cols(df)
   df <- h.rd_remove_unnessary_rows(df)
-  
+
   df <- h.rd_fill_with_default(df, "project", "UNKNOWN")
   df <- h.rd_fill_with_default(df, "section", "UNKNOWN")
   df <- h.rd_fill_with_default(df, "id", "UNKNOWN")
   df <- h.rd_fill_with_default(df, "end", "1")
   df <- h.rd_fill_with_default(df, "resource", "UNKNOWN")
   df <- h.rd_fill_with_default(df, "task", "UNKNOWN")
-  df <- h.rd_fill_with_default(df, "progress", "0") 
+  df <- h.rd_fill_with_default(df, "progress", "0")
   df$progress <- as.numeric(df$progress)
 
   df <- h.rd_preprocess_start_column(df)
@@ -48,7 +48,7 @@ wrangle_raw_plan <- function(df) {
 h.rd_check_id_deps <- function(df) {
   id_col <- df$id
   prior_ids <- unique(sort(unlist(df$prior_ids)))
-  
+
   unknow_ids <- setdiff(prior_ids, id_col)
   if (length(unknow_ids) > 0) {
     futile.logger::flog.warn(
@@ -62,9 +62,9 @@ h.rd_check_id_deps <- function(df) {
 h.rd_check_start_time_available <- function(df) {
   futile.logger::flog.info("Check that the start time is at least implicitly defined.")
 
-  
+
   # var is only for logger
-  h.comma_list = Vectorize(h.comma_list)
+  h.comma_list <- Vectorize(h.comma_list)
   df_log <- data.table::copy(df)
   cols <- c("depends_on", "start")
   df_log[, (cols) := lapply(.SD, h.comma_list), .SDcols = cols]
@@ -150,7 +150,6 @@ h.rd_make_id_unique_within_project <- function(df) {
 
 
 h.rd_check_project_section_id_unique <- function(df) {
-
   id_in_multiple_sections <- unique(df[, .(project, id, section)])
   id_in_multiple_sections <- id_in_multiple_sections[, .(n = .N), by = c("project", "id")]
   id_in_multiple_sections <- id_in_multiple_sections[n > 1]
@@ -235,7 +234,7 @@ h.rd_fill_with_default <- function(df, colname, def) {
 
 h.rd_remove_unnessary_rows <- function(df) {
   futile.logger::flog.info(glue::glue("Remove rows where project, section, id, start, end, resource, task are empty"))
-  
+
   discard <- with(df, is.na(project) & is.na(section) & is.na(id) & is.na(start) & is.na(end) & is.na(resource) & is.na(task))
 
   futile.logger::flog.debug(glue::glue("Remove {sum(discard)} rows"))

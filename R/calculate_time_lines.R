@@ -34,27 +34,27 @@ h.turn_weekend_day_to_monday <- function(day) {
   day
 }
 
-h.exclude_weekends <- function(start, end){
+h.exclude_weekends <- function(start, end) {
   if (end < start) {
     msg <- glue::glue("Specified end time {end} is before the start time {start}")
     futile.logger::flog.error(msg)
     stop(msg)
   }
-  
+
   shift <- h.turn_weekend_day_to_monday(start) - start
   if (shift > 0) {
     futile.logger::flog.warn(glue::glue("start {start} is on a weekend. shift start {start} and end {end} by {shift} day(s)."))
     start <- start + shift
     end <- end + shift
   }
-  
+
   nmb_workdays <- as.integer(end - start)
   nmb_workweeks <- floor(nmb_workdays / 5)
   nmb_days_remain <- nmb_workdays %% 5
-  
+
   end <- start + 7 * nmb_workweeks + nmb_days_remain
-  
-  if (lubridate::wday(end) %in% c(1,7)) {
+
+  if (lubridate::wday(end) %in% c(1, 7)) {
     # if we stop working on saturday we actually have to work till monday
     # if we stop working on sunday we actually have to work till tuesday
     futile.logger::flog.debug(glue::glue("The task ends on {end} which is a weekend. Hence, the actual end is 2 days on {end + 2}"))
@@ -101,7 +101,6 @@ h.calculate_time_lines_at <- function(dt_ref, row) {
 
   futile.logger::flog.debug(glue::glue("Try to calculate earliest start time for row -{row}- based on prior tasks"), prior_tasks, capture = TRUE)
   while (is.na(earliest_start_time)) {
-    
     prior_tasks <- prior_tasks[is.na(time_end)]
     na_id <- prior_tasks$id[1]
     futile.logger::flog.info(glue::glue("Nonsorted entry -{dt_ref$id[row]}- must follow after -{na_id}-"))
@@ -114,14 +113,14 @@ h.calculate_time_lines_at <- function(dt_ref, row) {
     earliest_start_time <- max(prior_tasks$time_end)
   }
   futile.logger::flog.debug(glue::glue("Earliest start time found for row -{row}-: {earliest_start_time}"))
-  
+
   end <- h.calculate_end_time(earliest_start_time, dt_ref$waiting[row], dt_ref$est_days[row], dt_ref$fixed_end_date[row])
 
   dt_ref[row, time_start := earliest_start_time]
   dt_ref[row, time_end := end]
   futile.logger::flog.debug(glue::glue("Timelines for the current row -{row}-"), dt_ref[row], capture = TRUE)
-  
-  
+
+
   if (end < earliest_start_time) {
     futile.logger::flog.warn("-time_start- is before -time_end-", dt_ref[row, ], capture = TRUE)
   }

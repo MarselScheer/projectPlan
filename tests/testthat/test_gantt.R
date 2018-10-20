@@ -14,42 +14,43 @@ d_out <-
   )
 
 test_that(
-  "rearrange in a way that every dependency has its own row",{
+  "rearrange in a way that every dependency has its own row", {
     expect_identical(h.one_row_for_every_dependency(d_in), d_out)
     expect_null(h.one_row_for_every_dependency(d_nodeps))
   }
 )
 
 d_in <- data.table::data.table(
-  id = c("a", "b", "c"), 
+  id = c("a", "b", "c"),
   depends_on = list(NA, c("a"), c("a", "b")),
   y = 1:3,
   time_start = c(lubridate::ymd("2018-01-01"), lubridate::ymd("2018-02-01"), lubridate::ymd("2018-03-01")),
-  time_end   = c(lubridate::ymd("2018-01-11"), lubridate::ymd("2018-02-11"), lubridate::ymd("2018-03-11")))
+  time_end = c(lubridate::ymd("2018-01-11"), lubridate::ymd("2018-02-11"), lubridate::ymd("2018-03-11"))
+)
 d_nodeps <- data.table::data.table(
-  id = c("a", "b", "c"), 
+  id = c("a", "b", "c"),
   depends_on = list(NA, NA, NA),
   y = 1:3,
   time_start = c(lubridate::ymd("2018-01-01"), lubridate::ymd("2018-02-01"), lubridate::ymd("2018-03-01")),
-  time_end   = c(lubridate::ymd("2018-01-11"), lubridate::ymd("2018-02-11"), lubridate::ymd("2018-03-11")))
+  time_end = c(lubridate::ymd("2018-01-11"), lubridate::ymd("2018-02-11"), lubridate::ymd("2018-03-11"))
+)
 d_out <- data.table::data.table(
-  id = c("b", "c", "c"), 
+  id = c("b", "c", "c"),
   time_start_id = c(lubridate::ymd("2018-02-01"), lubridate::ymd("2018-03-01"), lubridate::ymd("2018-03-01")),
   y_id = c(2L, 3L, 3L),
   prior_task = c("a", "a", "b"),
   time_end_prior = c(lubridate::ymd("2018-01-11"), lubridate::ymd("2018-01-11"), lubridate::ymd("2018-02-11")),
   y_prior = c(1L, 1L, 2L),
   time_start = c(lubridate::ymd("2017-01-01")),
-  time_end   = c(lubridate::ymd("2019-01-01")),
+  time_end = c(lubridate::ymd("2019-01-01")),
   y = 0
 )
 
 test_that(
-  "For every arrow one row",{
+  "For every arrow one row", {
     expect_identical(h.calculate_arrows(d_in, lubridate::ymd("2017-01-01"), lubridate::ymd("2019-01-01")), d_out)
     expect_null(h.calculate_arrows(d_nodeps, lubridate::ymd("2017-01-01"), lubridate::ymd("2019-01-01")))
   }
-  
 )
 
 
@@ -66,7 +67,7 @@ test_that(
       )
     )
     expect_identical(
-      #2018-10-14 is sunday
+      # 2018-10-14 is sunday
       h.make_weekend_rows(lubridate::ymd("2018-10-14"), lubridate::ymd("2018-10-15")),
       data.table::data.table(
         y = 0,
@@ -77,7 +78,7 @@ test_that(
       )
     )
     expect_identical(
-      #2018-10-13 is saturday
+      # 2018-10-13 is saturday
       h.make_weekend_rows(lubridate::ymd("2018-10-13"), lubridate::ymd("2018-10-20")),
       data.table::data.table(
         y = 0,
@@ -93,14 +94,15 @@ test_that(
 d_in <- data.table::data.table(
   project = "A",
   section = "B",
-  id = letters[1:3], 
+  id = letters[1:3],
   task = letters[1:3],
   resource = letters[1:3],
   depends_on = list(NA, NA, NA),
   y = 1:3,
   time_start = c(lubridate::ymd("2018-01-01"), lubridate::ymd("2018-02-01"), lubridate::ymd("2018-03-01")),
-  time_end   = c(lubridate::ymd("2018-01-11"), lubridate::ymd("2018-02-11"), lubridate::ymd("2018-03-11")),
-  progress = 10 * 1:3)
+  time_end = c(lubridate::ymd("2018-01-11"), lubridate::ymd("2018-02-11"), lubridate::ymd("2018-03-11")),
+  progress = 10 * 1:3
+)
 
 test_that(
   "Just run a plot without arrows",
@@ -111,14 +113,15 @@ test_that(
 d_in <- data.table::data.table(
   project = "A",
   section = "B",
-  id = letters[1:3], 
+  id = letters[1:3],
   task = letters[1:3],
   resource = letters[1:3],
   depends_on = list(NA, "a", NA),
   y = 1:3,
   time_start = c(lubridate::ymd("2018-01-01"), lubridate::ymd("2018-02-01"), lubridate::ymd("2018-03-01")),
-  time_end   = c(lubridate::ymd("2018-01-11"), lubridate::ymd("2018-02-11"), lubridate::ymd("2018-03-11")),
-  progress = 10 * 8:10)
+  time_end = c(lubridate::ymd("2018-01-11"), lubridate::ymd("2018-02-11"), lubridate::ymd("2018-03-11")),
+  progress = 10 * 8:10
+)
 
 test_that(
   "Just run a plot with arrows",
