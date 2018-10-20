@@ -28,7 +28,7 @@ h.combine_comma_list_cols <- function(v, w = "") {
 
 
 h.log_rows <- function(df, idx, warn_msg, warn_columns = c("project", "section", "id"), error = FALSE) {
-  if (any(idx)) {
+  if (any(idx, na.rm = TRUE)) {
     if (error) {
       futile.logger::flog.error(warn_msg)
       futile.logger::flog.error("Rows:", df[idx, ], capture = TRUE)
