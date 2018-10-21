@@ -24,12 +24,6 @@ The aim of the package is to calculate time lines for different task that may de
 
 ## Example
 
-Imagine a simple 4-task-plan, where 
-
-* 1 task was already completed 
-* 1 task started on *2018-10-02* where it is estimated that it will take 10 days to be completed
-* 2 tasks are depending somehow on the first two tasks
-
 ```{r raw_plan, echo=FALSE}
 library(data.table)
 raw_plan <- data.table::rbindlist(
@@ -39,8 +33,8 @@ raw_plan <- data.table::rbindlist(
       section = "0_prep",
       id = c("a", "b"),
       depends_on = NA,
-      start = c("2018-10-01", "2018-10-02"),
-      end = c("2018-10-03", "10"),
+      start = c("2018-10-15", "2018-10-16"),
+      end = c("2018-10-17", "10"),
       resource = c("R1", "R2"),
       task = c("T1", "T2"),
       progress = c(100, 50),
@@ -52,11 +46,11 @@ raw_plan <- data.table::rbindlist(
       id = c("c", "d"),
       depends_on = c("a", "a, b"),
       start = NA,
-      end = c(5, 7),
+      end = c(7, 6),
       resource = c("R1", "R2"),
       task = c("T3", "T4"),
       progress = c(0, 0),
-      deadline = c(NA, "2018-10-18")
+      deadline = c("2018-10-29", "2018-11-07")
     )
   )
 )
@@ -64,6 +58,13 @@ suppressPackageStartupMessages(library(dplyr))
 suppressPackageStartupMessages(library(projectPlan))
 dummy <- futile.logger::flog.threshold(futile.logger::WARN)
 ```
+
+Imagine a simple 4-task-plan, where 
+
+* 1 task was already completed 
+* 1 task started on *`r raw_plan$start[2]`* where it is estimated that it will take `r raw_plan$end[2]` days to be completed
+* 2 tasks are depending somehow on the first two tasks
+
 
 ```{r show_raw_plan}
 raw_plan
@@ -89,6 +90,10 @@ With the calculated time lines a gantt chart can be plotted
 library(ggplot2)
 projectPlan::gantt_by_sections(plan, show_dependencies = TRUE)
 ```
+
+Note that currently the number of days the end date of a task is away from the corresponding deadline
+is not adjusted for weekends, for instance *T3* ends on Thrusday and the deadline is on the following Monday. 
+This will be improved in the near future.
 
 ## Other packages for visualization
 

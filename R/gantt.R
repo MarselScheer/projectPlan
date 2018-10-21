@@ -26,6 +26,8 @@ gantt_by_sections <- function(dt, xlim, show_dependencies = FALSE, text_size = 3
       h.mark_completed_tasks(pf)
   )
 
+  ret <- h.plot_deadlines(ret, pf)
+  
   if (show_dependencies) {
     arrowMatrix_section <- h.calculate_arrows(pf, xmin, xmax)
     if (!is.null(arrowMatrix_section)) {
@@ -40,18 +42,17 @@ gantt_by_sections <- function(dt, xlim, show_dependencies = FALSE, text_size = 3
 
 
 h.one_row_for_every_dependency <- function(dt) {
-  
   if (all(is.na(unlist(dt$depends_on)))) {
     return(NULL)
   }
-  
+
   ret <- data.table::copy(dt)
   max_deps <- max(unlist(lapply(ret$depends_on, length)))
-  
+
   cols <- paste0("..col", 1:max_deps)
   ret[, (cols) := data.table::transpose(ret$depends_on)]
   ret <- data.table::melt(ret, id.vars = "id", measure.vars = cols, value.name = "prior_task")
-  
+
   ret <- ret[!is.na(ret$prior_task)]
   data.table::setorderv(ret, c("id", "prior_task"))
   ret$variable <- NULL
@@ -61,22 +62,22 @@ h.one_row_for_every_dependency <- function(dt) {
 
 h.calculate_arrows <- function(sorted_dt, start, end) {
   one_row_dep <- h.one_row_for_every_dependency(sorted_dt)
-  
+
   if (is.null(one_row_dep)) {
     return(NULL)
   }
 
   time_start <- sorted_dt[, c("id", "time_start", "y")]
   time_end <- sorted_dt[, c("id", "time_end", "y")]
-  
+
   ret <- time_end[one_row_dep, on = c(id = "prior_task")]
   data.table::setnames(ret, c("id", "time_end", "y", "i.id"), c("prior_task", "time_end_prior", "y_prior", "id"))
 
   ret <- time_start[ret, on = "id"]
   old_cols <- c("time_start", "y")
   data.table::setnames(ret, old_cols, paste0(old_cols, "_id"))
-  
-  ret[, ':='(time_start = start, time_end = end, y = 0)]
+
+  ret[, ":="(time_start = start, time_end = end, y = 0)]
   ret
 }
 
@@ -138,3 +139,28 @@ h.mark_completed_tasks <- function(pf) {
   }
   ggplot2::geom_rect(data = sub, fill = "grey")
 }
+
+h.plot_deadlines <- function(gp, pf) {
+  sub <- data.table::copy(pf)
+  with(NULL, sub[, due_text := paste("Ends", dist_end_to_deadline, "days\nbefore deadline", sep = " ")])
+ 
+  idx <- sub$dist_end_to_deadline <= 0 
+  if (any(idx, na.rm = TRUE)) {
+    gp <- gp + ggplot2::geom_label(
+      data = sub[idx], 
+      ggplot2::aes(y = y, x = time_start, label = due_text, hjust = 1), fill = "red3", color = "white"
+    )
+  }
+  
+  idx <- sub$dist_end_to_deadline > 0 
+  if (any(idx, na.rm = TRUE)) {
+    gp <- gp + ggplot2::geom_label(
+      data = sub[idx], 
+      ggplot2::aes(y = y, x = time_start, label = due_text, hjust = 1), fill = "green4", color = "white"
+    )
+  }
+  
+  gp
+}
+
+
