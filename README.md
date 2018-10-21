@@ -45,7 +45,7 @@ is due today a warning is logged.
 plan <- 
   projectPlan::wrangle_raw_plan(raw_plan) %>% 
   projectPlan::calculate_time_lines()
-#> WARN [2018-10-21 11:13:12] DEADLINE TODAY OR ALREADY UNMET (change logging-threshold to INFO to see all columns)
+#> WARN [2018-10-21 15:41:37] DEADLINE TODAY OR ALREADY UNMET (change logging-threshold to INFO to see all columns)
 #> 
 #>    project   section   id time_start   time_end   deadline progress
 #> 1:       A A::1_impl A::d 2018-10-30 2018-11-07 2018-11-07        0
