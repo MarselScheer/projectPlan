@@ -17,7 +17,7 @@ that may depend on each other.
 Imagine a simple 4-task-plan, where
 
   - 1 task was already completed
-  - 1 task started on *2018-10-16* where it is estimated that it will
+  - 1 task started on *2018-10-23* where it is estimated that it will
     take 10 days to be completed
   - 2 tasks are depending somehow on the first two tasks
 
@@ -26,15 +26,15 @@ Imagine a simple 4-task-plan, where
 ``` r
 raw_plan
 #>    project section id depends_on      start        end resource task
-#> 1:       A  0_prep  a       <NA> 2018-10-15 2018-10-17       R1   T1
-#> 2:       A  0_prep  b       <NA> 2018-10-16         10       R2   T2
+#> 1:       A  0_prep  a       <NA> 2018-10-22 2018-10-24       R1   T1
+#> 2:       A  0_prep  b       <NA> 2018-10-23         10       R2   T2
 #> 3:       A  1_impl  c          a       <NA>          7       R1   T3
 #> 4:       A  1_impl  d       a, b       <NA>          6       R2   T4
 #>    progress   deadline
 #> 1:      100       <NA>
 #> 2:       50       <NA>
-#> 3:        0 2018-10-29
-#> 4:        0 2018-11-07
+#> 3:        0 2018-11-05
+#> 4:        0 2018-11-14
 ```
 
 Then using this package one can easily calculate when a task will start
@@ -45,10 +45,10 @@ is due today a warning is logged.
 plan <- 
   projectPlan::wrangle_raw_plan(raw_plan) %>% 
   projectPlan::calculate_time_lines()
-#> WARN [2018-10-21 15:41:37] DEADLINE TODAY OR ALREADY UNMET (change logging-threshold to INFO to see all columns)
+#> WARN [2018-10-29 22:15:24] DEADLINE TODAY OR ALREADY UNMET (change logging-threshold to INFO to see all columns)
 #> 
 #>    project   section   id time_start   time_end   deadline progress
-#> 1:       A A::1_impl A::d 2018-10-30 2018-11-07 2018-11-07        0
+#> 1:       A A::1_impl A::d 2018-11-06 2018-11-14 2018-11-14        0
 #>    resource task
 #> 1:       R2   T4
 ```
@@ -59,15 +59,15 @@ plan <-
     #> 3:       A A::c       A::a  <NA>      A::a A::1_impl       R1   T3
     #> 4:       A A::d  A::a,A::b  <NA> A::a,A::b A::1_impl       R2   T4
     #>    progress   deadline fixed_start_date fixed_end_date est_days waiting
-    #> 1:      100       <NA>       2018-10-15     2018-10-17        0   FALSE
-    #> 2:       50       <NA>       2018-10-16           <NA>       10   FALSE
-    #> 3:        0 2018-10-29             <NA>           <NA>        7   FALSE
-    #> 4:        0 2018-11-07             <NA>           <NA>        6   FALSE
+    #> 1:      100       <NA>       2018-10-22     2018-10-24        0   FALSE
+    #> 2:       50       <NA>       2018-10-23           <NA>       10   FALSE
+    #> 3:        0 2018-11-05             <NA>           <NA>        7   FALSE
+    #> 4:        0 2018-11-14             <NA>           <NA>        6   FALSE
     #>    nmb_combined_entries time_start   time_end dist_end_to_deadline
-    #> 1:                    1 2018-10-15 2018-10-17              NA days
-    #> 2:                    1 2018-10-16 2018-10-30              NA days
-    #> 3:                    1 2018-10-17 2018-10-26               3 days
-    #> 4:                    1 2018-10-30 2018-11-07               0 days
+    #> 1:                    1 2018-10-22 2018-10-24              NA days
+    #> 2:                    1 2018-10-23 2018-11-06              NA days
+    #> 3:                    1 2018-10-24 2018-11-02               1 days
+    #> 4:                    1 2018-11-06 2018-11-14               0 days
 
 With the calculated time lines a gantt chart can be plotted
 
@@ -78,10 +78,11 @@ projectPlan::gantt_by_sections(plan, show_dependencies = TRUE)
 
 ![](README-gantt-1.png)<!-- -->
 
-Note that currently the number of days the end date of a task is away
-from the corresponding deadline is not adjusted for weekends, for
-instance *T3* ends on Thrusday and the deadline is on the following
-Monday. This will be improved in the near future.
+Note that the number of days the end date of a task is away from the
+corresponding deadline is adjusted for weekends, for instance *T3* will
+be done by Thrusday night and the deadline is on the following Monday.
+Hence, there is one day left, i.e. Friday, before the deadline is
+reached.
 
 ## Other packages for visualization
 

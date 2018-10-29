@@ -33,8 +33,8 @@ raw_plan <- data.table::rbindlist(
       section = "0_prep",
       id = c("a", "b"),
       depends_on = NA,
-      start = c("2018-10-15", "2018-10-16"),
-      end = c("2018-10-17", "10"),
+      start = c("2018-10-22", "2018-10-23"),
+      end = c("2018-10-24", "10"),
       resource = c("R1", "R2"),
       task = c("T1", "T2"),
       progress = c(100, 50),
@@ -50,7 +50,7 @@ raw_plan <- data.table::rbindlist(
       resource = c("R1", "R2"),
       task = c("T3", "T4"),
       progress = c(0, 0),
-      deadline = c("2018-10-29", "2018-11-07")
+      deadline = c("2018-11-05", "2018-11-14")
     )
   )
 )
@@ -86,14 +86,15 @@ print(plan)
 
 With the calculated time lines a gantt chart can be plotted
 
-```{r gantt}
+```{r gantt, fig.width=10}
 library(ggplot2)
 projectPlan::gantt_by_sections(plan, show_dependencies = TRUE)
 ```
 
-Note that currently the number of days the end date of a task is away from the corresponding deadline
-is not adjusted for weekends, for instance *T3* ends on Thrusday and the deadline is on the following Monday. 
-This will be improved in the near future.
+Note that the number of days the end date of a task is away from the corresponding deadline
+is adjusted for weekends, for instance *T3* will be done by Thrusday night and the deadline is on the 
+following Monday. Hence, there is one day left, i.e. Friday, before the deadline is reached.
+
 
 ## Other packages for visualization
 
