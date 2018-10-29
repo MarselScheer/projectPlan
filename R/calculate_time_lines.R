@@ -15,10 +15,20 @@ calculate_time_lines <- function(df) {
   df
 }
 
+
 h.calc_dist_to_deadline <- function(df) {
   idx <- !is.na(df$deadline)
   if (any(idx)) {
-    df[idx, dist_end_to_deadline := deadline - time_end]
+    raw_dist <- df$deadline[idx] - df$time_end[idx]
+    overdue <- as.integer(raw_dist < 0)
+    nmb_weekends <- floor(abs(raw_dist) / 7)
+    nmb_weekends <- nmb_weekends + 
+      abs(overdue - 1) * (wday(df$deadline[idx]) < wday(df$time_end[idx])) + 
+      overdue  * (wday(df$deadline[idx]) > wday(df$time_end[idx]))
+    nmb_weekends <- -1 * overdue * nmb_weekends + abs(overdue - 1) * nmb_weekends
+
+    df[idx, dist_end_to_deadline := raw_dist - 2 * nmb_weekends]
+    
     h.log_rows(df, df$dist_end_to_deadline <= 0, "DEADLINE TODAY OR ALREADY UNMET", warn_columns = c("project", "section", "id", "time_start", "time_end", "deadline", "progress", "resource", "task"))
   }
 }

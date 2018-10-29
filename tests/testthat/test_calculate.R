@@ -140,12 +140,13 @@ test_that(
 )
 
 d_in <- data.table::data.table(
-  time_end = c(lubridate::ymd("2018-11-20"), lubridate::ymd("2018-10-20")),
-  deadline = c(lubridate::ymd("2018-11-23"), NA)
+  project = NA, section = NA, id = NA, time_start = NA, progress = NA, resource = NA, task = NA,
+  time_end = c(lubridate::ymd("2018-11-20"), lubridate::ymd("2018-10-19"), lubridate::ymd("2018-10-18"), lubridate::ymd("2018-10-22"), lubridate::ymd("2018-11-02")),
+  deadline = c(lubridate::ymd("2018-11-23"), lubridate::ymd("2018-10-22"), lubridate::ymd("2018-11-02"), lubridate::ymd("2018-10-19"), lubridate::ymd("2018-10-18"))
 )
 d_out <- data.table::copy(d_in)
 d_expected <- data.table::copy(d_out)
-d_expected$dist_end_to_deadline <- lubridate::as.difftime(c(3, NA), units = "days")
+d_expected$dist_end_to_deadline <- lubridate::as.difftime(c(3, 1, 11, -1, -11), units = "days")
 h.calc_dist_to_deadline(d_out)
 
 test_that(
