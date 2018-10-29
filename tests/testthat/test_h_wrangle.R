@@ -33,10 +33,10 @@ test_that(
 )
 
 
-d_in <- data.table::data.table(deadline = c("2018-09-20"))
+d_in <- data.table::data.table(deadline = c("2018-09-20", "2018-10-27"))
 d_expected <- data.table::data.table(
-  deadline = c(lubridate::ymd("2018-09-20")),
-  raw_deadline = c("2018-09-20")
+  deadline = c(lubridate::ymd("2018-09-20"), lubridate::ymd("2018-10-29")),
+  raw_deadline = c("2018-09-20", "2018-10-27")
 )
 test_that(
   "ymd ín -deadline- are processed correctly", {
@@ -143,7 +143,7 @@ d_expected <- data.table::data.table(
   resource = c("r1, r2"),
   task = c("t1, t2"),
   progress = c(25),
-  deadline = lubridate::as_date(c("2018-09-23")),
+  deadline = lubridate::as_date(c("2018-09-24")),
   fixed_start_date = lubridate::as_date(c("2018-09-10")),
   fixed_end_date = lubridate::as_date(c("2018-10-25")),
   est_days = 0,

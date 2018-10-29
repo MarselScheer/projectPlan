@@ -167,6 +167,11 @@ h.rd_check_project_section_id_unique <- function(df) {
 h.rd_preprocess_deadline_column <- function(df) {
   df$raw_deadline <- df$deadline
   df$deadline <- suppressWarnings(lubridate::ymd(df$deadline))
+  idx <- !is.na(df$deadline)
+  if (any(idx)) {
+    df$deadline[idx] <- lubridate::as_date(sapply(df$deadline[idx], h.turn_weekend_day_to_monday))  
+  }
+  
   h.log_rows(
     df,
     with(df, xor(!is.na(deadline), !is.na(raw_deadline))),
