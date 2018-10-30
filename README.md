@@ -45,7 +45,7 @@ is due today a warning is logged.
 plan <- 
   projectPlan::wrangle_raw_plan(raw_plan) %>% 
   projectPlan::calculate_time_lines()
-#> WARN [2018-10-29 22:15:24] DEADLINE TODAY OR ALREADY UNMET (change logging-threshold to INFO to see all columns)
+#> WARN [2018-10-30 21:51:26] DEADLINE TODAY OR ALREADY UNMET (change logging-threshold to INFO to see all columns)
 #> 
 #>    project   section   id time_start   time_end   deadline progress
 #> 1:       A A::1_impl A::d 2018-11-06 2018-11-14 2018-11-14        0
@@ -82,7 +82,8 @@ Note that the number of days the end date of a task is away from the
 corresponding deadline is adjusted for weekends, for instance *T3* will
 be done by Thrusday night and the deadline is on the following Monday.
 Hence, there is one day left, i.e. Friday, before the deadline is
-reached.
+reached. The label attached to the vertical bar displays the distance in
+days from today to the next deadline.
 
 ## Other packages for visualization
 

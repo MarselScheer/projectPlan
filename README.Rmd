@@ -94,6 +94,7 @@ projectPlan::gantt_by_sections(plan, show_dependencies = TRUE)
 Note that the number of days the end date of a task is away from the corresponding deadline
 is adjusted for weekends, for instance *T3* will be done by Thrusday night and the deadline is on the 
 following Monday. Hence, there is one day left, i.e. Friday, before the deadline is reached.
+The label attached to the vertical bar displays the distance in days from today to the next deadline.
 
 
 ## Other packages for visualization
