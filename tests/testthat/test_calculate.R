@@ -140,16 +140,25 @@ test_that(
 )
 
 d_in <- data.table::data.table(
-  project = NA, section = NA, id = NA, time_start = NA, progress = NA, resource = NA, task = NA,
-  time_end = c(lubridate::ymd("2018-11-20"), lubridate::ymd("2018-10-19"), lubridate::ymd("2018-10-18"), lubridate::ymd("2018-10-22"), lubridate::ymd("2018-11-02")),
-  deadline = c(lubridate::ymd("2018-11-23"), lubridate::ymd("2018-10-22"), lubridate::ymd("2018-11-02"), lubridate::ymd("2018-10-19"), lubridate::ymd("2018-10-18"))
+  time_end = c(lubridate::ymd("2018-11-20"), lubridate::ymd("2018-10-19")),
+  deadline = c(lubridate::ymd("2018-11-23"), NA)
 )
 d_out <- data.table::copy(d_in)
 d_expected <- data.table::copy(d_out)
-d_expected$dist_end_to_deadline <- lubridate::as.difftime(c(3, 1, 11, -1, -11), units = "days")
-h.calc_dist_to_deadline(d_out)
+d_expected$dist_end_to_deadline <- lubridate::as.difftime(c(3, NA), units = "days")
+h.calc_end_to_deadline(d_out)
+
 
 test_that(
-  "Distance to deadline",
-  expect_identical(d_out, d_expected)
+  "Distance to deadline",{
+    expect_identical(h.calc_dist_to_deadline(
+      c(lubridate::ymd("2018-11-20"), lubridate::ymd("2018-10-19"), lubridate::ymd("2018-10-18"), lubridate::ymd("2018-10-22"), lubridate::ymd("2018-11-02")),
+      c(lubridate::ymd("2018-11-23"), lubridate::ymd("2018-10-22"), lubridate::ymd("2018-11-02"), lubridate::ymd("2018-10-19"), lubridate::ymd("2018-10-18"))
+    ), 
+    lubridate::as.difftime(c(3, 1, 11, -1, -11), units = "days"))
+    expect_identical(d_out, d_expected)  
+  }
 )
+
+
+
