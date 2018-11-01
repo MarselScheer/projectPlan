@@ -163,17 +163,27 @@ h.plot_deadlines <- function(gp, pf) {
   idx <- !is.na(sub$deadline) & sub$progress != 100
   if (any(idx, na.rm = TRUE)) {
     today <- lubridate::as_date(lubridate::now())
-    next_deadline <- min(sub$deadline[idx])
+    
+    next_deadlines_idx <- which(min(sub$deadline[idx]) == sub$deadline[idx])
+    next_deadline <- sub$deadline[idx][1]
+    next_deadline_tasks <- paste(sub$task[idx][next_deadlines_idx], collapse = "; ")
+    
     dist <- h.calc_dist_to_deadline(today, next_deadline)
     fill <- "red3"
     if (dist > 0) {
       fill <- "green4"
     }
-    gp <- gp + ggplot2::geom_label(
-      ggplot2::aes(y = 0, x = today, label = paste("Next deadline in\n", dist, "days", sep = " "), hjust = 1),
-      fill = fill,
-      color = "white"
-    )
+    gp <- gp + 
+      ggplot2::geom_label(
+        ggplot2::aes(y = 0, x = today, label = paste("Next deadline in\n", dist, "days", sep = " "), hjust = 1),
+        fill = fill,
+        color = "white"
+      ) + 
+      ggplot2::geom_label(
+        ggplot2::aes(y = 0, x = today, label = next_deadline_tasks, hjust = 0),
+        fill = fill,
+        color = "white"
+      )
   }
   
   
