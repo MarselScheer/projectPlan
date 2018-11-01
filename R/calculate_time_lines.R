@@ -31,7 +31,7 @@ h.calc_dist_to_deadline <- function(date_vec, deadline_vec) {
 h.calc_end_to_deadline <- function(df) {
   idx <- !is.na(df$deadline)
   if (any(idx)) {
-    df[idx, dist_end_to_deadline := h.calc_dist_to_deadline(time_end, deadline)]
+    with(NULL, df[idx, dist_end_to_deadline := h.calc_dist_to_deadline(time_end, deadline)])
     h.log_rows(df, df$dist_end_to_deadline <= 0, "DEADLINE TODAY OR ALREADY UNMET", warn_columns = c("project", "section", "id", "time_start", "time_end", "deadline", "progress", "resource", "task"))
   }
 }
@@ -102,7 +102,7 @@ h.calculate_time_lines_at <- function(dt_ref, row) {
 
 
   ids_prior <- unlist(dt_ref$prior_ids[row])
-  prior_tasks <- dt_ref[id %in% ids_prior, ]
+  prior_tasks <- with(NULL, dt_ref[id %in% ids_prior, ])
   fsd <- dt_ref$fixed_start_date[row]
 
   # seems to be some bug because is.na(earliest_start_time) returns FALSE?!?
@@ -114,14 +114,14 @@ h.calculate_time_lines_at <- function(dt_ref, row) {
 
   futile.logger::flog.debug(glue::glue("Try to calculate earliest start time for row -{row}- based on prior tasks"), prior_tasks, capture = TRUE)
   while (is.na(earliest_start_time)) {
-    prior_tasks <- prior_tasks[is.na(time_end)]
+    prior_tasks <- with(NULL, prior_tasks[is.na(time_end)])
     na_id <- prior_tasks$id[1]
     futile.logger::flog.info(glue::glue("Nonsorted entry -{dt_ref$id[row]}- must follow after -{na_id}-"))
 
     first_na_idx <- which(dt_ref$id == na_id)[1]
     h.calculate_time_lines_at(dt_ref, first_na_idx)
 
-    prior_tasks <- dt_ref[id %in% ids_prior]
+    prior_tasks <- with(NULL, dt_ref[id %in% ids_prior])
     futile.logger::flog.debug(glue::glue("Try to calculate earliest start time for row -{row}- based on prior tasks"), prior_tasks, capture = TRUE)
     earliest_start_time <- max(prior_tasks$time_end)
   }
@@ -129,8 +129,8 @@ h.calculate_time_lines_at <- function(dt_ref, row) {
 
   end <- h.calculate_end_time(earliest_start_time, dt_ref$waiting[row], dt_ref$est_days[row], dt_ref$fixed_end_date[row])
 
-  dt_ref[row, time_start := earliest_start_time]
-  dt_ref[row, time_end := end]
+  with(NULL, dt_ref[row, time_start := earliest_start_time])
+  with(NULL, dt_ref[row, time_end := end])
   futile.logger::flog.debug(glue::glue("Timelines for the current row -{row}-"), dt_ref[row], capture = TRUE)
 
 

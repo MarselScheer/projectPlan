@@ -1,4 +1,3 @@
-#' @export
 gantt_by_sections <- function(dt, xlim, show_dependencies = FALSE, text_size = 3) {
   xmin <- min(dt$time_start, na.rm = TRUE)
   xmax <- max(dt$time_end, na.rm = TRUE)
@@ -11,7 +10,7 @@ gantt_by_sections <- function(dt, xlim, show_dependencies = FALSE, text_size = 3
 
   pf <- data.table::copy(dt)
   data.table::setorderv(pf, c("section", "time_start"))
-  pf[, y := .N:1]
+  with(NULL, pf[, y := .N:1])
   with(pf, pf[, ":="(mean_y = mean(y), min_y = min(y), max_y = max(y)), by = "section"])
 
   prjf <- with(pf, pf[, list(min_y = min(y), max_y = max(y)), by = "project"])
@@ -31,9 +30,11 @@ gantt_by_sections <- function(dt, xlim, show_dependencies = FALSE, text_size = 3
   if (show_dependencies) {
     arrowMatrix_section <- h.calculate_arrows(pf, xmin, xmax)
     if (!is.null(arrowMatrix_section)) {
-      ret <-
-        ret +
-        ggplot2::geom_segment(data = arrowMatrix_section, ggplot2::aes(x = time_end_prior, y = y_prior - 0.25, xend = time_start_id + 0.25, yend = y_id - 0.25), arrow = ggplot2::arrow(length = ggplot2::unit(0.2, "cm")), alpha = 0.5)
+      ret <- ret + 
+        with(
+          NULL, 
+          ggplot2::geom_segment(data = arrowMatrix_section, ggplot2::aes(x = time_end_prior, y = y_prior - 0.25, xend = time_start_id + 0.25, yend = y_id - 0.25), arrow = ggplot2::arrow(length = ggplot2::unit(0.2, "cm")), alpha = 0.5)
+        )
     }
   }
 
@@ -146,18 +147,25 @@ h.plot_deadlines <- function(gp, pf) {
  
   idx <- sub$dist_end_to_deadline <= 0 
   if (any(idx, na.rm = TRUE)) {
-    gp <- gp + ggplot2::geom_label(
-      data = sub[idx], 
-      ggplot2::aes(y = y, x = time_start, label = due_text, hjust = 1), fill = "red3", color = "white"
-    )
+    gp <- gp + 
+      with(
+        NULL,
+        ggplot2::geom_label(
+          data = sub[idx], 
+          ggplot2::aes(y = y, x = time_start, label = due_text, hjust = 1), fill = "red3", color = "white"
+        )
+      )
   }
   
   idx <- sub$dist_end_to_deadline > 0 
   if (any(idx, na.rm = TRUE)) {
-    gp <- gp + ggplot2::geom_label(
-      data = sub[idx], 
-      ggplot2::aes(y = y, x = time_start, label = due_text, hjust = 1), fill = "green4", color = "white"
-    )
+    gp <- gp + 
+      with(NULL, 
+           ggplot2::geom_label(
+             data = sub[idx], 
+             ggplot2::aes(y = y, x = time_start, label = due_text, hjust = 1), fill = "green4", color = "white"
+           )
+      )
   }
   
   idx <- !is.na(sub$deadline) & sub$progress != 100
