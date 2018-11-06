@@ -95,7 +95,7 @@ h.rd_make_id_unique_within_project <- function(df) {
   }
 
   df <- data.table::data.table(df)
-  ret <- df[, .(
+  ret <- with(NULL, df[, .(
     depends_on = h.combine_comma_list_cols(depends_on),
     start = h.combine_comma_list_cols(start),
     prior_ids = h.combine_comma_list_cols(depends_on, start),
@@ -111,9 +111,9 @@ h.rd_make_id_unique_within_project <- function(df) {
     nmb_combined_entries = .N
   ),
   by = .(project, id)
-  ]
+  ])
 
-  combined_entries <- ret[nmb_combined_entries > 1]
+  combined_entries <- with(NULL, ret[nmb_combined_entries > 1])
   if (nrow(combined_entries) > 0) {
     futile.logger::flog.info(
       "Some id-entries were combined (within the project) into one entry, this means for instance that the estimated days are summed up.",
@@ -139,23 +139,25 @@ h.rd_make_id_unique_within_project <- function(df) {
   vadd_prefix_preserve_other_projects <- Vectorize(add_prefix_preserve_other_projects)
 
 
-  ret[, ":="(section = paste(project, section, sep = h.SEPERATOR),
-  id = paste(project, id, sep = h.SEPERATOR),
-  depends_on = vadd_prefix_preserve_other_projects(project, depends_on),
-  start = vadd_prefix_preserve_other_projects(project, start),
-  prior_ids = vadd_prefix_preserve_other_projects(project, prior_ids))]
+  with(NULL, 
+       ret[, ":="(section = paste(project, section, sep = h.SEPERATOR),
+                  id = paste(project, id, sep = h.SEPERATOR),
+                  depends_on = vadd_prefix_preserve_other_projects(project, depends_on),
+                  start = vadd_prefix_preserve_other_projects(project, start),
+                  prior_ids = vadd_prefix_preserve_other_projects(project, prior_ids))]
+  )
 
   unique(ret)
 }
 
 
 h.rd_check_project_section_id_unique <- function(df) {
-  id_in_multiple_sections <- unique(df[, .(project, id, section)])
-  id_in_multiple_sections <- id_in_multiple_sections[, .(n = .N), by = c("project", "id")]
-  id_in_multiple_sections <- id_in_multiple_sections[n > 1]
+  id_in_multiple_sections <- with(NULL, unique(df[, .(project, id, section)]))
+  id_in_multiple_sections <- with(NULL, id_in_multiple_sections[, .(n = .N), by = c("project", "id")])
+  id_in_multiple_sections <- with(NULL, id_in_multiple_sections[n > 1])
   id_in_multiple_sections <- id_in_multiple_sections$id
 
-  data.table::setorder(df, project, id, section)
+  with(NULL, data.table::setorder(df, project, id, section))
   h.log_rows(
     df,
     df$id %in% id_in_multiple_sections,
