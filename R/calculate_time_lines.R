@@ -1,3 +1,15 @@
+#' Calculate explit start and end dates for the given project plan.
+#' 
+#' Usually this function is called after a raw plan with tasks was prepared by \link{wrangle_raw_plan}.
+#' It takes a set of tasks and their estimated duration as well as
+#' dependencies between those tasks. This implicitly defines start end end dates
+#' for each task and this function explicitly calcualtes the corresponding explicit
+#' start and end times.
+#' 
+#' @param df A \code{data.frame} containing one task in each row.
+#' @return A \code{data.table} object with explicit start and end times for every (grouped) task
+#'
+#' @seealso \link{wrangle_raw_plan}, \link{gantt_by_sections}
 #' @export
 #' @import data.table
 calculate_time_lines <- function(df) {
