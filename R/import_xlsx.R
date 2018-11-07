@@ -1,3 +1,15 @@
+#' Import-helper-function for excel-sheets
+#'  
+#' 
+#' @param fName File name of the xlsx-file that should be imported
+#'
+#' @param sheets list of sheet-names that are imported. If not specified all sheets from the xlsx-file are imported.
+#'   If the sheet does not contain a project-column, then the name of the sheet is used as a project name.
+#'   
+#' @return One \code{data.table} containing all imported sheets. Usually, such an object needs to be preprocessed by 
+#'   \link{wrangle_raw_plan}
+#'
+#' @seealso \link{wrangle_raw_plan}
 #' @export
 import_xlsx <- function(fName, sheets) {
   futile.logger::flog.info(glue::glue("Import {fName}."))
