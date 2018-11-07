@@ -1,3 +1,14 @@
+#' Visualization of the project plan stratified according to sections
+#'
+#' The gantt-chart shows one block for every defined section and uses resources to color the rectangles.
+#'
+#' @param dt \code{data.table} create from \link{calculate_time_lines}
+#' @param xlim limits for the x-axis
+#' @param show_dependencies visualize the dependencies between the tasks as arrows
+#' @param text_size size of the font
+#'
+#' @return ggplot2-object displaying a gantt-chart
+#' @export
 gantt_by_sections <- function(dt, xlim, show_dependencies = FALSE, text_size = 3) {
   xmin <- min(dt$time_start, na.rm = TRUE)
   xmax <- max(dt$time_end, na.rm = TRUE)
