@@ -1,21 +1,37 @@
-# Hello, world!
-#
-# This is an example function named 'hello'
-# which prints 'Hello, world!'.
-#
-# You can learn more about package authoring with RStudio at:
-#
-#   http://r-pkgs.had.co.nz/
-#
-# Some useful keyboard shortcuts for package authoring:
-#
-#   Build and Reload Package:  'Ctrl + Shift + B'
-#   Check Package:             'Ctrl + Shift + E'
-#   Test Package:              'Ctrl + Shift + T'
-
-#' Calls all necessary for wrangling a raw project plan
+#' Prepares a raw project plan for further processing
 #'
-#' @return tibble with all columns preprocessed for calculating time lines
+#' This function is usually called first, for instance after a raw project
+#' plan was imported from an speadsheet.
+#'
+#' @param df Essential columns that must be provided are
+#'   
+#'   task: description of the task, e.g. write architecture
+#'   
+#'   resource: the resource that is working on that task
+#'   
+#'   id: an identifier for the task. used to declare dependencies
+#'   
+#'   section: a section is usually assigned to a set of tasks
+#'   
+#'   project: a project is usually assigned to a set of sections
+#'   
+#'   depends_on: a comma separated list of id's that the current task depends on or NA
+#'   
+#'   start: a date when the task starts, NA or 'TODAY'. At the beginning of a project, this is usually NA and \link{calculate_time_lines} tries to calculate an explicit date
+#'   
+#'   end: a date when the task ends or an integer (representing number of days the task will take to be completed) or 'WAIT'
+#'   
+#'   progress: number between 0 and 100, indicating the progress of the task
+#'   
+#'   deadline: NA or a date when the task must be completed
+#'
+#' @return \code{data.table} with columns preprocessed for calculating time lines by \link{calculate_time_lines}.
+#' 
+#' @details The column start can contain the word 'TODAY' which is replaced by the current date. 
+#'   The column end can contain the word 'WAIT' which marks the task as a waiting task and internally it is assumed that the 
+#'   task ends today.
+#' 
+#' @seealso \link{import_xlsx}, \link{calculate_time_lines}
 #'
 #' @export
 wrangle_raw_plan <- function(df) {
@@ -27,10 +43,12 @@ wrangle_raw_plan <- function(df) {
   df <- h.rd_fill_with_default(df, "project", "UNKNOWN")
   df <- h.rd_fill_with_default(df, "section", "UNKNOWN")
   df <- h.rd_fill_with_default(df, "id", "UNKNOWN")
+  df <- h.rd_fill_with_default(df, "depends_on", NA)
   df <- h.rd_fill_with_default(df, "end", "1")
   df <- h.rd_fill_with_default(df, "resource", "UNKNOWN")
   df <- h.rd_fill_with_default(df, "task", "UNKNOWN")
   df <- h.rd_fill_with_default(df, "progress", "0")
+  df <- h.rd_fill_with_default(df, "deadline", NA)
   df$progress <- as.numeric(df$progress)
 
   df <- h.rd_preprocess_start_column(df)
@@ -251,7 +269,15 @@ h.rd_remove_unnessary_rows <- function(df) {
 
 h.rd_select_cols <- function(df) {
   cols <- c("project", "section", "id", "depends_on", "start", "end", "resource", "task", "progress", "deadline")
-
   futile.logger::flog.info(glue::glue("Select the necessary columns -{h.comma_list(cols)}-"))
+  
+  missing_cols <- setdiff(cols, names(df))
+  if (length(missing_cols) > 0) {
+    futile.logger::flog.warn(glue::glue("Create missing column(s): -{h.comma_list(missing_cols)}-"))
+
+    new_cols <- data.table(matrix(NA, nrow = nrow(df), ncol = length(missing_cols)))
+    names(new_cols) <- missing_cols
+    df <- cbind(df, new_cols)
+  }
   df <- df[, lapply(.SD, as.character), .SDcols = cols]
 }
