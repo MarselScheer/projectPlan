@@ -2,8 +2,8 @@
 #' 
 #' Usually this function is called after a raw plan with tasks was prepared by \link{wrangle_raw_plan}.
 #' It takes a set of tasks and their estimated duration as well as
-#' dependencies between those tasks. This implicitly defines start end end dates
-#' for each task and this function explicitly calcualtes the corresponding explicit
+#' dependencies between those tasks. This implicitly defines start and end dates
+#' for each task and this function calculates the corresponding explicit
 #' start and end times.
 #' 
 #' @param df A \code{data.frame} containing one task in each row.
