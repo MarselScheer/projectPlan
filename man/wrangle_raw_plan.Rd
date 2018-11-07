@@ -30,7 +30,7 @@ progress: number between 0 and 100, indicating the progress of the task
 deadline: NA or a date when the task must be completed}
 }
 \value{
-\code{data.table} with columns preprocessed for calculating time lines.
+\code{data.table} with columns preprocessed for calculating time lines with \link{calculate_time_lines}.
 }
 \description{
 This function is usually called first, for instance after a raw project

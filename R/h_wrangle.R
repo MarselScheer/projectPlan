@@ -25,7 +25,7 @@
 #'   
 #'   deadline: NA or a date when the task must be completed
 #'
-#' @return \code{data.table} with columns preprocessed for calculating time lines by \link{calculate_time_lines}.
+#' @return \code{data.table} with columns preprocessed for calculating time lines with \link{calculate_time_lines}.
 #' 
 #' @details The column start can contain the word 'TODAY' which is replaced by the current date. 
 #'   The column end can contain the word 'WAIT' which marks the task as a waiting task and internally it is assumed that the 
