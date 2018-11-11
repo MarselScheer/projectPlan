@@ -43,12 +43,10 @@ wrangle_raw_plan <- function(df) {
   df <- h.rd_fill_with_default(df, "project", "UNKNOWN")
   df <- h.rd_fill_with_default(df, "section", "UNKNOWN")
   df <- h.rd_fill_with_default(df, "id", "UNKNOWN")
-  df <- h.rd_fill_with_default(df, "depends_on", NA)
   df <- h.rd_fill_with_default(df, "end", "1")
   df <- h.rd_fill_with_default(df, "resource", "UNKNOWN")
   df <- h.rd_fill_with_default(df, "task", "UNKNOWN")
   df <- h.rd_fill_with_default(df, "progress", "0")
-  df <- h.rd_fill_with_default(df, "deadline", NA)
   df$progress <- as.numeric(df$progress)
 
   df <- h.rd_preprocess_start_column(df)
