@@ -14,13 +14,14 @@ gantt_by_sections <- function(dt, xlim, show_dependencies = FALSE, text_size = 3
   xmax <- max(dt$time_end, na.rm = TRUE)
 
   if (missing(xlim)) {
-    xlim <- c(xmin - 2, xmax)
+    xlim <- c(xmin - 2, xmax + 7)
   } else {
     xlim <- lubridate::ymd(xlim)
   }
 
   pf <- data.table::copy(dt)
   data.table::setorderv(pf, c("section", "time_start"))
+  
   with(NULL, pf[, y := .N:1])
   with(pf, pf[, ":="(mean_y = mean(y), min_y = min(y), max_y = max(y)), by = "section"])
 
@@ -154,6 +155,7 @@ h.mark_completed_tasks <- function(pf) {
 
 h.plot_deadlines <- function(gp, pf) {
   sub <- data.table::copy(pf)
+  
   with(NULL, sub[, due_text := paste("Ends", dist_end_to_deadline, "days\nbefore deadline", sep = " ")])
  
   idx <- sub$dist_end_to_deadline <= 0 
@@ -162,7 +164,8 @@ h.plot_deadlines <- function(gp, pf) {
       with(
         NULL,
         ggplot2::geom_label(
-          data = sub[idx], 
+          # two or more rows with the same id (for instance because resources were separated by rows) would generate mutiple deadline labels
+          data = sub[idx] %>% group_by(id) %>% slice(1),
           ggplot2::aes(y = y, x = time_start, label = due_text, hjust = 1), fill = "red3", color = "white"
         )
       )
@@ -173,7 +176,8 @@ h.plot_deadlines <- function(gp, pf) {
     gp <- gp + 
       with(NULL, 
            ggplot2::geom_label(
-             data = sub[idx], 
+             # two or more rows with the same id (for instance because resources were separated by rows) would generate mutiple deadline labels
+             data = sub[idx] %>% group_by(id) %>% slice(1), 
              ggplot2::aes(y = y, x = time_start, label = due_text, hjust = 1), fill = "green4", color = "white"
            )
       )
@@ -185,7 +189,7 @@ h.plot_deadlines <- function(gp, pf) {
     
     next_deadlines_idx <- which(min(sub$deadline[idx]) == sub$deadline[idx])
     next_deadline <- sub$deadline[idx][1]
-    next_deadline_tasks <- paste(sub$task[idx][next_deadlines_idx], collapse = "; ")
+    next_deadline_tasks <- paste(unique(sub$task[idx][next_deadlines_idx]), collapse = "; ")
     
     dist <- h.calc_dist_to_deadline(today, next_deadline)
     fill <- "red3"
