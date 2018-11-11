@@ -85,7 +85,41 @@ A few notes on the columns in the spreadsheet (more details later):
 raw_plan <- projectPlan::import_xlsx("projects.xlsx")
 ```
 ```{r echo=FALSE}
-raw_plan <- projectPlan::import_xlsx("projects.xlsx")
+raw_plan <- structure(list(
+  section = c(
+    "0_prep", "0_prep", "0_prep", "1_offer",
+    "1_offer", "1_offer", "2_installation", "2_installation"
+  ), id = c(
+    "meas",
+    "rough_plan", "friends", "appointment_plan", "plan", "buy", "appointment_install",
+    "installation"
+  ), task = c(
+    "measure kitchen", "make a rough plan",
+    "ask friends which companies they can recommend", "make appointment with company for planning",
+    "plan new kitchen", "buy new kitchen", "make appointment for installation",
+    "installation of the new kitchen"
+  ), depends_on = c(
+    NA, "meas",
+    NA, "friends", "appointment_plan", "plan", "plan", "appointment_install"
+  ), start = c("TODAY", NA, "rough_plan", NA, NA, NA, NA, NA),
+  end = c(1, 2, 2, 5, 1, 1, 1, 1), resource = c(
+    "I", "I", "I, friend1, friend2",
+    "I", "I, company", "I", "I", "I, company"
+  ), progress = c(
+    0,
+    0, 0, 0, 0, 0, 0, 0
+  ), deadline = structure(c(
+    NA, NA, NA,
+    NA, NA, NA, NA, 1551398400
+  ), class = c("POSIXct", "POSIXt"), tzone = "UTC"), project = c(
+    "kitchen", "kitchen", "kitchen",
+    "kitchen", "kitchen", "kitchen", "kitchen", "kitchen"
+  )
+), row.names = c(
+  NA,
+  -8L
+), class = c("data.table", "data.frame"))
+#raw_plan <- projectPlan::import_xlsx("projects.xlsx")
 ```
 
 
