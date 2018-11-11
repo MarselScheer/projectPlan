@@ -1,11 +1,11 @@
 #' Calculate explit start and end dates for the given project plan.
-#' 
+#'
 #' Usually this function is called after a raw plan with tasks was prepared by \link{wrangle_raw_plan}.
 #' It takes a set of tasks and their estimated duration as well as
 #' dependencies between those tasks. This implicitly defines start and end dates
 #' for each task and this function calculates the corresponding explicit
 #' start and end times.
-#' 
+#'
 #' @param df A \code{data.frame} containing one task in each row.
 #' @return A \code{data.table} object with explicit start and end times for every (grouped) task
 #'
@@ -31,18 +31,18 @@ h.calc_dist_to_deadline <- function(date_vec, deadline_vec) {
   raw_dist <- deadline_vec - date_vec
   overdue <- as.integer(raw_dist < 0)
   nmb_weekends <- floor(abs(raw_dist) / 7)
-  nmb_weekends <- nmb_weekends + 
-    abs(overdue - 1) * (wday(deadline_vec) < wday(date_vec)) + 
-    overdue  * (wday(deadline_vec) > wday(date_vec))
+  nmb_weekends <- nmb_weekends +
+    abs(overdue - 1) * (wday(deadline_vec) < wday(date_vec)) +
+    overdue * (wday(deadline_vec) > wday(date_vec))
   nmb_weekends <- -1 * overdue * nmb_weekends + abs(overdue - 1) * nmb_weekends
-  
+
   raw_dist - 2 * nmb_weekends
 }
 
 
 h.calc_end_to_deadline <- function(df) {
   idx <- !is.na(df$deadline)
-  
+
   if (any(idx)) {
     with(NULL, df[idx, dist_end_to_deadline := h.calc_dist_to_deadline(time_end, deadline)])
     h.log_rows(df, df$dist_end_to_deadline <= 0, "DEADLINE TODAY OR ALREADY UNMET", warn_columns = c("project", "section", "id", "time_start", "time_end", "deadline", "progress", "resource", "task"))

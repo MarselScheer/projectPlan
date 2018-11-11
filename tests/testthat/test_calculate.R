@@ -150,15 +150,14 @@ h.calc_end_to_deadline(d_out)
 
 
 test_that(
-  "Distance to deadline",{
-    expect_identical(h.calc_dist_to_deadline(
-      c(lubridate::ymd("2018-11-20"), lubridate::ymd("2018-10-19"), lubridate::ymd("2018-10-18"), lubridate::ymd("2018-10-22"), lubridate::ymd("2018-11-02")),
-      c(lubridate::ymd("2018-11-23"), lubridate::ymd("2018-10-22"), lubridate::ymd("2018-11-02"), lubridate::ymd("2018-10-19"), lubridate::ymd("2018-10-18"))
-    ), 
-    lubridate::as.difftime(c(3, 1, 11, -1, -11), units = "days"))
-    expect_identical(d_out, d_expected)  
+  "Distance to deadline", {
+    expect_identical(
+      h.calc_dist_to_deadline(
+        c(lubridate::ymd("2018-11-20"), lubridate::ymd("2018-10-19"), lubridate::ymd("2018-10-18"), lubridate::ymd("2018-10-22"), lubridate::ymd("2018-11-02")),
+        c(lubridate::ymd("2018-11-23"), lubridate::ymd("2018-10-22"), lubridate::ymd("2018-11-02"), lubridate::ymd("2018-10-19"), lubridate::ymd("2018-10-18"))
+      ),
+      lubridate::as.difftime(c(3, 1, 11, -1, -11), units = "days")
+    )
+    expect_identical(d_out, d_expected)
   }
 )
-
-
-

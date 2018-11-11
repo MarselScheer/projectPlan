@@ -4,33 +4,33 @@
 #' plan was imported from an speadsheet.
 #'
 #' @param df Essential columns that must be provided are
-#'   
+#'
 #'   task: description of the task, e.g. write architecture
-#'   
+#'
 #'   resource: the resource that is working on that task
-#'   
+#'
 #'   id: an identifier for the task. used to declare dependencies
-#'   
+#'
 #'   section: a section is usually assigned to a set of tasks
-#'   
+#'
 #'   project: a project is usually assigned to a set of sections
-#'   
+#'
 #'   depends_on: a comma separated list of id's that the current task depends on or NA
-#'   
+#'
 #'   start: a date when the task starts, NA or 'TODAY'. At the beginning of a project, this is usually NA and \link{calculate_time_lines} tries to calculate an explicit date
-#'   
+#'
 #'   end: a date when the task ends or an integer (representing number of days the task will take to be completed) or 'WAIT'
-#'   
+#'
 #'   progress: number between 0 and 100, indicating the progress of the task
-#'   
+#'
 #'   deadline: NA or a date when the task must be completed
 #'
 #' @return \code{data.table} with columns preprocessed for calculating time lines with \link{calculate_time_lines}.
-#' 
-#' @details The column start can contain the word 'TODAY' which is replaced by the current date. 
-#'   The column end can contain the word 'WAIT' which marks the task as a waiting task and internally it is assumed that the 
+#'
+#' @details The column start can contain the word 'TODAY' which is replaced by the current date.
+#'   The column end can contain the word 'WAIT' which marks the task as a waiting task and internally it is assumed that the
 #'   task ends today.
-#' 
+#'
 #' @seealso \link{import_xlsx}, \link{calculate_time_lines}
 #'
 #' @export
@@ -155,12 +155,13 @@ h.rd_make_id_unique_within_project <- function(df) {
   vadd_prefix_preserve_other_projects <- Vectorize(add_prefix_preserve_other_projects)
 
 
-  with(NULL, 
-       ret[, ":="(section = paste(project, section, sep = h.SEPERATOR),
-                  id = paste(project, id, sep = h.SEPERATOR),
-                  depends_on = vadd_prefix_preserve_other_projects(project, depends_on),
-                  start = vadd_prefix_preserve_other_projects(project, start),
-                  prior_ids = vadd_prefix_preserve_other_projects(project, prior_ids))]
+  with(
+    NULL,
+    ret[, ":="(section = paste(project, section, sep = h.SEPERATOR),
+    id = paste(project, id, sep = h.SEPERATOR),
+    depends_on = vadd_prefix_preserve_other_projects(project, depends_on),
+    start = vadd_prefix_preserve_other_projects(project, start),
+    prior_ids = vadd_prefix_preserve_other_projects(project, prior_ids))]
   )
 
   unique(ret)
@@ -187,9 +188,9 @@ h.rd_preprocess_deadline_column <- function(df) {
   df$deadline <- suppressWarnings(lubridate::ymd(df$deadline))
   idx <- !is.na(df$deadline)
   if (any(idx)) {
-    df$deadline[idx] <- lubridate::as_date(sapply(df$deadline[idx], h.turn_weekend_day_to_monday))  
+    df$deadline[idx] <- lubridate::as_date(sapply(df$deadline[idx], h.turn_weekend_day_to_monday))
   }
-  
+
   h.log_rows(
     df,
     with(df, xor(!is.na(deadline), !is.na(raw_deadline))),
@@ -268,7 +269,7 @@ h.rd_remove_unnessary_rows <- function(df) {
 h.rd_select_cols <- function(df) {
   cols <- c("project", "section", "id", "depends_on", "start", "end", "resource", "task", "progress", "deadline")
   futile.logger::flog.info(glue::glue("Select the necessary columns -{h.comma_list(cols)}-"))
-  
+
   missing_cols <- setdiff(cols, names(df))
   if (length(missing_cols) > 0) {
     futile.logger::flog.warn(glue::glue("Create missing column(s): -{h.comma_list(missing_cols)}-"))
