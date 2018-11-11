@@ -47,7 +47,7 @@ h.calc_end_to_deadline <- function(df) {
     with(NULL, df[idx, dist_end_to_deadline := h.calc_dist_to_deadline(time_end, deadline)])
     h.log_rows(df, df$dist_end_to_deadline <= 0, "DEADLINE TODAY OR ALREADY UNMET", warn_columns = c("project", "section", "id", "time_start", "time_end", "deadline", "progress", "resource", "task"))
   } else {
-    df[, dist_end_to_deadline := NA]
+    with(NULL, df[, dist_end_to_deadline := NA])
   }
 }
 
