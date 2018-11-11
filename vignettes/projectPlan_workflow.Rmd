@@ -1,0 +1,113 @@
+---
+title: "projectPlan Workflow"
+author: "Marsel Scheer"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{projectPlan Workflow}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+futile.logger::flog.threshold(futile.logger::WARN)
+
+library(projectPlan)
+suppressPackageStartupMessages(library(dplyr))
+library(DT)
+```
+
+# Introduction
+
+A VERY simplified scene is the following.
+
+* Peter: "How long will it take to realize 'this' and 'that'?" 
+* Bob: "With enough resources our department maybe need 3 months. But other departments will need to be involved!" 
+* Peter: "OK. Can you make a timeline for that?"
+* Bob: "Give me an hour. I create a rough version."
+
+Bob starts making a rough plan containg 10 major chunks, estimated durations and assign resources for those chunks and thinks about dependencies between the chunks.
+
+One hour later ...
+
+* Bob: "I am done, but I have no idea if customer service needs to prepare a training and how long this will take. Furthermore, production needs to make some changes, too."
+* Peter: "Lets discuss this in the next head meeting."
+
+The outcome of the head meeting is that the project should be realized, but there are some restriction: 
+
+* customer service must complete the training before launch
+* production cannot start before another project is not completed
+
+The next step is adding this information to the plan and start refining the 10 major chunks. Once the project starts you start keep track of the tasks, i.e. the actual start time, progress, end time. You add other things that might pop up or you dont want to forget during the project.
+
+During all phases this package could be helpful. For this vignette we try to work through a simple project hopefully every can grasp, i.e. replace an old kitchen in a household with a new one.
+
+# A Simple plan grows
+
+We start with a simple list
+
+* measure kitchen
+* make a rough plan
+* check if friends can recommend a company
+* make an appointment for the planning
+* plan the new kitchen with the company
+* buy/pay the new kitchen
+* make an appointment for installation
+* install new kitchen
+
+It is easy to see that there are already some dependencies. For instance, no one will install our new kitchen if did not paid for it! Depending on how rough the plan is, we might need to measure the kitchen first. So we open up LibreOffice Calc enter every point in one row and save it as xlsx-file. So the usual workflow is to edit the plan for instance using LibreOffice Calc, import the plan with R and let R do the caclualtions. 
+
+We create the following spreadsheet: 
+![spreadsheet](./LibreOfficeCalc.png)
+
+A few notes on the columns in the spreadsheet (more details later): 
+
+* section is used just to get a bit more structure into the tasks
+* id is used identify a task (to be used in depends_on-columns)
+* task is clear
+* depends_on defines dependencies, for instance we need to measure the kitchen before we make new (rough) plan for the kitchen
+* start can be 
+    - TODAY (this is substitute by the current date) or 
+    - an id (for instance, we can ask our friends at any time but we decided to do this after we made our rough plan. So this is not a dependency! We just planned to do it after a certain task)
+    - a date (yyyy-mm-dd) when the task actually was started
+* end is the estimated duration in days
+* resource can be a comma separated list
+* progress is a number between 0 and 100
+* deadline is a date
+
+*projectPlan::import_xlsx* will import ALL sheets and use the sheet name as the project name. The sheet name will be ignored if one has a column *project*.
+
+```{r, eval=FALSE}
+raw_plan <- projectPlan::import_xlsx("projects.xlsx")
+```
+```{r echo=FALSE}
+raw_plan <- projectPlan::import_xlsx("projects.xlsx")
+```
+
+
+Now we can easily calculate explicit timelines for the tasks
+
+```{r}
+plan <- raw_plan %>% 
+  projectPlan::wrangle_raw_plan()
+
+timelines <- plan %>% 
+  projectPlan::calculate_time_lines()
+
+timelines %>% 
+  dplyr::select(task, resource, time_start, time_end, dist_end_to_deadline) %>% 
+  dplyr::arrange(time_start) %>% 
+  DT::datatable()
+```
+
+We can also easily visualize the timelines. Note, the *separate_rows* calls to get one row for every resource in the timeline:
+
+```{r, fig.width=10}
+timelines %>% 
+  tidyr::separate_rows(resource) %>% 
+  projectPlan::gantt_by_sections(show_dependencies = TRUE)
+```
