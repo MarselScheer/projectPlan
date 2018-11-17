@@ -196,3 +196,44 @@ raw_plan %>%
   projectPlan::gantt_by_sections(show_dependencies = TRUE)
 ```
 
+Assume that we alread planned our new kitchen with Mrs. Gray and we already have an appointment for the
+installation of the new kitchen. *Life&Cook* can dispose the old kitchen for us but we would 
+have to pay for that. So we try to sell the kitchen but at least one week before the installation 
+*Life&Cook* need to know if they have to dispose the old kitchen for us. So we extend our plan. 
+
+In order to show a bit more of the package-functionality we create a new project for selling the old kitchen.
+The new project will be located in a separate spreadsheet with the name *sell_kitchen* and contains two sections:
+
+
+```{r, echo=FALSE}
+#sell_kitchen <- projectPlan::import_xlsx("projects.xlsx") %>% dplyr::filter(project == "sell_kitchen")
+sell_kitchen <- structure(list(
+  section = c("0_prep", "0_prep", "0_prep", "1_pickup"), id = c("pictures", "offer", "tours", "sell"), task = c(
+    "make pictures of kitchen",
+    "offer kitchen on various internet platforms", "placeholder for tours with potential buyers",
+    "get paid and pick up of the kitchen"
+  ), depends_on = c(
+    "kitchen::appointment_install",
+    "pictures", "offer", "tours"
+  ), start = c(
+    NA_character_, NA_character_,
+    NA_character_, NA_character_
+  ), end = c(NA, 1, 20, 1), resource = c(
+    "I",
+    "I", "I", NA
+  ), progress = c(0, 0, 0, NA), deadline = structure(c(
+    NA_real_,
+    NA_real_, NA_real_, NA_real_
+  ), class = c("POSIXct", "POSIXt"), tzone = "UTC"),
+  project = c(
+    "sell_kitchen", "sell_kitchen", "sell_kitchen",
+    "sell_kitchen"
+  ), comments = c(NA, NA, NA, NA)
+), class = "data.frame", row.names = c(
+  NA,
+  -4L
+))
+DT::datatable(sell_kitchen)
+```
+
+
