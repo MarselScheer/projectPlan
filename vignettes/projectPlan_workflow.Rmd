@@ -66,7 +66,10 @@ We start with a simple list
 * make an appointment for installation
 * install new kitchen
 
-It is easy to see that there are already some dependencies. For instance, no one will install our new kitchen if did not paid for it! Depending on how rough the plan is, we might need to measure the kitchen first. So we open up LibreOffice Calc enter every point in one row and save it as xlsx-file. So the usual workflow is to edit the plan for instance using LibreOffice Calc, import the plan with R and let R do the caclualtions. 
+It is easy to see that there are already some dependencies. For instance, no one will install our new kitchen if did not paid for it! 
+Depending on how rough the plan is, we might need to measure the kitchen first. So we open up LibreOffice Calc enter every point in one 
+row and save it as xlsx-file. So the usual workflow is to edit the plan for instance using LibreOffice Calc, import the plan with R and 
+let R do the caclualtions. 
 
 We create the following spreadsheet: 
 ![spreadsheet](./LibreOfficeCalc.png)
@@ -81,13 +84,14 @@ A few notes on the columns in the spreadsheet (more details later):
     - TODAY (this is substitute by the current date) or 
     - an id (for instance, we can ask our friends at any time but we decided to do this after we made our rough plan. So this is not a dependency! We just planned to do it after a certain task)
     - a date (yyyy-mm-dd) when the task actually was started
-* end is the estimated duration in days
+* end is the estimated duration in days or a date (yyyy-mm-dd) when the task was or will be finished. 
 * resource can be a comma separated list
 * progress is a number between 0 and 100
 * deadline is a date
 * other columns are ignored by *projectPlan*
 
-*projectPlan::import_xlsx* will import ALL sheets and use the sheet name as the project name. The sheet name will be ignored if one has a column *project*.
+*projectPlan::import_xlsx* will import ALL sheets and use the sheet name as the project name. The sheet name will be ignored if one has 
+a column *project*.
 
 ```{r, eval=FALSE}
 raw_plan <- projectPlan::import_xlsx("projects.xlsx")
