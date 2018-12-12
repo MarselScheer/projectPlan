@@ -1,0 +1,35 @@
+---
+title: "Special Terms"
+author: "Marsel Scheer"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Special Terms}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+futile.logger::flog.threshold(futile.logger::WARN)
+
+library(projectPlan)
+suppressPackageStartupMessages(library(dplyr))
+library(DT)
+```
+
+# Introduction
+
+Currently the two special terms *TODAY* and *WAIT* can be used in a project plan. The following two sections
+explain the special terms in detail.
+
+# TODAY
+
+This special term can only be used in the start-column. The function *projectPlan::wrangle_raw_plan*
+replaces the occurence of *TODAY* with the current date. This special term makes most sense
+for the first task during the initial planning of the project, in order to get an idea when 
+the project would be finished, if it is started today. Once the project has started, i.e. the first
+task is started, one would replace it with the actual start date of the project.
