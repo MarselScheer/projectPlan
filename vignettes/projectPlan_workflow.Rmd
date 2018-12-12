@@ -206,6 +206,8 @@ raw_plan %>%
   projectPlan::gantt_by_sections(show_dependencies = TRUE)
 ```
 
+## Incorporate another project plan
+
 Assume that we already planned our new kitchen with Mrs. Gray and we already have an appointment for the
 installation of the new kitchen. *Life&Cook* can dispose the old kitchen for us but we would 
 have to pay for that. So we try to sell the kitchen but at least one week before the installation 
