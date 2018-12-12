@@ -42,7 +42,7 @@ production needs to make some changes, too."
 The outcome of the head meeting is that the project should be realized, but there are some restriction: 
 
 * customer service must complete the training before launch
-* production cannot start before another project is not completed
+* the production team cannot start before they finished another project
 
 The next step is adding this information to the plan and start refining the 10 major chunks. Once the project starts you start keep 
 track of the tasks, i.e. the actual start time, progress, end time. You add other things that might pop up or you dont want to forget 
@@ -91,7 +91,8 @@ A few notes on the columns in the spreadsheet (more details later):
 * other columns are ignored by *projectPlan*
 
 *projectPlan::import_xlsx* will import ALL sheets and use the sheet name as the project name. The sheet name will be ignored if one has 
-a column *project*.
+a column *project*. Note, that the deadline for the last task (installation of the new kitchen) in the screenshot is fixed, 
+while in the following will be dynamically about 3 month in the future.
 
 ```{r, eval=FALSE}
 raw_plan <- projectPlan::import_xlsx("projects.xlsx")
@@ -121,7 +122,7 @@ raw_plan <- structure(list(
     0,
     0, 0, 0, 0, 0, 0, 0
   ), deadline = structure(c(NA, NA, NA, 
-    NA, NA, NA, NA, 17956), class = "Date"), project = c(
+    NA, NA, NA, NA, as.numeric(Sys.Date()) + 90), class = "Date"), project = c(
     "kitchen", "kitchen", "kitchen",
     "kitchen", "kitchen", "kitchen", "kitchen", "kitchen"
   )
@@ -176,7 +177,13 @@ raw_plan$deadline[4] = project_start + 24
 raw_plan$progress[4] = 50
 ```
 
-Assume that we started 3 week ago and we updated the spreadsheet over the time. We already completed 
+Let's look at an updated version of the project plan:
+
+```{r}
+DT::datatable(raw_plan)
+```
+
+This plan shows that we started 3 week ago and we updated the spreadsheet over the time. We already completed 
 the first three tasks. But making a rough plan took us 4 days instead of the planned 2 days.
 
 We already know that we want to contact the company *Life&Cook* but we were not able to call the 
@@ -189,13 +196,7 @@ reformulate the task for the appointment one could simply add a comments column 
 Currently such a comments column is ignored by *projectPlan*. However, we additionally set a 
 deadline for that task in order to call *Life&Cook* again if Mrs. Gray did not call back. 
 In this case we use the deadline-functionality more as a remind-functionality. The corresponding plan
-after importing the spreadsheet might look like this:
-
-```{r}
-DT::datatable(raw_plan)
-```
-
-Such a plan results in the following gantt-chart:
+after importing the spreadsheet might look like this. Such a plan results in the following gantt-chart:
 
 ```{r, fig.width=12, fig.height=7}
 raw_plan %>% 
@@ -205,7 +206,7 @@ raw_plan %>%
   projectPlan::gantt_by_sections(show_dependencies = TRUE)
 ```
 
-Assume that we alread planned our new kitchen with Mrs. Gray and we already have an appointment for the
+Assume that we already planned our new kitchen with Mrs. Gray and we already have an appointment for the
 installation of the new kitchen. *Life&Cook* can dispose the old kitchen for us but we would 
 have to pay for that. So we try to sell the kitchen but at least one week before the installation 
 *Life&Cook* need to know if they have to dispose the old kitchen for us. So we extend our plan. 
@@ -285,10 +286,10 @@ containing all projects. Hence, we can easily calculate timeline taking all proj
 and there possible dependencies into account: 
 
 ```{r, fig.width=15, fig.height=7}
-raw_plan %>% 
-  projectPlan::wrangle_raw_plan() %>% 
-  projectPlan::calculate_time_lines() %>% 
-  tidyr::separate_rows(resource) %>% 
+raw_plan %>%
+  projectPlan::wrangle_raw_plan() %>%
+  projectPlan::calculate_time_lines() %>%
+  tidyr::separate_rows(resource) %>%
   projectPlan::gantt_by_sections(show_dependencies = TRUE)
 ```
 
