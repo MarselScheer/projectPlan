@@ -1,0 +1,33 @@
+---
+title: "Project and Section column"
+author: "Marsel Scheer"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Project and Section}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+futile.logger::flog.threshold(futile.logger::WARN)
+
+library(projectPlan)
+suppressPackageStartupMessages(library(dplyr))
+library(DT)
+```
+
+# Introduction
+
+The columns *project* and *section* can be used to group task together also in the gantt-chart. Furthermore,
+the *project* column is necessary if one wants to specify dependencies between tasks of different projects.
+
+
+
+
+
+
