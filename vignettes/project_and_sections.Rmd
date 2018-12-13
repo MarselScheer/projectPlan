@@ -25,9 +25,38 @@ library(DT)
 
 The columns *project* and *section* can be used to group task together also in the gantt-chart. Furthermore,
 the *project* column is necessary if one wants to specify dependencies between tasks of different projects.
+For illustration purpose, we will create very small project plans, that focus on the corresponding aspect 
+under considerations.
 
+# project column
 
+Usually it is not necessary to create the *project* column explicitly. Importing the a project plan with
+*projectPlan::import_xlsx* will use the name of the sheet as the project name. However, if a *project*
+column exists the name of the sheet is ignored.
 
+Lets look at two very simple projects containing two tasks each:
+```{r, echo=FALSE}
+pA <- dplyr::tibble(
+  project = c("A"), 
+  section = "prep", task = paste0("task", 1:2), id = paste0("i", 1:2), start = "TODAY", depends_on = "", deadline = NA,
+  end = 1:2,
+  progress = 0, 
+  resource = "R1")
+pB <- pA
+pB$project = "B"
 
+pp <- dplyr::bind_rows(pA, pB)
+
+DT::datatable(pp)
+```
+
+Creating a gantt-chart one sees that every plan gets its own blue frame:
+```{r, fig.height=5, fig.width=10}
+pp %>% 
+  projectPlan::wrangle_raw_plan() %>% 
+  projectPlan::calculate_time_lines() %>% 
+  projectPlan::gantt_by_sections()
+
+```
 
 
