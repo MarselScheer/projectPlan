@@ -28,7 +28,7 @@ the *project* column is necessary if one wants to specify dependencies between t
 For illustration purpose, we will create very small project plans, that focus on the corresponding aspect 
 under considerations.
 
-# project column
+# *project* column
 
 Usually it is not necessary to create the *project* column explicitly. Importing the a project plan with
 *projectPlan::import_xlsx* will use the name of the sheet as the project name. However, if a *project*
@@ -74,3 +74,29 @@ pp %>%
   projectPlan::calculate_time_lines() %>% 
   projectPlan::gantt_by_sections(show_dependencies = TRUE)
 ```
+This example also shows that the same *id*'s can be used in different projects.
+
+# *section* column
+
+Within every blue frame, i.e. a project, of a gantt-chart further dotted frames/lines separate the different sections within that project,
+where the section are sorted alphabetically.
+
+```{r, echo=FALSE}
+pA <- dplyr::tibble(
+  project = c("A"), 
+  section = c("0_prep", "1_design"), task = paste0("task", 1:2), id = paste0("i", 1:2), start = "TODAY", depends_on = "", deadline = NA,
+  end = 1:2,
+  progress = 0, 
+  resource = "R1")
+
+DT::datatable(pA)
+```
+
+```{r, fig.height=5, fig.width=10}
+pA %>% 
+  projectPlan::wrangle_raw_plan() %>% 
+  projectPlan::calculate_time_lines() %>% 
+  projectPlan::gantt_by_sections()
+```
+
+
