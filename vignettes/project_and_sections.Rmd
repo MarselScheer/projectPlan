@@ -56,7 +56,19 @@ pp %>%
   projectPlan::wrangle_raw_plan() %>% 
   projectPlan::calculate_time_lines() %>% 
   projectPlan::gantt_by_sections()
-
 ```
 
+Usually, dependencies between tasks can be specified by using the entry in the *id* column. However, to reference
+an id from another project you have to use *::*, similar to the notation that is necessary if you want to explicitly
+state the namespace in *R*. In order to specify that id *i1* of project *A* depends on *i1* of project *B* one enters
+*B::i1*.
 
+```{r, echo=FALSE, fig.height=5, fig.width=10}
+pp$depends_on[1] = "B::i1"
+pp$depends_on[2] = "i1"
+DT::datatable(pp)
+pp %>% 
+  projectPlan::wrangle_raw_plan() %>% 
+  projectPlan::calculate_time_lines() %>% 
+  projectPlan::gantt_by_sections()
+```
