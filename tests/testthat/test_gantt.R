@@ -1,4 +1,4 @@
-testthat::context("Wrangle")
+testthat::context("gantt")
 # library(projectPlan)
 
 futile.logger::flog.threshold(futile.logger::FATAL, name = futile.logger::flog.namespace())
