@@ -70,7 +70,9 @@ pA %>%
 
 # Logic dependencies
 
-Logic dependency, e.g. first walls then roof, can be specified using the *depends_on* column.
+Logic dependency, e.g. first walls then roof, can be specified using the *depends_on* column. 
+Note that *task2* has no *start*-entry this is important because if the *start*-entry is set,
+then this is considered as the start date of that task, irrespective of its dependency.
 
 ```{r, echo=FALSE}
 pA$id <- "i1"
@@ -81,8 +83,30 @@ pA$start[2] <- ""
 DT::datatable(pA)
 ```
 
-In order to visually this logic dependency one has to set the parameter *show_dependencies* to 
+In order to visually this logic dependency (arrow from one task to another) one has to set the parameter *show_dependencies* to 
 *TRUE*:
+
+```{r, fig.height=5, fig.width=10}
+pA %>% 
+  projectPlan::wrangle_raw_plan() %>% 
+  projectPlan::calculate_time_lines() %>% 
+  projectPlan::gantt_by_sections(show_dependencies = TRUE)
+```
+
+
+
+# Non-Logic dependencies
+
+If a task should start after some other tasks one can use the *start*-column and simply
+enter the *id* after which the current task should be positioned:
+
+```{r, echo=FALSE}
+pA$depends_on[2] <- ""
+pA$start[2] <- "i1"
+DT::datatable(pA)
+```
+
+In this case the gantt chart do not show an an arrow even if the parameter *show_dependencies* is set to *TRUE*:
 
 ```{r, fig.height=5, fig.width=10}
 pA %>% 
