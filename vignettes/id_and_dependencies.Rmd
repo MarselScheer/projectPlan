@@ -68,3 +68,27 @@ pA %>%
   projectPlan::gantt_by_sections()
 ```
 
+# Logic dependencies
+
+Logic dependency, e.g. first walls then roof, can be specified using the *depends_on* column.
+
+```{r, echo=FALSE}
+pA$id <- "i1"
+pA$section <- "prep"
+pA$id <- paste0("i", 1:2)
+pA$depends_on[2] <- "i1"
+pA$start[2] <- ""
+DT::datatable(pA)
+```
+
+In order to visually this logic dependency one has to set the parameter *show_dependencies* to 
+*TRUE*:
+
+```{r, fig.height=5, fig.width=10}
+pA %>% 
+  projectPlan::wrangle_raw_plan() %>% 
+  projectPlan::calculate_time_lines() %>% 
+  projectPlan::gantt_by_sections(show_dependencies = TRUE)
+```
+
+
