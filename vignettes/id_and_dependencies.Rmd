@@ -116,3 +116,40 @@ pA %>%
 ```
 
 
+# Dependencies between different projects
+
+As stated at the beginning, internally, the *id* is combined with the project name. For instance, *id = i1* in
+project *A* is internally stored as *A::i1*. This is also the reason why *id = i1* can be used in project *A* and
+*B* at the same time without any conflicts. In order to define that a task depends on another task of a different 
+project one has to specify the 'whole' id, that is *projectname::id*.
+
+```{r}
+pA <- dplyr::tibble(
+  project = c("A"), 
+  section = "prep", task = paste0("task", 1:2), id = paste0("i", 1:2), start = "TODAY", depends_on = "", deadline = NA,
+  end = 1:2,
+  progress = 0, 
+  resource = "R1")
+
+pB <- pA
+pB$project = "B"
+
+pp <- dplyr::bind_rows(pA, pB)
+
+pp$depends_on[1] = "B::i1"
+pp$depends_on[2] = "i1"
+pp$start[1:2] = NA
+DT::datatable(pp)
+```
+
+Again, note that start is not specified for tasks that depend on other tasks, otherwise the entry in start would
+override the start date that is implicitly defined by the dependencies.
+
+
+```{r, echo=FALSE, fig.height=5, fig.width=10}
+pp %>% 
+  projectPlan::wrangle_raw_plan() %>% 
+  projectPlan::calculate_time_lines() %>% 
+  projectPlan::gantt_by_sections(show_dependencies = TRUE)
+```
+
