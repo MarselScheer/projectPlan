@@ -1,0 +1,70 @@
+---
+title: "ID and dependencies"
+author: "Marsel Scheer"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{ID and dependencies}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+futile.logger::flog.threshold(futile.logger::WARN)
+
+library(projectPlan)
+suppressPackageStartupMessages(library(dplyr))
+library(DT)
+```
+
+# Introduction
+
+The columns *id* is used to identify tasks in the work plan. This allows to specify dependencies between
+tasks. There can be logic dependencies where a task cannot start if another has not been finished, for instance
+first comes the fundament, then the walls and then the roof. Other tasks may need to be executed
+sequentially simply because because there are not enough resources.
+For illustration purpose, we will create very small project plans, that focus on the corresponding aspect 
+under considerations.
+
+# *id* not unique 
+
+```{r, echo=FALSE}
+pA <- dplyr::tibble(
+  project = c("A"), 
+  section = c("0_prep", "1_design"), task = paste0("task", 1:2), id = paste0("i", 1:2), start = "TODAY", depends_on = "", deadline = NA,
+  end = 1:2,
+  progress = 0, 
+  resource = "R1")
+```
+
+The intrinsic property of an *id* is that it is unique. Internally, the *id*-entry is combined with the project name.
+Therefore if the same *id* is used in different projects it is unique.
+However, especially at the beginning of a project when the plan is growing it could be handy to have one id for more than one tasks. 
+Using the same *id* within the same *section* is possible. If this happens, then the corresponding rows are combined
+together into one entry, i.e.:
+
+* all entries in columns *depends_on, resource, task* are concatenated
+* mean of the progress column is calculated
+* minimum of the deadlines is calculated
+* sum of the estimated days necessary is calculated
+* if start and end date are given, then minimum of start and maximum of the end date are used for the combined entry
+* if any task waiting, then the combined entry also gets a waiting status
+
+Note that using the same *id* in different *sections* results in a warning
+
+```{r, echo=FALSE}
+pA$id <- "i1"
+DT::datatable(pA)
+```
+
+```{r, fig.height=5, fig.width=10}
+pA %>% 
+  projectPlan::wrangle_raw_plan() %>% 
+  projectPlan::calculate_time_lines() %>% 
+  projectPlan::gantt_by_sections()
+```
+
