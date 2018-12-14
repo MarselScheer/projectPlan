@@ -1,10 +1,10 @@
 ---
-title: "Special Terms"
+title: "Start and end dates"
 author: "Marsel Scheer"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Special Terms}
+  %\VignetteIndexEntry{Start and end dates}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -23,23 +23,24 @@ library(DT)
 
 # Introduction
 
-Currently the two special terms *TODAY* and *WAIT* can be used in a project plan. The following two sections
-explain the special terms in detail. For illustration purpose, we will create very small project plans, 
- that focus on the corresponding aspect under considerations.
+The duration of a task is defined by the two columns *start* and *end*. The duration of the task
+can be implicitly (due to dependencies and estimated durations of a task) or explicitly defined.
 
-# TODAY
+# Explicit start and end dates
 
-This special term can only be used in the start-column. The function *projectPlan::wrangle_raw_plan*
-replaces the occurence of *TODAY* with the current date. This special term makes most sense
-for the first task during the initial planning of the project, in order to get an idea when 
-the project would be finished, if it is started today. Once the project has started, i.e. the first
-task is started, one would replace it with the actual start date of the project.
+This is the easiest case. Just provide the date in the format *yyyy-mm-dd* for start and end date.
+It is recommended to set the start date to the actual date when the task was started. 
+This way it is directly documented when the task was started. It is also recommend to set the
+actual end date once the task was completed.
 
-# WAIT
-
-This special term can only be used in the end-column. With respect to its behaviour it is similar to
-*TODAY*, because it is assumend that the corresponding task will end today, but the intend is quite different.
-
-
-
+```{r}
+pA <- dplyr::tibble(
+  project = c("A"), 
+  section = "prep", task = paste0("task", 1:2), id = paste0("i", 1:2), 
+  start = c("2018-12-10", "2018-12-11"),
+  end   = c("2018-12-15", "2018-12-12"),
+  progress = 0, 
+  resource = "R1")
+DT::datatable(pA)
+```
 
