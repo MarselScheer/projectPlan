@@ -99,4 +99,27 @@ pA %>%
   projectPlan::gantt_by_sections()
 ```
 
+Especially at the beginning of a project when the plan is growing it could be handy to have one id for more than one task. 
+Using the same *id* within the same *section* is possible. If this happens, then the corresponding rows get are combined
+together into one entry, i.e.:
 
+* all entries in columns *depends_on, resource, task* are concatenated
+* mean of the progress column is calculated
+* minimum of the deadlines is calculated
+* sum of the estimated days necessary is calculated
+* if start and end date are given, then minimum of start and maximum of the end date are used for the combined entry
+* if any task waiting, then the combined entry also gets a waiting status
+
+Note that using the same *id* in different *sections* results in a warning
+
+```{r, echo=FALSE}
+pA$id <- "i1"
+DT::datatable(pA)
+```
+
+```{r, fig.height=5, fig.width=10}
+pA %>% 
+  projectPlan::wrangle_raw_plan() %>% 
+  projectPlan::calculate_time_lines() %>% 
+  projectPlan::gantt_by_sections()
+```
