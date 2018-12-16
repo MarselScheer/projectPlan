@@ -43,7 +43,8 @@ wrangle_raw_plan <- function(df) {
   df <- h.rd_fill_with_default(df, "project", "UNKNOWN")
   df <- h.rd_fill_with_default(df, "section", "UNKNOWN")
   df <- h.rd_fill_with_default(df, "id", "UNKNOWN")
-  df <- h.rd_fill_with_default(df, "end", "1")
+  df <- h.rd_fill_with_default(df, "est_duration", "1")
+  df <- h.rd_fill_with_default(df, "waiting", "FALSE")
   df <- h.rd_fill_with_default(df, "resource", "UNKNOWN")
   df <- h.rd_fill_with_default(df, "task", "UNKNOWN")
   df <- h.rd_fill_with_default(df, "progress", "0")
@@ -51,6 +52,8 @@ wrangle_raw_plan <- function(df) {
 
   df <- h.rd_preprocess_start_column(df)
   df <- h.rd_preprocess_end_column(df)
+  df <- h.rd_preprocess_est_duration_column(df)
+  df <- h.rd_preprocess_waiting_column(df)
   df <- h.rd_preprocess_deadline_column(df)
   h.rd_check_project_section_id_unique(df)
 
@@ -200,21 +203,20 @@ h.rd_preprocess_deadline_column <- function(df) {
   df
 }
 
-h.rd_preprocess_end_column <- function(df) {
-  df$waiting <- df$end == "WAIT"
-  df$est_days <- suppressWarnings(as.numeric(df$end))
-  df$fixed_end_date <- suppressWarnings(lubridate::ymd(df$end))
+h.rd_preprocess_waiting_column <- function(df) {
+  df$waiting <- as.logical(df$waiting)
+  df
+}
 
-  h.log_rows(
-    df,
-    with(df, (!waiting & is.na(est_days) & is.na(fixed_end_date))),
-    warn_msg = glue::glue("Entries in column 'end' must be 'WAIT', an integer, or a date using a ymd-format"),
-    error = TRUE
-  )
-  # if (any(idx)) {
-  #   futile.logger::flog.warn(glue::glue("Entries in column 'end' must be 'WAIT', an integer, or a date using a ymd-format"))
-  #   h.log_rows(df, idx)
-  # }
+h.rd_preprocess_est_duration_column <- function(df) {
+  df$est_days <- as.numeric(df$est_duration)
+  df$est_duration <- NULL
+  df
+}
+
+
+h.rd_preprocess_end_column <- function(df) {
+  df$fixed_end_date <- suppressWarnings(lubridate::ymd(df$end))
   df$end <- NULL
   df
 }
@@ -267,7 +269,7 @@ h.rd_remove_unnessary_rows <- function(df) {
 }
 
 h.rd_select_cols <- function(df) {
-  cols <- c("project", "section", "id", "depends_on", "start", "end", "resource", "task", "progress", "deadline")
+  cols <- c("project", "section", "id", "depends_on", "start", "end", "est_duration", "waiting", "resource", "task", "progress", "deadline")
   futile.logger::flog.info(glue::glue("Select the necessary columns -{h.comma_list(cols)}-"))
 
   missing_cols <- setdiff(cols, names(df))

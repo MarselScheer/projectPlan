@@ -19,16 +19,13 @@ test_that(
 )
 
 
-d_in <- data.table::data.table(end = c("2018-09-20", "WAIT", "3"))
+d_in <- data.table::data.table(end = c("2018-09-20", "WAIT"))
 d_expected <- data.table::data.table(
-  waiting = c(F, T, F),
-  est_days = c(NA, NA, 3),
-  fixed_end_date = c(lubridate::ymd("2018-09-20"), NA, NA)
+  fixed_end_date = c(lubridate::ymd("2018-09-20"), NA)
 )
 test_that(
-  "WAIT, integer, ymd ín -end- are processed correctly", {
+  "ymd ín -end- is processed correctly", {
     expect_identical(h.rd_preprocess_end_column(d_in), d_expected)
-    expect_error(h.rd_preprocess_end_column(data.table::data.table(end = "a")), regexp = "must be 'WAIT'.*integer.*ymd")
   }
 )
 
@@ -90,6 +87,7 @@ d_in <- data.frame(
   depends_on = NA_character_,
   start = NA_character_,
   end = NA_character_,
+  waiting = NA_character_,
   resource = NA_character_,
   task = NA_character_,
   progress = NA,
@@ -127,6 +125,8 @@ d_in <- data.frame(
   depends_on = c("b, B::b", "b, b"),
   start = c("2018-09-10", "2018-09-11"),
   end = c("2018-09-20", "2018-10-25"),
+  est_duration = c("1", "2"),
+  waiting = c("T", "FALSE"),
   resource = c("r1, r2", "r2"),
   task = c("t1", "t2"),
   progress = c(0, 50),
@@ -146,8 +146,8 @@ d_expected <- data.table::data.table(
   deadline = lubridate::as_date(c("2018-09-24")),
   fixed_start_date = lubridate::as_date(c("2018-09-10")),
   fixed_end_date = lubridate::as_date(c("2018-10-25")),
-  est_days = 0,
-  waiting = FALSE,
+  est_days = 3,
+  waiting = TRUE,
   nmb_combined_entries = 2L,
   stringsAsFactors = FALSE
 )
