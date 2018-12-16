@@ -20,23 +20,23 @@ test_that(
 test_that(
   "Calculate end times", {
     expect_identical(
-      h.calculate_end_time(lubridate::ymd("2018-10-04"), FALSE, 2, lubridate::ymd("2018-10-06")),
+      h.calculate_end_time(lubridate::ymd("2018-10-04"), 2, lubridate::ymd("2018-10-06")),
       lubridate::ymd("2018-10-08")
     )
     expect_identical(
-      h.calculate_end_time(lubridate::ymd("2018-10-04"), FALSE, 2, NA),
+      h.calculate_end_time(lubridate::ymd("2018-10-04"), 2, NA),
       lubridate::ymd("2018-10-08")
     )
     expect_identical(
-      h.calculate_end_time(lubridate::ymd("2018-10-05"), FALSE, 5, NA),
+      h.calculate_end_time(lubridate::ymd("2018-10-05"), 5, NA),
       lubridate::ymd("2018-10-12")
     )
     expect_identical(
-      h.calculate_end_time(lubridate::ymd("2018-10-05"), FALSE, 6, NA),
+      h.calculate_end_time(lubridate::ymd("2018-10-05"), 6, NA),
       lubridate::ymd("2018-10-15")
     )
     expect_identical(
-      h.calculate_end_time(lubridate::ymd("2018-10-05"), FALSE, 5 + 5 + 5 + 6, NA),
+      h.calculate_end_time(lubridate::ymd("2018-10-05"), 5 + 5 + 5 + 6, NA),
       lubridate::ymd("2018-11-05")
     )
   }
@@ -48,7 +48,8 @@ dt_in <- data.table::data.table(
   fixed_start_date = lubridate::ymd("2018-10-05"),
   fixed_end_date = c(lubridate::ymd("2018-10-07"), lubridate::as_date(NA), lubridate::as_date(NA)),
   est_days = c(21L, 6, 21L),
-  waiting = c(F, T, F)
+  waiting = c(F, T, F),
+  deadline = c(lubridate::as_date(NA), lubridate::as_date(NA), lubridate::as_date(NA))
 )
 dt_out <- data.table::copy(dt_in)
 

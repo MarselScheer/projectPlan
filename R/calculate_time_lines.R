@@ -91,21 +91,30 @@ h.exclude_weekends <- function(start, end) {
   end
 }
 
-h.calculate_end_time <- function(earliest_start_time, is_waiting, est_days, fixed_end_date) {
+h.calculate_end_time <- function(earliest_start_time, est_days, fixed_end_date) {
   if (!is.na(as.character(fixed_end_date))) {
     end <- fixed_end_date
     end <- h.turn_weekend_day_to_monday(end)
     return(end)
   }
 
-  if (is_waiting) {
-    end <- lubridate::as_date(lubridate::now())
-    end <- h.turn_weekend_day_to_monday(end)
-    return(end)
-  }
-
   end <- earliest_start_time + est_days
   h.exclude_weekends(earliest_start_time, end)
+}
+
+h.adjust_dates_for_waiting_tasks <- function(dt_ref, row) {
+  est_end <- dt_ref$time_end[row]
+  
+  if (dt_ref$waiting[row]) {
+    
+    if (is.na(dt_ref$deadline[row])) {
+      with(NULL, dt_ref[row, deadline := est_end])
+    }
+    
+    updated_end <- max(est_end, lubridate::as_date(lubridate::now()))
+    updated_end <- h.turn_weekend_day_to_monday(updated_end)
+    with(NULL, dt_ref[row, time_end := updated_end])
+  }
 }
 
 
@@ -142,10 +151,11 @@ h.calculate_time_lines_at <- function(dt_ref, row) {
   }
   futile.logger::flog.debug(glue::glue("Earliest start time found for row -{row}-: {earliest_start_time}"))
 
-  end <- h.calculate_end_time(earliest_start_time, dt_ref$waiting[row], dt_ref$est_days[row], dt_ref$fixed_end_date[row])
+  end <- h.calculate_end_time(earliest_start_time, dt_ref$est_days[row], dt_ref$fixed_end_date[row])
 
   with(NULL, dt_ref[row, time_start := earliest_start_time])
   with(NULL, dt_ref[row, time_end := end])
+  h.adjust_dates_for_waiting_tasks(dt_ref, row)  
   futile.logger::flog.debug(glue::glue("Timelines for the current row -{row}-"), dt_ref[row], capture = TRUE)
 
 
