@@ -36,7 +36,7 @@ under considerations.
 pA <- dplyr::tibble(
   project = c("A"), 
   section = c("0_prep", "1_design"), task = paste0("task", 1:2), id = paste0("i", 1:2), start = "TODAY", depends_on = "", deadline = NA,
-  end = 1:2,
+  est_duration = 1:2,
   progress = 0, 
   resource = "R1")
 ```
@@ -127,7 +127,7 @@ project one has to specify the 'whole' id, that is *projectname::id*.
 pA <- dplyr::tibble(
   project = c("A"), 
   section = "prep", task = paste0("task", 1:2), id = paste0("i", 1:2), start = "TODAY", depends_on = "", deadline = NA,
-  end = 1:2,
+  est_duration = 1:2,
   progress = 0, 
   resource = "R1")
 
