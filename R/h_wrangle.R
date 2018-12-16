@@ -44,7 +44,7 @@ wrangle_raw_plan <- function(df) {
   df <- h.rd_fill_with_default(df, "section", "UNKNOWN")
   df <- h.rd_fill_with_default(df, "id", "UNKNOWN")
   df <- h.rd_fill_with_default(df, "est_duration", "1")
-  df <- h.rd_fill_with_default(df, "waiting", "FALSE")
+  df <- h.rd_fill_with_default(df, "status", "")
   df <- h.rd_fill_with_default(df, "resource", "UNKNOWN")
   df <- h.rd_fill_with_default(df, "task", "UNKNOWN")
   df <- h.rd_fill_with_default(df, "progress", "0")
@@ -53,7 +53,7 @@ wrangle_raw_plan <- function(df) {
   df <- h.rd_preprocess_start_column(df)
   df <- h.rd_preprocess_end_column(df)
   df <- h.rd_preprocess_est_duration_column(df)
-  df <- h.rd_preprocess_waiting_column(df)
+  df <- h.rd_preprocess_status_column(df)
   df <- h.rd_preprocess_deadline_column(df)
   h.rd_check_project_section_id_unique(df)
 
@@ -127,6 +127,7 @@ h.rd_make_id_unique_within_project <- function(df) {
     fixed_end_date = date_max(fixed_end_date),
     est_days = sum(est_days, na.rm = TRUE),
     waiting = any(waiting),
+    aborted = any(aborted),
     nmb_combined_entries = .N
   ),
   by = .(project, id)
@@ -203,8 +204,11 @@ h.rd_preprocess_deadline_column <- function(df) {
   df
 }
 
-h.rd_preprocess_waiting_column <- function(df) {
-  df$waiting <- as.logical(df$waiting)
+h.rd_preprocess_status_column <- function(df) {
+  df$status <- toupper(df$status)
+  df$waiting <- df$status == "AWAIT"
+  df$aborted <- df$status == "ABORTED"
+  df$status <- NULL
   df
 }
 
@@ -269,7 +273,7 @@ h.rd_remove_unnessary_rows <- function(df) {
 }
 
 h.rd_select_cols <- function(df) {
-  cols <- c("project", "section", "id", "depends_on", "start", "end", "est_duration", "waiting", "resource", "task", "progress", "deadline")
+  cols <- c("project", "section", "id", "depends_on", "start", "end", "est_duration", "status", "resource", "task", "progress", "deadline")
   futile.logger::flog.info(glue::glue("Select the necessary columns -{h.comma_list(cols)}-"))
 
   missing_cols <- setdiff(cols, names(df))

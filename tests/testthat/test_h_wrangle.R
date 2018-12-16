@@ -53,7 +53,8 @@ d_in <- data.table::data.table(
   fixed_start_date = lubridate::ymd(c("2018-09-10", "2018-09-11")),
   fixed_end_date = lubridate::ymd(c("2018-09-15", "2018-09-16")),
   est_days = c(2, 3),
-  waiting = c(T, F)
+  waiting = c(F, T),
+  aborted = c(T, F)
 )
 
 d_expected <- data.table::data.table(
@@ -70,6 +71,7 @@ d_expected <- data.table::data.table(
   fixed_end_date = lubridate::ymd(c("2018-09-16")),
   est_days = c(5),
   waiting = c(T),
+  aborted = c(T),
   nmb_combined_entries = 2L
 )
 
@@ -87,7 +89,8 @@ d_in <- data.frame(
   depends_on = NA_character_,
   start = NA_character_,
   end = NA_character_,
-  waiting = NA_character_,
+  est_duration = NA_character_,
+  status = NA_character_,
   resource = NA_character_,
   task = NA_character_,
   progress = NA,
@@ -109,6 +112,7 @@ d_expected <- data.table::data.table(
   fixed_end_date = lubridate::as_date(NA),
   est_days = 1,
   waiting = FALSE,
+  aborted = FALSE,
   nmb_combined_entries = 1L
 )
 d_out <- wrangle_raw_plan(d_in)
@@ -126,7 +130,7 @@ d_in <- data.frame(
   start = c("2018-09-10", "2018-09-11"),
   end = c("2018-09-20", "2018-10-25"),
   est_duration = c("1", "2"),
-  waiting = c("T", "FALSE"),
+  status = c("aborted", "await"),
   resource = c("r1, r2", "r2"),
   task = c("t1", "t2"),
   progress = c(0, 50),
@@ -148,6 +152,7 @@ d_expected <- data.table::data.table(
   fixed_end_date = lubridate::as_date(c("2018-10-25")),
   est_days = 3,
   waiting = TRUE,
+  aborted = TRUE,
   nmb_combined_entries = 2L,
   stringsAsFactors = FALSE
 )
