@@ -17,6 +17,28 @@ test_that(
   }
 )
 
+now <- h.turn_weekend_day_to_monday(lubridate::as_date(lubridate::now()))
+dt_in <- data.table::data.table(
+  time_end = c(now - 1, now + 5, now - 1),
+  waiting = c(F, T, T),
+  deadline = c(lubridate::as_date(NA), now - 7, now)
+)
+dt_out <- data.table::data.table(
+  time_end = c(now - 1, now + 5, now),
+  waiting = c(F, T, T),
+  deadline = c(lubridate::as_date(NA), now - 7, now)
+)
+h.adjust_dates_for_waiting_tasks(dt_in, 1)
+h.adjust_dates_for_waiting_tasks(dt_in, 2)
+h.adjust_dates_for_waiting_tasks(dt_in, 3)
+test_that(
+  "End time modification according to waiting status", {
+    expect_identical(dt_in, dt_out)
+  }
+)
+
+
+
 test_that(
   "Calculate end times", {
     expect_identical(
