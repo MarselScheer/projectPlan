@@ -102,18 +102,10 @@ h.calculate_end_time <- function(earliest_start_time, est_days, fixed_end_date) 
   h.exclude_weekends(earliest_start_time, end)
 }
 
-h.adjust_dates_for_waiting_tasks <- function(dt_ref, row) {
-  est_end <- dt_ref$time_end[row]
-  
-  if (dt_ref$waiting[row]) {
-    
-    if (is.na(dt_ref$deadline[row])) {
-      with(NULL, dt_ref[row, deadline := est_end])
-    }
-    
-    updated_end <- max(est_end, lubridate::as_date(lubridate::now()))
-    updated_end <- h.turn_weekend_day_to_monday(updated_end)
-    with(NULL, dt_ref[row, time_end := updated_end])
+h.set_deadline_for_waiting_tasks <- function(dt_ref, row) {
+  if (dt_ref$waiting[row] & is.na(dt_ref$deadline[row])) {
+    time_end <- dt_ref$time_end[row]
+    with(NULL, dt_ref[row, deadline := time_end])
   }
 }
 
@@ -155,7 +147,7 @@ h.calculate_time_lines_at <- function(dt_ref, row) {
 
   with(NULL, dt_ref[row, time_start := earliest_start_time])
   with(NULL, dt_ref[row, time_end := end])
-  h.adjust_dates_for_waiting_tasks(dt_ref, row)  
+  h.set_deadline_for_waiting_tasks(dt_ref, row)  
   futile.logger::flog.debug(glue::glue("Timelines for the current row -{row}-"), dt_ref[row], capture = TRUE)
 
 

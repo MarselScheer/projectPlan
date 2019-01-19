@@ -21,16 +21,16 @@ now <- h.turn_weekend_day_to_monday(lubridate::as_date(lubridate::now()))
 dt_in <- data.table::data.table(
   time_end = c(now - 1, now + 5, now - 1),
   waiting = c(F, T, T),
-  deadline = c(lubridate::as_date(NA), now - 7, now)
+  deadline = c(lubridate::as_date(NA), now - 7, lubridate::as_date(NA))
 )
 dt_out <- data.table::data.table(
-  time_end = c(now - 1, now + 5, now),
+  time_end = c(now - 1, now + 5, now - 1),
   waiting = c(F, T, T),
-  deadline = c(lubridate::as_date(NA), now - 7, now)
+  deadline = c(lubridate::as_date(NA), now - 7, now - 1)
 )
-h.adjust_dates_for_waiting_tasks(dt_in, 1)
-h.adjust_dates_for_waiting_tasks(dt_in, 2)
-h.adjust_dates_for_waiting_tasks(dt_in, 3)
+h.set_deadline_for_waiting_tasks(dt_in, 1)
+h.set_deadline_for_waiting_tasks(dt_in, 2)
+h.set_deadline_for_waiting_tasks(dt_in, 3)
 test_that(
   "End time modification according to waiting status", {
     expect_identical(dt_in, dt_out)
@@ -82,7 +82,7 @@ test_that(
     # expect_identical(dt_out$time_end, c(lubridate::ymd("2018-11-05"), NA))
     # h.calculate_time_lines_at(dt_out, 2)
     expect_identical(dt_out$time_start, c(lubridate::ymd("2018-10-05"), lubridate::ymd("2018-10-05"), lubridate::ymd("2018-10-05")))
-    expect_identical(dt_out$time_end, c(lubridate::ymd("2018-10-08"), h.turn_weekend_day_to_monday(lubridate::as_date(lubridate::now())), lubridate::ymd("2018-11-05")))
+    expect_identical(dt_out$time_end, c(lubridate::ymd("2018-10-08"), lubridate::ymd("2018-10-15"), lubridate::ymd("2018-11-05")))
   }
 )
 
