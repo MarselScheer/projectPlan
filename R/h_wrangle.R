@@ -168,8 +168,35 @@ h.rd_make_id_unique_within_project <- function(df) {
     prior_ids = vadd_prefix_preserve_other_projects(project, prior_ids))]
   )
 
-  unique(ret)
+  h.unique(ret)
 }
+
+h.unique <- function(dt) {
+  # since data.table 1.12.0 unique does not work anymore if a column is a list 
+  v_to_comma_list <- Vectorize(h.combine_comma_list_cols)
+  with(NULL,
+       dt[, ":="(
+         depends_on = v_to_comma_list(depends_on),
+         start = v_to_comma_list(start),
+         prior_ids = v_to_comma_list(prior_ids)
+       )])
+  dt <- unique(dt)
+  
+  to_list <- function(str) {
+    if (is.na(str)) {
+      return(NA_character_)
+    }
+    list(h.split_comma_list(str))
+  }
+  v_to_list <- Vectorize(to_list)
+  with(NULL,
+       dt[, ":="(
+         depends_on = v_to_list(depends_on),
+         start = v_to_list(start),
+         prior_ids = v_to_list(prior_ids)
+       )])
+}
+
 
 
 h.rd_check_project_section_id_unique <- function(df) {
