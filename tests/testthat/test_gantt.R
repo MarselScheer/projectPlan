@@ -98,6 +98,7 @@ d_in <- data.table::data.table(
   task = letters[1:3],
   resource = letters[1:3],
   depends_on = list(NA, NA, NA),
+  waiting = c(F, F, F),
   y = 1:3,
   time_start = c(lubridate::ymd("2018-01-01"), lubridate::ymd("2018-02-01"), lubridate::ymd("2018-03-01")),
   time_end = c(lubridate::ymd("2018-01-11"), lubridate::ymd("2018-02-11"), lubridate::ymd("2018-03-11")),
@@ -118,6 +119,7 @@ d_in <- data.table::data.table(
   task = letters[1:3],
   resource = letters[1:3],
   depends_on = list(NA, "a", NA),
+  waiting = c(F, F, F),
   y = 1:3,
   time_start = c(lubridate::ymd("2018-01-01"), lubridate::ymd("2018-02-01"), lubridate::ymd("2018-03-01")),
   time_end = c(lubridate::ymd("2018-01-11"), lubridate::ymd("2018-02-11"), lubridate::ymd("2018-03-11")),
@@ -129,3 +131,4 @@ test_that(
   "Just run a plot with arrows",
   expect_s3_class(gantt_by_sections(d_in, show_dependencies = TRUE), "ggplot")
 )
+
