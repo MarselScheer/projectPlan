@@ -157,7 +157,8 @@ h.plot_deadlines <- function(gp, pf) {
   sub <- data.table::copy(pf)
 
   with(NULL, sub[, due_text := paste("Ends", dist_end_to_deadline, "days\nbefore deadline", sep = " ")])
-
+  with(NULL, sub[waiting == TRUE, due_text := paste0("Status AWAIT\n", due_text)])
+  
   idx <- sub$dist_end_to_deadline <= 0
   if (any(idx, na.rm = TRUE)) {
     gp <- gp +
