@@ -212,51 +212,6 @@ raw_plan %>%
 
 ## Incorporate another project plan
 
-Assume that we already planned our new kitchen with Mrs. Gray and we already have an appointment for the
-installation of the new kitchen. *Life&Cook* can dispose the old kitchen for us but we would 
-have to pay for that. So we try to sell the kitchen but at least one week before the installation 
-*Life&Cook* need to know if they have to dispose the old kitchen for us. So we extend our plan. 
-
-In order to show a bit more of the package-functionality we create a new project for selling the old kitchen.
-The new project will be located in a separate spreadsheet with the name *sell_kitchen* and contains two sections.
-Note the first *depends_on* entry, i.e. *kitchen::appointment_install*, which is is a cross-project-dependency.
-
-
-```{r, echo=FALSE}
-#sell_kitchen <- projectPlan::import_xlsx("projects.xlsx") %>% dplyr::filter(project == "sell_kitchen")
-sell_kitchen <- structure(list(
-  section = c("0_prep", "0_prep", "0_prep", "1_pickup"), id = c("pictures", "offer", "tours", "sell"), task = c(
-    "make pictures of kitchen",
-    "offer kitchen on various internet platforms", "placeholder for tours with potential buyers",
-    "get paid and pick up of the kitchen"
-  ), depends_on = c(
-    "kitchen::appointment_install",
-    "pictures", "offer", "tours"
-  ), start = c(
-    NA_character_, NA_character_,
-    NA_character_, NA_character_
-  ), 
-  end = c("", "", "", ""),
-  est_duration = c(1, 1, 20, 1), 
-  status = c("", "", "", ""),
-  resource = c(
-    "I",
-    "I", "I", "I, buyer"
-  ), progress = c(0, 0, 0, 0), deadline = structure(c(
-    NA_real_,
-    NA_real_, NA_real_, NA_real_
-  ), class = c("POSIXct", "POSIXt"), tzone = "UTC"),
-  project = c(
-    "sell_kitchen", "sell_kitchen", "sell_kitchen",
-    "sell_kitchen"
-  ), comments = c(NA, NA, NA, NA)
-), class = "data.frame", row.names = c(
-  NA,
-  -4L
-))
-DT::datatable(sell_kitchen)
-```
-
 ```{r, echo = FALSE}
 raw_plan$start[4] <- as.character(project_start + 12)
 raw_plan$end[4] <- as.character(project_start + 18)
@@ -282,13 +237,67 @@ raw_plan$depends_on <- ""
 dispose_note <- raw_plan[8]
 dispose_note$id <- "dispose_note"
 dispose_note$task <- "note to Life&Cook (1 week before installation) if they should dispose the kitchen"
-dispose_note$start <- as.character(project_start + 80 - 8)
-dispose_note$end <- as.character(project_start + 81 - 8)
-dispose_note$deadline <- lubridate::as_date(dispose_note$end) + 1
+dispose_note$start <- NA
+dispose_note$end <- NA
+dispose_note$deadline <- lubridate::as_date(raw_plan$start[8]) - 7 
 dispose_note$depends_on <- "sell_kitchen::sell"
-
 raw_plan <- 
-  dplyr::bind_rows(raw_plan[1:7], dispose_note, raw_plan[8], sell_kitchen)
+  dplyr::bind_rows(raw_plan[1:7], dispose_note, raw_plan[8])
+```
+
+
+Assume that we already planned our new kitchen with Mrs. Gray and we already have an appointment for the
+installation of the new kitchen on `r raw_plan[id == "installation"]$start`. 
+*Life&Cook* can dispose the old kitchen for us but we would 
+have to pay for that. So we try to sell the kitchen but at least one week before the installation 
+*Life&Cook* need to know if they have to dispose the old kitchen for us. So the new plan is:
+
+```{r, echo=FALSE}
+DT::datatable(raw_plan)
+```
+
+Note that row `r which(raw_plan$id == "dispose_note")` has no explicit start or end date. 
+It has only a deadline one week before installation and the dependency *sell_kitchen::sell*. 
+The latter is a cross-project-dependency. We will create the project *sell_kitchen* in the next step.
+
+In order to show a bit more of the package-functionality we create a new project for selling the old kitchen.
+The new project will be located in a separate spreadsheet with the name *sell_kitchen* and contains two sections.
+Note the first *depends_on* entry, i.e. *kitchen::appointment_install*, which again is a cross-project-dependency.
+
+
+```{r, echo=FALSE}
+#sell_kitchen <- projectPlan::import_xlsx("projects.xlsx") %>% dplyr::filter(project == "sell_kitchen")
+sell_kitchen <- structure(list(
+  section = c("0_prep", "0_prep", "0_prep", "1_pickup"), id = c("pictures", "offer", "tours", "sell"), task = c(
+    "make pictures of kitchen",
+    "offer kitchen on various internet platforms", "placeholder for tours with potential buyers",
+    "get paid and pick up of the kitchen"
+  ), depends_on = c(
+    "kitchen::appointment_install",
+    "pictures", "offer", "tours"
+  ), start = c(
+    NA_character_, NA_character_,
+    NA_character_, NA_character_
+  ), 
+  end = c("", "", "", ""),
+  est_duration = c(1, 1, 30, 1), 
+  status = c("", "", "", ""),
+  resource = c(
+    "I",
+    "I", "I", "I, buyer"
+  ), progress = c(0, 0, 0, 0), deadline = structure(c(
+    NA_real_,
+    NA_real_, NA_real_, NA_real_
+  ), class = c("POSIXct", "POSIXt"), tzone = "UTC"),
+  project = c(
+    "sell_kitchen", "sell_kitchen", "sell_kitchen",
+    "sell_kitchen"
+  ), comments = c(NA, NA, NA, NA)
+), class = "data.frame", row.names = c(
+  NA,
+  -4L
+))
+DT::datatable(sell_kitchen)
 ```
 
 Importing the xlsx-file (every project in a separate sheet) will result in a raw plan
@@ -296,10 +305,16 @@ containing all projects. Hence, we can easily calculate timeline taking all proj
 and there possible dependencies into account: 
 
 ```{r, fig.width=15, fig.height=7}
-raw_plan %>%
+tmp_time_lines <- raw_plan %>%
+  dplyr::bind_rows(sell_kitchen) %>% 
   projectPlan::wrangle_raw_plan() %>%
-  projectPlan::calculate_time_lines() %>%
+  projectPlan::calculate_time_lines()
+
+tmp_time_lines %>%
   tidyr::separate_rows(resource) %>%
   projectPlan::gantt_by_sections(show_dependencies = TRUE)
 ```
 
+The gantt-chart now easily reveals that if the project *sell_kitchen* goes as planned,
+then we can inform *Life&Cook* `r as.numeric(tmp_time_lines[id == "kitchen::dispose_note"]$dist_end_to_deadline)` days 
+before we reach the last time when we can hire life&cook to dispose our kitchen.
