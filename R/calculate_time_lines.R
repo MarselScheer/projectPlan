@@ -23,9 +23,15 @@ calculate_time_lines <- function(df) {
   for (i in 1:nrow(df)) {
     h.calculate_time_lines_at(df, i)
   }
+  h.set_deadline_for_waiting_tasks(df)  
   h.calc_end_to_deadline(df)
   df
 }
+
+h.set_deadline_for_waiting_tasks <- function(dt_ref) {
+  with(NULL, dt_ref[waiting & is.na(deadline) == TRUE, deadline := time_end])
+}
+
 
 h.calc_dist_to_deadline <- function(date_vec, deadline_vec) {
   raw_dist <- deadline_vec - date_vec
@@ -102,13 +108,6 @@ h.calculate_end_time <- function(earliest_start_time, est_days, fixed_end_date) 
   h.exclude_weekends(earliest_start_time, end)
 }
 
-h.set_deadline_for_waiting_tasks <- function(dt_ref, row) {
-  if (dt_ref$waiting[row] & is.na(dt_ref$deadline[row])) {
-    time_end <- dt_ref$time_end[row]
-    with(NULL, dt_ref[row, deadline := time_end])
-  }
-}
-
 
 h.calculate_time_lines_at <- function(dt_ref, row) {
   futile.logger::flog.debug(glue::glue("Calculate time lines for row -{row}-"), dt_ref[row, ], capture = TRUE)
@@ -147,7 +146,7 @@ h.calculate_time_lines_at <- function(dt_ref, row) {
 
   with(NULL, dt_ref[row, time_start := earliest_start_time])
   with(NULL, dt_ref[row, time_end := end])
-  h.set_deadline_for_waiting_tasks(dt_ref, row)  
+  
   futile.logger::flog.debug(glue::glue("Timelines for the current row -{row}-"), dt_ref[row], capture = TRUE)
 
 

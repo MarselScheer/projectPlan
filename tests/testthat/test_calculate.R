@@ -28,9 +28,7 @@ dt_out <- data.table::data.table(
   waiting = c(F, T, T),
   deadline = c(lubridate::as_date(NA), now - 7, now - 1)
 )
-h.set_deadline_for_waiting_tasks(dt_in, 1)
-h.set_deadline_for_waiting_tasks(dt_in, 2)
-h.set_deadline_for_waiting_tasks(dt_in, 3)
+h.set_deadline_for_waiting_tasks(dt_in)
 test_that(
   "End time modification according to waiting status", {
     expect_identical(dt_in, dt_out)
@@ -148,7 +146,8 @@ dt_in <- data.table::data.table(
   fixed_start_date = c(lubridate::as_date(NA), lubridate::as_date(NA), lubridate::ymd("2018-10-02")),
   fixed_end_date = c(lubridate::as_date(NA), lubridate::as_date(NA), lubridate::ymd("2018-10-06")),
   est_days = c(1, 6, 2),
-  waiting = c(F, F, F)
+  waiting = c(F, F, F),
+  deadline = c(NA_character_, NA_character_, NA_character_)
 )
 dt_out <- data.table::copy(dt_in)
 
