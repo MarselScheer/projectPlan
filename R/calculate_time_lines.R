@@ -32,8 +32,8 @@ h.calc_dist_to_deadline <- function(date_vec, deadline_vec) {
   overdue <- as.integer(raw_dist < 0)
   nmb_weekends <- floor(abs(raw_dist) / 7)
   nmb_weekends <- nmb_weekends +
-    abs(overdue - 1) * (wday(deadline_vec) < wday(date_vec)) +
-    overdue * (wday(deadline_vec) > wday(date_vec))
+    (1 - overdue) * (lubridate::wday(deadline_vec) < lubridate::wday(date_vec)) +
+    overdue * (lubridate::wday(deadline_vec) > lubridate::wday(date_vec))
   nmb_weekends <- -1 * overdue * nmb_weekends + abs(overdue - 1) * nmb_weekends
 
   raw_dist - 2 * nmb_weekends
