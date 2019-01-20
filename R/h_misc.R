@@ -39,3 +39,15 @@ h.log_rows <- function(df, idx, warn_msg, warn_columns = c("project", "section",
     }
   }
 }
+
+h.log_start = function(){
+  mc <- sys.call(sys.parent())
+  mc <- capture.output(print(mc))
+  futile.logger::flog.trace(glue::glue("Start {mc}"))
+}
+h.log_end = function(){
+  mc <- sys.call(sys.parent())
+  mc <- capture.output(print(mc))
+  futile.logger::flog.trace(glue::glue("End {mc}"))
+}
+
