@@ -46,12 +46,13 @@ DT::datatable(pA)
 
 # Implicit start and end dates
 
-Lets look at a simple dependency, where id *i2* depends on id *i1*:
+Lets look at a simple dependency, where id *i2* depends on id *i1*, which it self is implicitly defined by the *TODAY*-entry 
+in column *start*:
 ```{r}
 pA <- dplyr::tibble(
   project = c("A"), 
   section = "prep", task = paste0("task", 1:2), id = paste0("i", 1:2), 
-  start = c("2018-12-10", NA_character_),
+  start = c("TODAY", NA_character_),
   end   = c(NA_character_, NA_character_),
   depends_on = c(NA_character_, "i1"),
   est_duration = c(2,4),
@@ -71,5 +72,8 @@ pA %>%
   select(task, time_start, time_end) %>% 
   DT::datatable()
 ```
+
+Note that *TODAY* for the start time of id *i1* was subsituted by the date the function *wrangle_raw_plan*
+was executed.
 
 See the corresponding vignette for more details on id's and dependencies.
