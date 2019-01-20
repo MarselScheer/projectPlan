@@ -11,6 +11,14 @@ test_that(
   expect_identical(h.rd_preprocess_start_column(d_in), d_expected)
 )
 
+d_in <- data.table::data.table(depends_on = c("A"), start = c(NA))
+d_expected <- data.table::data.table(depends_on = c("A"), start = as.character(NA), fixed_start_date = lubridate::as_date(NA))
+test_that(
+  "TODAY becomes the current date",
+  expect_identical(h.rd_preprocess_start_column(d_in), d_expected)
+)
+
+
 d_in <- data.table::data.table(depends_on = c(NA, "A"), start = c(NA, "B"))
 d_expected <- data.table::data.table(depends_on = c(NA, "A"), start = c(NA, "B"), fixed_start_date = c(lubridate::as_date(lubridate::now()), NA))
 test_that(

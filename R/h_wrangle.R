@@ -35,6 +35,8 @@
 #'
 #' @export
 wrangle_raw_plan <- function(df) {
+  h.log_start()
+  
   df <- data.table::data.table(df)
 
   df <- h.rd_select_cols(df)
@@ -61,10 +63,14 @@ wrangle_raw_plan <- function(df) {
   h.rd_check_start_time_available(df)
   h.rd_check_id_deps(df)
 
+  h.log_end()
+  
   df
 }
 
 h.rd_check_id_deps <- function(df) {
+  h.log_start()
+  
   id_col <- df$id
   prior_ids <- unique(sort(unlist(df$prior_ids)))
 
@@ -75,10 +81,15 @@ h.rd_check_id_deps <- function(df) {
       capture = TRUE
     )
   }
+  
+  h.log_end()
+  
 }
 
 
 h.rd_check_start_time_available <- function(df) {
+  h.log_start()
+  
   futile.logger::flog.info("Check that the start time is at least implicitly defined.")
 
 
@@ -94,9 +105,14 @@ h.rd_check_start_time_available <- function(df) {
     idx,
     warn_msg = glue::glue("Missing explicit or implicit start time for the following entries")
   )
+  
+  h.log_end()
+  
 }
 
 h.rd_make_id_unique_within_project <- function(df) {
+  h.log_start()
+  
   date_min <- function(v) {
     if (all(is.na(v))) {
       # strange behaviour if all NA then min (with na.rm = TRUE) will return Inf as expected, but NA is displayed.
@@ -167,11 +183,16 @@ h.rd_make_id_unique_within_project <- function(df) {
     start = vadd_prefix_preserve_other_projects(project, start),
     prior_ids = vadd_prefix_preserve_other_projects(project, prior_ids))]
   )
-
-  h.unique(ret)
+  ret <- h.unique(ret)
+  
+  h.log_end()
+  
+  ret
 }
 
 h.unique <- function(dt) {
+  h.log_start()
+  
   # since data.table 1.12.0 unique does not work anymore if a column is a list 
   v_to_comma_list <- Vectorize(h.combine_comma_list_cols)
   with(NULL,
@@ -189,17 +210,23 @@ h.unique <- function(dt) {
     list(h.split_comma_list(str))
   }
   v_to_list <- Vectorize(to_list)
-  with(NULL,
+  ret <- with(NULL,
        dt[, ":="(
          depends_on = v_to_list(depends_on),
          start = v_to_list(start),
          prior_ids = v_to_list(prior_ids)
        )])
+  
+  h.log_end()
+  
+  ret
 }
 
 
 
 h.rd_check_project_section_id_unique <- function(df) {
+  h.log_start()
+  
   id_in_multiple_sections <- with(NULL, unique(df[, .(project, id, section)]))
   id_in_multiple_sections <- with(NULL, id_in_multiple_sections[, .(n = .N), by = c("project", "id")])
   id_in_multiple_sections <- with(NULL, id_in_multiple_sections[n > 1])
@@ -211,10 +238,15 @@ h.rd_check_project_section_id_unique <- function(df) {
     df$id %in% id_in_multiple_sections,
     warn_msg = glue::glue("The same id -{h.comma_list(id_in_multiple_sections)}- used in different 'sections' of the same 'project' is probably an error")
   )
+  
+  h.log_end()
+  
 }
 
 
 h.rd_preprocess_deadline_column <- function(df) {
+  h.log_start()
+  
   df$raw_deadline <- df$deadline
   df$deadline <- suppressWarnings(lubridate::ymd(df$deadline))
   idx <- !is.na(df$deadline)
@@ -228,31 +260,50 @@ h.rd_preprocess_deadline_column <- function(df) {
     warn_msg = glue::glue("Entries in column 'deadline' must be a ymd-format"),
     error = TRUE
   )
+  
+  h.log_end()
   df
 }
 
 h.rd_preprocess_status_column <- function(df) {
+  h.log_start()
+  
   df$status <- toupper(df$status)
   df$waiting <- df$status == "AWAIT"
   df$aborted <- df$status == "ABORTED"
   df$status <- NULL
+  
+  h.log_end()
+  
   df
 }
 
 h.rd_preprocess_est_duration_column <- function(df) {
+  h.log_start()
+  
   df$est_days <- as.numeric(df$est_duration)
   df$est_duration <- NULL
+  
+  h.log_end()
+  
   df
 }
 
 
 h.rd_preprocess_end_column <- function(df) {
+  h.log_start()
+  
   df$fixed_end_date <- suppressWarnings(lubridate::ymd(df$end))
   df$end <- NULL
+  
+  h.log_end()
+  
   df
 }
 
 h.rd_preprocess_start_column <- function(df) {
+  h.log_start()
+  
   TODAY <- as.character(lubridate::as_date(lubridate::now()))
 
   idx <- is.na(df$depends_on) & is.na(df$start)
@@ -266,18 +317,22 @@ h.rd_preprocess_start_column <- function(df) {
   }
 
   idx <- df$start == "TODAY"
-  if (any(idx)) {
+  if (any(idx, na.rm = TRUE)) {
     futile.logger::flog.info(glue::glue("Convert 'TODAY' in column -start- to the current date -{TODAY}-"))  
   }
   
   df$start[idx] <- TODAY
   df$fixed_start_date <- suppressWarnings(lubridate::ymd(df$start))
   df$start[!is.na(df$fixed_start_date)] <- NA
-
+  
+  h.log_end()
+  
   df
 }
 
 h.rd_fill_with_default <- function(df, colname, def) {
+  h.log_start()
+  
   idx <- is.na(df[[colname]])
 
   h.log_rows(
@@ -288,20 +343,31 @@ h.rd_fill_with_default <- function(df, colname, def) {
   if (any(idx)) {
     df[[colname]][idx] <- def
   }
+  
+  h.log_end()
+  
   df
 }
 
 h.rd_remove_unnessary_rows <- function(df) {
+  h.log_start()
+  
   futile.logger::flog.info(glue::glue("Remove rows where project, section, id, start, end, resource, task are empty"))
 
   discard <- with(df, is.na(project) & is.na(section) & is.na(id) & is.na(start) & is.na(end) & is.na(resource) & is.na(task))
 
   futile.logger::flog.debug(glue::glue("Remove {sum(discard)} rows"))
 
-  df[!discard, ]
+  ret <- df[!discard, ]
+  
+  h.log_end()
+
+  ret  
 }
 
 h.rd_select_cols <- function(df) {
+  h.log_start()
+  
   cols <- c("project", "section", "id", "depends_on", "start", "end", "est_duration", "status", "resource", "task", "progress", "deadline")
   futile.logger::flog.info(glue::glue("Select the necessary columns -{h.comma_list(cols)}-"))
 
@@ -313,5 +379,9 @@ h.rd_select_cols <- function(df) {
     names(new_cols) <- missing_cols
     df <- cbind(df, new_cols)
   }
-  df <- df[, lapply(.SD, as.character), .SDcols = cols]
+  ret <- df[, lapply(.SD, as.character), .SDcols = cols]
+  
+  h.log_end()
+  
+  ret  
 }
