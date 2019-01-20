@@ -77,11 +77,13 @@ h.exclude_weekends <- function(start, end) {
 
   shift <- h.turn_weekend_day_to_monday(start) - start
   if (shift > 0) {
-    futile.logger::flog.warn(glue::glue("start {start} is on a weekend. shift start {start} and end {end} by {shift} day(s)."))
+    futile.logger::flog.warn(glue::glue("start {start} is on a weekend. Shift end {end} by {shift} day(s)."))
+    futile.logger::flog.debug(glue::glue("In order to correctly exclude weekends, also start {start} is shifted by {shift} day(s) locally but not in the project plan"))
     start <- start + shift
     end <- end + shift
   }
 
+  futile.logger::flog.debug(glue::glue("Exclude weekends between {start} and {end}"))
   nmb_workdays <- as.integer(end - start)
   nmb_workweeks <- floor(nmb_workdays / 5)
   nmb_days_remain <- nmb_workdays %% 5
