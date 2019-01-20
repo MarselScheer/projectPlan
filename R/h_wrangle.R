@@ -265,10 +265,12 @@ h.rd_preprocess_start_column <- function(df) {
     )
   }
 
-
-  futile.logger::flog.info(glue::glue("Convert the 'TODAY' in column 'start' to the current date -{TODAY}-"))
-
-  df$start[df$start == "TODAY"] <- TODAY
+  idx <- df$start == "TODAY"
+  if (any(idx)) {
+    futile.logger::flog.info(glue::glue("Convert 'TODAY' in column -start- to the current date -{TODAY}-"))  
+  }
+  
+  df$start[idx] <- TODAY
   df$fixed_start_date <- suppressWarnings(lubridate::ymd(df$start))
   df$start[!is.na(df$fixed_start_date)] <- NA
 
