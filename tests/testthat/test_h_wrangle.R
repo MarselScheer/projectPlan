@@ -14,7 +14,7 @@ test_that(
 d_in <- data.table::data.table(depends_on = c("A"), start = c(NA))
 d_expected <- data.table::data.table(depends_on = c("A"), start = as.character(NA), fixed_start_date = lubridate::as_date(NA))
 test_that(
-  "TODAY becomes the current date",
+  "start-column contains only NA",
   expect_identical(h.rd_preprocess_start_column(d_in), d_expected)
 )
 
