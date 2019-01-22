@@ -46,7 +46,7 @@ wrangle_raw_plan <- function(df) {
   df <- h.rd_fill_with_default(df, "section", "UNKNOWN")
   df <- h.rd_fill_with_default(df, "id", "UNKNOWN")
   df <- h.rd_fill_with_default(df, "est_duration", "1")
-  df <- h.rd_fill_with_default(df, "status", "")
+  df <- h.rd_fill_with_default(df, "status", "", log_filling = FALSE)
   df <- h.rd_fill_with_default(df, "resource", "UNKNOWN")
   df <- h.rd_fill_with_default(df, "task", "UNKNOWN")
   df <- h.rd_fill_with_default(df, "progress", "0")
@@ -332,16 +332,18 @@ h.rd_preprocess_start_column <- function(df) {
   df
 }
 
-h.rd_fill_with_default <- function(df, colname, def) {
+h.rd_fill_with_default <- function(df, colname, def, log_filling = TRUE) {
   h.log_start()
   
   idx <- is.na(df[[colname]])
 
-  h.log_rows(
-    df,
-    idx,
-    warn_msg = glue::glue("Some entries in column -{colname}- are not specified. Set those entries to -{def}-.")
-  )
+  if (log_filling) {
+    h.log_rows(
+      df,
+      idx,
+      warn_msg = glue::glue("Some entries in column -{colname}- are not specified. Set those entries to -{def}-.")
+    )
+  }
   if (any(idx)) {
     df[[colname]][idx] <- def
   }
