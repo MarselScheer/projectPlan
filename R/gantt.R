@@ -189,8 +189,8 @@ h.plot_deadlines <- function(gp, pf) {
   if (any(idx, na.rm = TRUE)) {
     today <- lubridate::as_date(lubridate::now())
 
-    next_deadlines_idx <- which(min(sub$deadline[idx]) == sub$deadline[idx])
-    next_deadline <- sub$deadline[idx][1]
+    next_deadline <- min(sub$deadline[idx])
+    next_deadlines_idx <- which(next_deadline == sub$deadline[idx])
     next_deadline_tasks <- paste(unique(sub$task[idx][next_deadlines_idx]), collapse = "; ")
 
     dist <- h.calc_dist_to_deadline(today, next_deadline)
