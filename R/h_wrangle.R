@@ -226,16 +226,18 @@ h.unique <- function(dt) {
 
 h.rd_check_project_section_id_unique <- function(df) {
   h.log_start()
+  #dont want that data.table::setorder change the order of df
+  df_copy <- data.table::copy(df)
   
-  id_in_multiple_sections <- with(NULL, unique(df[, .(project, id, section)]))
+  id_in_multiple_sections <- with(NULL, unique(df_copy[, .(project, id, section)]))
   id_in_multiple_sections <- with(NULL, id_in_multiple_sections[, .(n = .N), by = c("project", "id")])
   id_in_multiple_sections <- with(NULL, id_in_multiple_sections[n > 1])
   id_in_multiple_sections <- id_in_multiple_sections$id
 
-  with(NULL, data.table::setorder(df, project, id, section))
+  with(NULL, data.table::setorder(df_copy, project, id, section))
   h.log_rows(
-    df,
-    df$id %in% id_in_multiple_sections,
+    df_copy,
+    df_copy$id %in% id_in_multiple_sections,
     warn_msg = glue::glue("The same id -{h.comma_list(id_in_multiple_sections)}- used in different 'sections' of the same 'project' is probably an error")
   )
   
