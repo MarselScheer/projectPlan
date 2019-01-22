@@ -283,7 +283,19 @@ h.rd_preprocess_status_column <- function(df) {
 h.rd_preprocess_est_duration_column <- function(df) {
   h.log_start()
   
-  df$est_days <- as.numeric(df$est_duration)
+  df$est_days <- suppressWarnings(as.numeric(df$est_duration))
+  
+  idx <- is.na(df$est_days)
+  if (any(idx)) {
+    df$est_days[idx] <- 1
+  }
+  
+  h.log_rows(
+    df,
+    idx,
+    warn_msg = glue::glue("Entries in column 'est_duration' must be integer. Replace those entries by 1."),
+    warn_columns = c("project", "section", "id", "est_duration")
+  )
   df$est_duration <- NULL
   
   h.log_end()
