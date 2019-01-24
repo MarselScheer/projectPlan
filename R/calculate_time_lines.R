@@ -50,28 +50,7 @@ collapse_time_lines <- function(dt, project, section = ""){
     stop(msg)
   }
   
-  ret <- dt[idx]
-  if (all(ret$aborted)) {
-    ret <- with(NULL, ret[ , .(
-      time_start = min(time_start),
-      time_end = min(time_start),
-      aborted = all(aborted)
-    ), by = BY])
-  } else {
-    not_aborted = !ret$aborted
-    ret <- with(NULL, ret[ not_aborted, .(
-      time_start = min(time_start),
-      time_end = max(time_end),
-      deadline = suppressWarnings(min(deadline, na.rm = TRUE)),
-      dist_end_to_deadline = suppressWarnings(min(dist_end_to_deadline, na.rm = TRUE)),
-      aborted = all(aborted)
-    ), by = BY])
-    ret$dist_end_to_deadline[is.infinite(ret$dist_end_to_deadline)] <- NA
-  }
-  
-  ret$task <- as.character(glue::glue("{project}::{section} collapsed"))
-  ret$waiting <- FALSE
-  ret$resource <- "collapsed"
+  ret <- h.collapse_time_lines(dt[idx], group_by = BY, task_label = glue::glue("{project}::{section} collapsed"))
   
   if (!is.element("section", names(ret))) {
     ret$section <- as.character(glue::glue("{project}::collapsed"))
@@ -80,6 +59,43 @@ collapse_time_lines <- function(dt, project, section = ""){
   dplyr::bind_rows(dt[!idx], ret)
 }
 
+h.collapse_time_lines <- function(dt, group_by, task_label) {
+  ret <- dt
+  
+  all_complete <- FALSE
+  if (all(ret$progress == 100)) {
+    all_complete <- TRUE
+  }
+  
+  if (all(ret$aborted)) {
+    ret <- with(NULL, ret[ , .(
+      time_start = min(time_start),
+      time_end = min(time_start),
+      aborted = all(aborted)
+    ), by = group_by])
+  } else {
+    not_aborted = !ret$aborted
+    ret <- with(NULL, ret[ not_aborted, .(
+      time_start = min(time_start),
+      time_end = max(time_end),
+      deadline = suppressWarnings(min(deadline, na.rm = TRUE)),
+      dist_end_to_deadline = suppressWarnings(min(dist_end_to_deadline, na.rm = TRUE)),
+      aborted = all(aborted)
+    ), by = group_by])
+    ret$dist_end_to_deadline[is.infinite(ret$dist_end_to_deadline)] <- NA
+  }
+  
+  ret$progress <- 0
+  if (all_complete) {
+    ret$progress <- 100
+  }
+  
+  ret$task <- as.character(task_label)
+  ret$waiting <- FALSE
+  ret$resource <- "collapsed"
+  
+  ret
+}
 
 #' @export
 collapse_time_lines_all_projects <- function(dt) {
