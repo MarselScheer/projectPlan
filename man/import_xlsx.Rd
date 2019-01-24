@@ -13,7 +13,7 @@ import_xlsx(fName, sheets)
 If the sheet does not contain a project-column, then the name of the sheet is used as a project name.}
 }
 \value{
-One \code{data.table} containing all imported sheets. Usually, such an object needs to be preprocessed by 
+One \code{data.table} containing all imported sheets. Usually, such an object needs to be preprocessed by
   \link{wrangle_raw_plan}
 }
 \description{

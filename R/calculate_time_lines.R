@@ -28,6 +28,67 @@ calculate_time_lines <- function(df) {
   df
 }
 
+#' @export
+collapse_time_lines <- function(dt, project, section = ""){
+  
+  if (missing(project)) {
+    msg <- "At least the parameter project must be specified."
+    futile.logger::flog.error(glue::glue("{msg} Valid entries for example are: "), head(unique(dt$project)), capture = TRUE)
+    stop(msg)
+  }
+  idx <- dt$project == project
+  
+  BY <- c("project")
+  if (section != "") {
+    idx <- idx & dt$section == glue::glue("{project}::{section}")
+    BY <- c("project", "section")
+  }
+  
+  if (all(idx == FALSE)) {
+    msg <- glue::glue("Either the project -{project}- or project-section-combination -{project}::{section}- does not exist in the project plan.")
+    futile.logger::flog.error(msg)
+    stop(msg)
+  }
+  
+  ret <- dt[idx]
+  if (all(ret$aborted)) {
+    ret <- with(NULL, ret[ , .(
+      time_start = min(time_start),
+      time_end = min(time_start),
+      aborted = all(aborted)
+    ), by = BY])
+  } else {
+    not_aborted = !ret$aborted
+    ret <- with(NULL, ret[ not_aborted, .(
+      time_start = min(time_start),
+      time_end = max(time_end),
+      deadline = suppressWarnings(min(deadline, na.rm = TRUE)),
+      dist_end_to_deadline = suppressWarnings(min(dist_end_to_deadline, na.rm = TRUE)),
+      aborted = all(aborted)
+    ), by = BY])
+    ret$dist_end_to_deadline[is.infinite(ret$dist_end_to_deadline)] <- NA
+  }
+  
+  ret$task <- as.character(glue::glue("{project}::{section} collapsed"))
+  ret$waiting <- FALSE
+  ret$resource <- "collapsed"
+  
+  if (!is.element("section", names(ret))) {
+    ret$section <- as.character(glue::glue("{project}::collapsed"))
+  }
+  
+  dplyr::bind_rows(dt[!idx], ret)
+}
+
+
+#' @export
+collapse_time_lines_all_projects <- function(dt) {
+  for (p in unique(dt$project)) {
+    dt <- collapse_time_lines(dt, project = p)
+  }
+  dt
+}
+
 h.set_deadline_for_waiting_tasks <- function(dt_ref) {
   with(NULL, dt_ref[waiting & is.na(deadline) == TRUE, deadline := time_end])
 }
