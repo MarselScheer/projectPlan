@@ -29,14 +29,6 @@ calculate_time_lines <- function(df) {
 }
 
 #' @export
-collapse_time_lines_all_projects <- function(dt) {
-  for (p in unique(dt$project)) {
-    dt <- collapse_time_lines(dt, project = p)
-  }
-  dt
-}
-
-#' @export
 collapse_projects <- function(dt, projects) {
   ret <- dt
   for (p in unique(projects)) {
@@ -97,37 +89,6 @@ h.collapse_project <- function(dt, project) {
   dplyr::bind_rows(dt[!idx], ret)  
 }
 
-
-#' @export
-collapse_time_lines <- function(dt, project, section = ""){
-  
-  if (missing(project)) {
-    msg <- "At least the parameter project must be specified."
-    futile.logger::flog.error(glue::glue("{msg} Valid entries for example are: "), head(unique(dt$project)), capture = TRUE)
-    stop(msg)
-  }
-  idx <- dt$project == project
-  
-  BY <- c("project")
-  if (section != "") {
-    idx <- idx & dt$section == glue::glue("{project}::{section}")
-    BY <- c("project", "section")
-  }
-  
-  if (all(idx == FALSE)) {
-    msg <- glue::glue("Either the project -{project}- or project-section-combination -{project}::{section}- does not exist in the project plan.")
-    futile.logger::flog.error(msg)
-    stop(msg)
-  }
-  
-  ret <- h.collapse_time_lines(dt[idx], group_by = BY, task_label = glue::glue("{project}::{section} collapsed"))
-  
-  if (!is.element("section", names(ret))) {
-    ret$section <- as.character(glue::glue("{project}::collapsed"))
-  }
-  
-  dplyr::bind_rows(dt[!idx], ret)
-}
 
 h.collapse_time_lines <- function(dt, group_by, task_label) {
   ret <- dt
