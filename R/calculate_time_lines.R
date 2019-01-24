@@ -29,6 +29,44 @@ calculate_time_lines <- function(df) {
 }
 
 #' @export
+collapse_time_lines_all_projects <- function(dt) {
+  for (p in unique(dt$project)) {
+    dt <- collapse_time_lines(dt, project = p)
+  }
+  dt
+}
+
+#' @export
+collapse_projects <- function(dt, projects) {
+  ret <- dt
+  for (p in unique(projects)) {
+    ret <- h.collapse_project(ret, p)
+  }
+  ret
+}
+
+h.collapse_project <- function(dt, project) {
+  if (missing(project)) {
+    msg <- "Parameter project must be specified."
+    futile.logger::flog.error(glue::glue("{msg} Valid entries for example are: "), head(unique(dt$project)), capture = TRUE)
+    stop(msg)
+  }
+  idx <- dt$project == project
+  
+  if (all(idx == FALSE)) {
+    msg <- glue::glue("The project -{project}- does not exist in the project plan.")
+    futile.logger::flog.error(glue::glue("{msg} Valid entries for example are: "), head(unique(dt$project)), capture = TRUE)
+    stop(msg)
+  }
+  
+  ret <- h.collapse_time_lines(dt[idx], group_by = "project", task_label = glue::glue("{project} collapsed"))
+  ret$section <- as.character(glue::glue("{project} collapsed"))
+  
+  dplyr::bind_rows(dt[!idx], ret)  
+}
+
+
+#' @export
 collapse_time_lines <- function(dt, project, section = ""){
   
   if (missing(project)) {
@@ -95,14 +133,6 @@ h.collapse_time_lines <- function(dt, group_by, task_label) {
   ret$resource <- "collapsed"
   
   ret
-}
-
-#' @export
-collapse_time_lines_all_projects <- function(dt) {
-  for (p in unique(dt$project)) {
-    dt <- collapse_time_lines(dt, project = p)
-  }
-  dt
 }
 
 h.set_deadline_for_waiting_tasks <- function(dt_ref) {
