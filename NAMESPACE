@@ -2,6 +2,7 @@
 
 export(calculate_time_lines)
 export(collapse_projects)
+export(collapse_section)
 export(collapse_time_lines)
 export(collapse_time_lines_all_projects)
 export(gantt_by_sections)

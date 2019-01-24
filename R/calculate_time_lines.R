@@ -45,6 +45,38 @@ collapse_projects <- function(dt, projects) {
   ret
 }
 
+#' @export
+collapse_section <- function(dt, project, section) {
+  if (missing(project)) {
+    msg <- "The parameter project must be specified."
+    futile.logger::flog.error(msg)
+    stop(msg)
+  }
+  idx <- 
+  
+  if (missing(section)) {
+    msg <- "The parameter section must be specified."
+    futile.logger::flog.error(msg)
+    stop(msg)
+  }
+  
+  idx <- (dt$project == project) & (dt$section == glue::glue("{project}::{section}"))
+
+  if (all(idx == FALSE)) {
+    msg <- glue::glue("project-section-combination -{project}::{section}- does not exist in the project plan.")
+    futile.logger::flog.error(msg)
+    stop(msg)
+  }
+  
+  ret <- h.collapse_time_lines(dt[idx], group_by = c("project", "section"), task_label = glue::glue("{project}::{section} collapsed"))
+  
+  # if (!is.element("section", names(ret))) {
+  #   ret$section <- as.character(glue::glue("{project}::collapsed"))
+  # }
+  
+  dplyr::bind_rows(dt[!idx], ret)
+}
+
 h.collapse_project <- function(dt, project) {
   if (missing(project)) {
     msg <- "Parameter project must be specified."
