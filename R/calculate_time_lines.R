@@ -38,6 +38,22 @@ collapse_projects <- function(dt, projects) {
 }
 
 #' @export
+collapse_complete_sections <- function(dt) {
+  
+  is.completed <- function(progress, aborted) {
+    all(progress[!aborted] == 100)
+  }
+  
+  complete_sections <- dt[, .(complete = is.completed(progress, aborted)), by = "section"][complete == TRUE]
+  for (proj_sec in complete_sections$section) {
+    proj_sec <- unlist(strsplit(proj_sec, "::"))
+    dt <- collapse_section(dt, project = proj_sec[1], section = proj_sec[2])
+  }
+  dt
+}
+
+
+#' @export
 collapse_section <- function(dt, project, section) {
   if (missing(project)) {
     msg <- "The parameter project must be specified."
@@ -59,12 +75,10 @@ collapse_section <- function(dt, project, section) {
     futile.logger::flog.error(msg)
     stop(msg)
   }
+  task_label <- as.character(glue::glue("{project}::{section} collapsed"))
+  ret <- h.collapse_time_lines(dt[idx], group_by = c("project", "section"), task_label = task_label)
+  ret$section <- task_label
   
-  ret <- h.collapse_time_lines(dt[idx], group_by = c("project", "section"), task_label = glue::glue("{project}::{section} collapsed"))
-  
-  # if (!is.element("section", names(ret))) {
-  #   ret$section <- as.character(glue::glue("{project}::collapsed"))
-  # }
   
   dplyr::bind_rows(dt[!idx], ret)
 }
