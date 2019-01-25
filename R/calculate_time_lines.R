@@ -52,6 +52,17 @@ collapse_complete_sections <- function(dt) {
   dt
 }
 
+#' @export
+collapse_complete_projects <- function(dt) {
+  
+  is.completed <- function(progress, aborted) {
+    all(progress[!aborted] == 100)
+  }
+  
+  complete_projects <- dt[, .(complete = is.completed(progress, aborted)), by = "project"][complete == TRUE]
+  collapse_projects(dt, projects = complete_projects$project)
+}
+
 
 #' @export
 collapse_section <- function(dt, project, section) {
