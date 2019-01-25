@@ -94,7 +94,11 @@ h.collapse_time_lines <- function(dt, group_by, task_label) {
   ret <- dt
   
   all_complete <- FALSE
-  if (all(ret$progress == 100)) {
+  not_aborted = !ret$aborted
+  if (all(ret$progress[not_aborted] == 100)) {
+    if (all(ret$aborted)) {
+      futile.logger::flog.info(glue::glue("Collapsing time lines if all tasks are aborted, will present them as completed. This was done for {task_label}"))
+    }
     all_complete <- TRUE
   }
   
@@ -105,7 +109,6 @@ h.collapse_time_lines <- function(dt, group_by, task_label) {
       aborted = all(aborted)
     ), by = group_by])
   } else {
-    not_aborted = !ret$aborted
     ret <- with(NULL, ret[ not_aborted, .(
       time_start = min(time_start),
       time_end = max(time_end),
