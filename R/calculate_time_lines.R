@@ -91,7 +91,7 @@ collapse_section <- function(dt, project, section) {
   ret$section <- task_label
   
   
-  dplyr::bind_rows(dt[!idx], ret)
+  data.table::rbindlist(list(dt[!idx], ret), fill = TRUE)
 }
 
 h.collapse_project <- function(dt, project) {
@@ -111,7 +111,7 @@ h.collapse_project <- function(dt, project) {
   ret <- h.collapse_time_lines(dt[idx], group_by = "project", task_label = glue::glue("{project} collapsed"))
   ret$section <- as.character(glue::glue("{project} collapsed"))
   
-  dplyr::bind_rows(dt[!idx], ret)  
+  data.table::rbindlist(list(dt[!idx], ret), fill = TRUE)  
 }
 
 
