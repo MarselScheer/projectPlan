@@ -127,19 +127,29 @@ h.collapse_time_lines <- function(dt, group_by, task_label) {
     all_complete <- TRUE
   }
   
+  min_dist_end_to_deadline <- function(deadline, dist_end_to_deadline) {
+    min_dline <- suppressWarnings(min(deadline, na.rm = TRUE))
+    if (is.infinite(min_dline)) {
+      return(NA)
+    }
+    
+    idx_min_dline <- which(min_dline == deadline)
+    min(dist_end_to_deadline[idx_min_dline])
+  }
+  
   if (all(ret$aborted)) {
     ret <- with(NULL, ret[ , .(
       time_start = min(time_start),
       time_end = min(time_start),
-      aborted = all(aborted)
+      aborted = T
     ), by = group_by])
   } else {
     ret <- with(NULL, ret[ not_aborted, .(
       time_start = min(time_start),
       time_end = max(time_end),
       deadline = suppressWarnings(min(deadline, na.rm = TRUE)),
-      dist_end_to_deadline = suppressWarnings(min(dist_end_to_deadline, na.rm = TRUE)),
-      aborted = all(aborted)
+      dist_end_to_deadline = min_dist_end_to_deadline(deadline, dist_end_to_deadline),
+      aborted = F
     ), by = group_by])
     ret$dist_end_to_deadline[is.infinite(ret$dist_end_to_deadline)] <- NA
   }
