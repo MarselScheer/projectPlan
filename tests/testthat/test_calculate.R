@@ -183,3 +183,58 @@ test_that(
     expect_identical(d_out, d_expected)
   }
 )
+
+
+d_in <- data.table::data.table(
+  project = c("A"),
+  section = c("A::s1", "A::s1"),
+  aborted = c(T, T),
+  time_start = c(lubridate::ymd("2019-01-20"), lubridate::ymd("2019-01-26")),
+  time_end   = c(lubridate::ymd("2019-01-23"), lubridate::ymd("2019-01-27")),
+  progress = c(23, 99)
+)
+d_out <- data.table::data.table(
+  project = c("A"),
+  section = c("A::s1 collapsed"),
+  aborted = c(T),
+  time_start = c(lubridate::ymd("2019-01-20")),
+  time_end   = c(lubridate::ymd("2019-01-20")),
+  progress = c(100),
+  task = "A::s1 collapsed",
+  waiting = F,
+  resource = "collapsed"
+)
+test_that(
+  "Collapsing when all tasks have status aborted",
+  expect_identical(collapse_complete_sections(d_in), d_out)
+)
+
+d_in <- data.table::data.table(
+  project = c("A", "A", "B", "B"),
+  section = c("A::s1", "A::s1", "B::s1", "B::s1"),
+  aborted = c(F, T, F, F),
+  time_start = c(lubridate::ymd("2019-01-20"), lubridate::ymd("2019-01-26"), lubridate::ymd("2019-02-05"), lubridate::ymd("2019-01-05")),
+  time_end   = c(lubridate::ymd("2019-01-23"), lubridate::ymd("2019-01-27"), lubridate::ymd("2019-02-15"), lubridate::ymd("2019-03-10")),
+  deadline   = c(lubridate::ymd("2019-01-23"), lubridate::ymd("2019-01-28"), lubridate::ymd("2019-02-14"), lubridate::ymd("2019-03-05")),
+  dist_end_to_deadline = c(0, 1, -1, -5),
+  progress = c(100, 99, 100, 100)
+)
+d_out <- data.table::data.table(
+  project = c("A", "B"),
+  section = c("A collapsed", "B collapsed"),
+  aborted = c(F, F),
+  time_start = c(lubridate::ymd("2019-01-20"), lubridate::ymd("2019-01-05")),
+  time_end   = c(lubridate::ymd("2019-01-23"), lubridate::ymd("2019-03-10")),
+  deadline   = c(lubridate::ymd("2019-01-23"), lubridate::ymd("2019-02-14")),
+  dist_end_to_deadline = c(0, -1),
+  progress = c(100, 100),
+  task = c("A collapsed", "B collapsed"),
+  waiting = c(F, F),
+  resource = "collapsed"
+)
+test_that(
+  "Collapsing when all tasks have status aborted or are complete",
+  expect_identical(collapse_complete_projects(d_in), d_out)
+)
+
+
