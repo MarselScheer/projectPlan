@@ -151,7 +151,7 @@ h.collapse_time_lines <- function(dt, group_by, task_label) {
       dist_end_to_deadline = min_dist_end_to_deadline(deadline, dist_end_to_deadline),
       aborted = F
     ), by = group_by])
-    ret$dist_end_to_deadline[is.infinite(ret$dist_end_to_deadline)] <- NA
+    ret$deadline[is.infinite(ret$deadline)] <- NA
   }
   
   ret$progress <- 0
