@@ -256,3 +256,16 @@ test_that(
 )
 
 
+test_that(
+  "Error if parameter missing", {
+    expect_error(collapse_section(d_in), regexp = "must be specified")
+    expect_error(collapse_section(d_in, project = ""), regexp = "must be specified")
+    expect_error(collapse_section(d_in, project = "A", section = "unk"), regexp = "does not exist")
+    expect_error(collapse_section(d_in, project = "A", section = "unk"), regexp = "A::unk.*does not exist")
+    expect_error(collapse_section(d_in, project = "C", section = "s1"), regexp = "C::s1.*does not exist")
+    expect_error(h.collapse_project(d_in), regexp = "must be specified")
+    expect_error(h.collapse_project(d_in, project = "C"), regexp = "does not exist")
+  }
+)
+
+
