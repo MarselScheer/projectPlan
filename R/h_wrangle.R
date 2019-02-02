@@ -52,6 +52,7 @@ wrangle_raw_plan <- function(df) {
   df <- h.rd_fill_with_default(df, "progress", "0")
   df$progress <- as.numeric(df$progress)
 
+  df <- h.rd_preprocess_depends_on_column(df)
   df <- h.rd_preprocess_start_column(df)
   df <- h.rd_preprocess_end_column(df)
   df <- h.rd_preprocess_est_duration_column(df)
@@ -66,6 +67,38 @@ wrangle_raw_plan <- function(df) {
   h.log_end()
   
   df
+}
+
+
+h.replace_TAG_PREVIOUS <- function(df, col) {
+  if (nrow(df) <= 1) {
+    return(df)
+  }
+  
+  idx <- which(purrr::map_lgl(df[[col]], ~ any(h.split_comma_list(.x) == h.TAG_PREVIOUS)))
+
+  if (any(idx == 1, na.rm = TRUE)) {
+    msg <- glue::glue("The tag -{h.TAG_PREVIOUS}- is not allowed as a first entry in column -{col}- in the first project. Ignore this entry")
+    h.log_rows(df, idx[1], msg, warn_columns = c("project", "section", "id", col))
+    idx <- idx[-1]
+  }
+
+  ret <- data.table::copy(df)
+  ret[[col]][idx] <- purrr::map_chr(
+    idx,
+    function(row) {
+      dep_ids <- h.split_comma_list(ret[[col]][row])
+      if (any(dep_ids == h.TAG_PREVIOUS)) {
+        prev_id <- paste0(ret[["project"]][row - 1], h.SEPERATOR, ret[["id"]][row - 1])
+        dep_ids <- c(dep_ids[dep_ids != h.TAG_PREVIOUS], prev_id)
+      }
+      h.comma_list(dep_ids)
+    })
+  ret
+}
+
+h.rd_preprocess_depends_on_column <- function(df) {
+  h.replace_TAG_PREVIOUS(df, "depends_on")
 }
 
 h.rd_check_id_deps <- function(df) {
@@ -317,6 +350,8 @@ h.rd_preprocess_end_column <- function(df) {
 
 h.rd_preprocess_start_column <- function(df) {
   h.log_start()
+  
+  df <- h.replace_TAG_PREVIOUS(df, "start")
   
   TODAY <- as.character(lubridate::as_date(lubridate::now()))
 
