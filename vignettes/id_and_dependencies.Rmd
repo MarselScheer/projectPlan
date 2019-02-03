@@ -93,7 +93,12 @@ pA %>%
   projectPlan::gantt_by_sections(show_dependencies = TRUE)
 ```
 
+Instead of stating the dependcy directly one could simply use the term *PREVIOUS*. 
 
+```{r label, options}
+pA$depends_on[2] <- "PREVIOUS"
+DT::datatable(pA)
+```
 
 # Non-Logic dependencies
 
@@ -113,6 +118,15 @@ pA %>%
   projectPlan::wrangle_raw_plan() %>% 
   projectPlan::calculate_time_lines() %>% 
   projectPlan::gantt_by_sections(show_dependencies = TRUE)
+```
+
+
+Again, instead of stating the dependcy directly one could simply use the term *PREVIOUS*. 
+
+```{r label, options}
+pA$depends_on[2] <- ""
+pA$start[2] <- "PREVIOUS"
+DT::datatable(pA)
 ```
 
 
