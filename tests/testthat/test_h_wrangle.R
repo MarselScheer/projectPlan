@@ -171,3 +171,59 @@ test_that(
     expect_identical(d_out, d_expected)
   }
 )
+
+
+d_in <- data.table::rbindlist(
+  list(
+    data.table::data.table(
+      project = "A", id = letters[1:3], section = "S",
+      depends_on = c(NA, "PREVIOUS, xyz", "PREVIOUS"),
+      start = c("PREVIOUS", NA, NA)
+    ),
+    data.table::data.table(
+      project = "B", id = letters[1:3], section = "S",
+      depends_on = c(NA, "PREVIOUS", NA),
+      start = c("PREVIOUS, A::a", NA, "PREVIOUS")
+    )
+  )
+)
+
+d_out_dep <- data.table::rbindlist(
+  list(
+    data.table::data.table(
+      project = "A", id = letters[1:3], section = "S",
+      depends_on = c(NA, "A::a, xyz", "A::b"),
+      start = c("PREVIOUS", NA, NA)
+    ),
+    data.table::data.table(
+      project = "B", id = letters[1:3], section = "S",
+      depends_on = c(NA, "B::a", NA),
+      start = c("PREVIOUS, A::a", NA, "PREVIOUS")
+    )
+  )
+)
+
+d_out_start <- data.table::rbindlist(
+  list(
+    data.table::data.table(
+      project = "A", id = letters[1:3], section = "S",
+      depends_on = c(NA, "PREVIOUS, xyz", "PREVIOUS"),
+      start = c("PREVIOUS", NA, NA)
+    ),
+    data.table::data.table(
+      project = "B", id = letters[1:3], section = "S",
+      depends_on = c(NA, "PREVIOUS", NA),
+      start = c("A::a, A::c", NA, "B::b")
+    )
+  )
+)
+
+
+test_that(
+  "PREVIOUS tag is replaced correctly", {
+    expect_identical(h.replace_TAG_PREVIOUS(d_in, "depends_on"), d_out_dep)
+    expect_identical(h.replace_TAG_PREVIOUS(d_in, "start"), d_out_start)  
+  }
+)
+
+
