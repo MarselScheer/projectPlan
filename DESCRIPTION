@@ -1,7 +1,7 @@
 Package: projectPlan
 Type: Package
 Title: Supports creating project plans and time lines
-Version: 0.1.0
+Version: 0.0.0.9000
 Date: 2018-09-29
 Authors@R: person("Marsel", "Scheer", role = c("aut", "cre"), email = "scheer@freescience.de") 
 Maintainer: Marsel Scheer <scheer@freescience.de>
