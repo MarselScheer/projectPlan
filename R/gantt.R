@@ -158,6 +158,7 @@ h.plot_deadlines <- function(gp, pf) {
 
   with(NULL, sub[, due_text := paste("Ends", dist_end_to_deadline, "days\nbefore deadline", sep = " ")])
   with(NULL, sub[waiting == TRUE, due_text := paste0("Status AWAIT\n", due_text)])
+  with(NULL, sub[aborted == TRUE, dist_end_to_deadline := NA])
   
   # probably not the best way to reuse the existing size for the upcoming labels
   size <- gp$layers[[1]]$aes_params$size
