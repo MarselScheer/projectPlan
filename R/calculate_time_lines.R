@@ -29,10 +29,10 @@ calculate_time_lines <- function(df) {
 }
 
 #' @export
-collapse_projects <- function(dt, projects) {
+collapse_projects <- function(dt, projects, task_label = "{project} collapsed") {
   ret <- dt
   for (p in unique(projects)) {
-    ret <- h.collapse_project(ret, p)
+    ret <- h.collapse_project(ret, p, task_label)
   }
   ret
 }
@@ -47,7 +47,7 @@ collapse_complete_sections <- function(dt) {
   complete_sections <- dt[, .(complete = is.completed(progress, aborted)), by = "section"][complete == TRUE]
   for (proj_sec in complete_sections$section) {
     proj_sec <- unlist(strsplit(proj_sec, "::"))
-    dt <- collapse_section(dt, project = proj_sec[1], section = proj_sec[2])
+    dt <- collapse_section(dt, project = proj_sec[1], section = proj_sec[2], task_label = "{project}::{section} completed")
   }
   dt
 }
@@ -60,12 +60,12 @@ collapse_complete_projects <- function(dt) {
   }
   
   complete_projects <- dt[, .(complete = is.completed(progress, aborted)), by = "project"][complete == TRUE]
-  collapse_projects(dt, projects = complete_projects$project)
+  collapse_projects(dt, projects = complete_projects$project, task_label = "{project} completed")
 }
 
 
 #' @export
-collapse_section <- function(dt, project, section) {
+collapse_section <- function(dt, project, section, task_label = "{project}::{section} collapsed") {
   if (missing(project)) {
     msg <- "The parameter project must be specified."
     futile.logger::flog.error(msg)
@@ -86,7 +86,7 @@ collapse_section <- function(dt, project, section) {
     futile.logger::flog.error(msg)
     stop(msg)
   }
-  task_label <- as.character(glue::glue("{project}::{section} collapsed"))
+  task_label <- as.character(glue::glue(task_label))
   ret <- h.collapse_time_lines(dt[idx], group_by = c("project", "section"), task_label = task_label)
   ret$section <- task_label
   
@@ -94,7 +94,7 @@ collapse_section <- function(dt, project, section) {
   data.table::rbindlist(list(dt[!idx], ret), fill = TRUE)
 }
 
-h.collapse_project <- function(dt, project) {
+h.collapse_project <- function(dt, project, task_label) {
   if (missing(project)) {
     msg <- "Parameter project must be specified."
     futile.logger::flog.error(glue::glue("{msg} Valid entries for example are: "), head(unique(dt$project)), capture = TRUE)
@@ -107,9 +107,9 @@ h.collapse_project <- function(dt, project) {
     futile.logger::flog.error(glue::glue("{msg} Valid entries for example are: "), head(unique(dt$project)), capture = TRUE)
     stop(msg)
   }
-  
-  ret <- h.collapse_time_lines(dt[idx], group_by = "project", task_label = glue::glue("{project} collapsed"))
-  ret$section <- as.character(glue::glue("{project} collapsed"))
+  task_label = as.character(glue::glue(task_label))
+  ret <- h.collapse_time_lines(dt[idx], group_by = "project", task_label)
+  ret$section <- task_label
   
   data.table::rbindlist(list(dt[!idx], ret), fill = TRUE)  
 }
