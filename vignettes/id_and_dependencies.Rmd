@@ -95,7 +95,7 @@ pA %>%
 
 Instead of stating the dependcy directly one could simply use the term *PREVIOUS*. 
 
-```{r label, options}
+```{r, echo=FALSE}
 pA$depends_on[2] <- "PREVIOUS"
 DT::datatable(pA)
 ```
@@ -123,7 +123,7 @@ pA %>%
 
 Again, instead of stating the dependcy directly one could simply use the term *PREVIOUS*. 
 
-```{r label, options}
+```{r, echo=FALSE}
 pA$depends_on[2] <- ""
 pA$start[2] <- "PREVIOUS"
 DT::datatable(pA)
@@ -137,7 +137,7 @@ project *A* is internally stored as *A::i1*. This is also the reason why *id = i
 *B* at the same time without any conflicts. In order to define that a task depends on another task of a different 
 project one has to specify the 'whole' id, that is *projectname::id*.
 
-```{r}
+```{r, echo=FALSE}
 pA <- dplyr::tibble(
   project = c("A"), 
   section = "prep", task = paste0("task", 1:2), id = paste0("i", 1:2), start = "TODAY", depends_on = "", deadline = NA,
