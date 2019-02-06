@@ -195,12 +195,12 @@ d_in <- data.table::data.table(
 )
 d_out <- data.table::data.table(
   project = c("A"),
-  section = c("A::s1 collapsed"),
+  section = c("A::s1 completed"),
   aborted = c(T),
   time_start = c(lubridate::ymd("2019-01-20")),
   time_end   = c(lubridate::ymd("2019-01-20")),
   progress = c(100),
-  task = "A::s1 collapsed",
+  task = "A::s1 completed",
   waiting = F,
   resource = "collapsed"
 )
@@ -221,14 +221,14 @@ d_in <- data.table::data.table(
 )
 d_out <- data.table::data.table(
   project = c("A", "B"),
-  section = c("A collapsed", "B collapsed"),
+  section = c("A completed", "B completed"),
   aborted = c(F, F),
   time_start = c(lubridate::ymd("2019-01-20"), lubridate::ymd("2019-01-05")),
   time_end   = c(lubridate::ymd("2019-01-23"), lubridate::ymd("2019-03-10")),
   deadline   = c(lubridate::as_date(NA), lubridate::ymd("2019-02-14")),
   dist_end_to_deadline = c(NA, -1),
   progress = c(100, 100),
-  task = c("A collapsed", "B collapsed"),
+  task = c("A completed", "B completed"),
   waiting = c(F, F),
   resource = "collapsed"
 )

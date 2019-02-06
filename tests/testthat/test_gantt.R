@@ -99,6 +99,7 @@ d_in <- data.table::data.table(
   resource = letters[1:3],
   depends_on = list(NA, NA, NA),
   waiting = c(F, F, F),
+  aborted = F,
   y = 1:3,
   time_start = c(lubridate::ymd("2018-01-01"), lubridate::ymd("2018-02-01"), lubridate::ymd("2018-03-01")),
   time_end = c(lubridate::ymd("2018-01-11"), lubridate::ymd("2018-02-11"), lubridate::ymd("2018-03-11")),
@@ -115,6 +116,7 @@ test_that(
 d_in <- data.table::data.table(
   project = "A",
   section = "B",
+  aborted = F,
   id = letters[1:3],
   task = letters[1:3],
   resource = letters[1:3],
