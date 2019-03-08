@@ -24,6 +24,10 @@
 #'   progress: number between 0 and 100, indicating the progress of the task
 #'
 #'   deadline: NA or a date when the task must be completed
+#'   
+#' @param date_origin Reference date in format YYYY-mm-dd for converting an integer to a date. 
+#'   For dates (post-1901) from Windows Excel origin should by 1899-12-30 (is the default value). 
+#'   For dates (post-1901) from Mac Excel origin should by 1904-01-01. 
 #'
 #' @return \code{data.table} with columns preprocessed for calculating time lines with \link{calculate_time_lines}.
 #'
@@ -34,7 +38,7 @@
 #' @seealso \link{import_xlsx}, \link{calculate_time_lines}
 #'
 #' @export
-wrangle_raw_plan <- function(df) {
+wrangle_raw_plan <- function(df, date_origin = "1899-12-30") {
   h.log_start()
   
   df <- data.table::data.table(df)
@@ -53,8 +57,8 @@ wrangle_raw_plan <- function(df) {
   df$progress <- as.numeric(df$progress)
 
   df <- h.rd_preprocess_depends_on_column(df)
-  df <- h.rd_preprocess_start_column(df)
-  df <- h.rd_preprocess_end_column(df)
+  df <- h.rd_preprocess_start_column(df, date_origin = date_origin)
+  df <- h.rd_preprocess_end_column(df, date_origin = date_origin)
   df <- h.rd_preprocess_est_duration_column(df)
   df <- h.rd_preprocess_status_column(df)
   df <- h.rd_preprocess_deadline_column(df)
@@ -337,9 +341,10 @@ h.rd_preprocess_est_duration_column <- function(df) {
 }
 
 
-h.rd_preprocess_end_column <- function(df) {
+h.rd_preprocess_end_column <- function(df, date_origin) {
   h.log_start()
   
+  df$end <- h.convert_numeric_date(df$end, date_origin = date_origin)
   df$fixed_end_date <- suppressWarnings(lubridate::ymd(df$end))
   df$end <- NULL
   
@@ -348,7 +353,14 @@ h.rd_preprocess_end_column <- function(df) {
   df
 }
 
-h.rd_preprocess_start_column <- function(df) {
+h.convert_numeric_date <- function(v_str, date_origin) {
+  v_num <- suppressWarnings(as.numeric(v_str))
+  num_idx <- !is.na(v_num)
+  v_str[num_idx] <- as.character(as.Date(v_num[num_idx], origin = date_origin))
+  v_str
+}
+
+h.rd_preprocess_start_column <- function(df, date_origin) {
   h.log_start()
   
   df <- h.replace_TAG_PREVIOUS(df, "start")
@@ -370,6 +382,7 @@ h.rd_preprocess_start_column <- function(df) {
     futile.logger::flog.info(glue::glue("Convert 'TODAY' in column -start- to the current date -{TODAY}-"))  
   }
   
+  df$start <- h.convert_numeric_date(df$start, date_origin = date_origin)
   df$start[idx] <- TODAY
   df$fixed_start_date <- suppressWarnings(lubridate::ymd(df$start))
   df$start[!is.na(df$fixed_start_date)] <- NA

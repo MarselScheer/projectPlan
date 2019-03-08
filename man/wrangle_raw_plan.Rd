@@ -4,7 +4,7 @@
 \alias{wrangle_raw_plan}
 \title{Prepares a raw project plan for further processing}
 \usage{
-wrangle_raw_plan(df)
+wrangle_raw_plan(df, date_origin = "1899-12-30")
 }
 \arguments{
 \item{df}{Essential columns that must be provided are
@@ -28,6 +28,10 @@ wrangle_raw_plan(df)
   progress: number between 0 and 100, indicating the progress of the task
 
   deadline: NA or a date when the task must be completed}
+
+\item{date_origin}{Reference date in format YYYY-mm-dd for converting an integer to a date. 
+For dates (post-1901) from Windows Excel origin should by 1899-12-30 (is the default value). 
+For dates (post-1901) from Mac Excel origin should by 1904-01-01.}
 }
 \value{
 \code{data.table} with columns preprocessed for calculating time lines with \link{calculate_time_lines}.

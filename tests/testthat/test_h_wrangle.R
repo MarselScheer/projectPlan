@@ -4,18 +4,27 @@ testthat::context("Wrangle")
 futile.logger::flog.threshold(futile.logger::FATAL, name = futile.logger::flog.namespace())
 
 
+
+test_that(
+  "Conversion of numeric dates", {
+    expect_identical(h.convert_numeric_date(letters[1:3], date_origin = "1899-12-30"), letters[1:3])
+    expect_identical(h.convert_numeric_date(rep(NA_character_, 3), date_origin = "1899-12-30"), rep(NA_character_, 3))
+    expect_identical(h.convert_numeric_date(c("43529", "43530"), date_origin = "1899-12-30"), c("2019-03-05", "2019-03-06"))
+  })
+
+
 d_in <- data.table::data.table(depends_on = c("A"), start = c("TODAY"))
 d_expected <- data.table::data.table(depends_on = c("A"), start = as.character(NA), fixed_start_date = lubridate::as_date(lubridate::now()))
 test_that(
   "TODAY becomes the current date",
-  expect_identical(h.rd_preprocess_start_column(d_in), d_expected)
+  expect_identical(h.rd_preprocess_start_column(d_in, date_origin = "1899-12-30"), d_expected)
 )
 
 d_in <- data.table::data.table(depends_on = c("A"), start = c(NA))
 d_expected <- data.table::data.table(depends_on = c("A"), start = as.character(NA), fixed_start_date = lubridate::as_date(NA))
 test_that(
   "start-column contains only NA",
-  expect_identical(h.rd_preprocess_start_column(d_in), d_expected)
+  expect_identical(h.rd_preprocess_start_column(d_in, date_origin = "1899-12-30"), d_expected)
 )
 
 
@@ -23,17 +32,17 @@ d_in <- data.table::data.table(depends_on = c(NA, "A"), start = c(NA, "B"))
 d_expected <- data.table::data.table(depends_on = c(NA, "A"), start = c(NA, "B"), fixed_start_date = c(lubridate::as_date(lubridate::now()), NA))
 test_that(
   "Current date is default if no dependency and no start is defined",
-  expect_identical(h.rd_preprocess_start_column(d_in), d_expected)
+  expect_identical(h.rd_preprocess_start_column(d_in, date_origin = "1899-12-30"), d_expected)
 )
 
 
-d_in <- data.table::data.table(end = c("2018-09-20", "WAIT"))
+d_in <- data.table::data.table(end = c("2018-09-20", "WAIT", "43530"))
 d_expected <- data.table::data.table(
-  fixed_end_date = c(lubridate::ymd("2018-09-20"), NA)
+  fixed_end_date = c(lubridate::ymd("2018-09-20"), NA, lubridate::ymd("2019-03-06"))
 )
 test_that(
-  "ymd ín -end- is processed correctly", {
-    expect_identical(h.rd_preprocess_end_column(d_in), d_expected)
+  "ymd and 'numeric' ín -end- are processed correctly", {
+    expect_identical(h.rd_preprocess_end_column(d_in, date_origin = "1899-12-30"), d_expected)
   }
 )
 
