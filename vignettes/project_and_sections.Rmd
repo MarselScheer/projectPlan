@@ -39,7 +39,7 @@ Lets look at two very simple projects containing two tasks each:
 pA <- dplyr::tibble(
   project = c("A"), 
   section = "prep", task = paste0("task", 1:2), id = paste0("i", 1:2), start = "TODAY", depends_on = "", deadline = NA,
-  end = 1:2,
+  est_duration = 1:2,
   progress = 0, 
   resource = "R1")
 
@@ -85,7 +85,7 @@ where the section are sorted alphabetically.
 pA <- dplyr::tibble(
   project = c("A"), 
   section = c("0_prep", "1_design"), task = paste0("task", 1:2), id = paste0("i", 1:2), start = "TODAY", depends_on = "", deadline = NA,
-  end = 1:2,
+  est_duration = 1:2,
   progress = 0, 
   resource = "R1")
 
