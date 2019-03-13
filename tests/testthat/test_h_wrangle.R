@@ -54,8 +54,8 @@ d_expected <- data.table::data.table(
 )
 test_that(
   "ymd ín -deadline- are processed correctly", {
-    expect_identical(h.rd_preprocess_deadline_column(d_in), d_expected)
-    expect_error(h.rd_preprocess_deadline_column(data.table::data.table(deadline = "20-09-2018")), regexp = "must be.*ymd")
+    expect_identical(h.rd_preprocess_deadline_column(d_in, date_origin = "1899-12-30"), d_expected)
+    expect_error(h.rd_preprocess_deadline_column(data.table::data.table(deadline = "20-09-2018"), date_origin = "1899-12-30"), regexp = "must be.*ymd")
   }
 )
 

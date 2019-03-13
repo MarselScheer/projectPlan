@@ -61,7 +61,7 @@ wrangle_raw_plan <- function(df, date_origin = "1899-12-30") {
   df <- h.rd_preprocess_end_column(df, date_origin = date_origin)
   df <- h.rd_preprocess_est_duration_column(df)
   df <- h.rd_preprocess_status_column(df)
-  df <- h.rd_preprocess_deadline_column(df)
+  df <- h.rd_preprocess_deadline_column(df, date_origin = date_origin)
   h.rd_check_project_section_id_unique(df)
 
   df <- h.rd_make_id_unique_within_project(df)
@@ -283,11 +283,13 @@ h.rd_check_project_section_id_unique <- function(df) {
 }
 
 
-h.rd_preprocess_deadline_column <- function(df) {
+h.rd_preprocess_deadline_column <- function(df, date_origin) {
   h.log_start()
   
   df$raw_deadline <- df$deadline
+  df$deadline <- h.convert_numeric_date(df$deadline, date_origin = date_origin)
   df$deadline <- suppressWarnings(lubridate::ymd(df$deadline))
+  
   idx <- !is.na(df$deadline)
   if (any(idx)) {
     df$deadline[idx] <- lubridate::as_date(sapply(df$deadline[idx], h.turn_weekend_day_to_monday))
