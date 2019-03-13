@@ -101,8 +101,24 @@ h.replace_TAG_PREVIOUS <- function(df, col) {
   ret
 }
 
+h.replace_section_with_ids <- function(df, col) {
+  h.log_start()
+  
+  project_section <- paste(df$project, df$section, sep = h.SEPERATOR)
+  project_id <- paste(df$project, df$id, sep = h.SEPERATOR)
+  idx <- purrr::map(df[[col]], ~ which(project_section == .x))
+  replacement_ids <- purrr::map(idx, ~ h.comma_list(project_id[.x]))
+  rows <- which(!is.na(unlist(replacement_ids)))
+  df[[col]][rows] <- unlist(replacement_ids[rows])
+  
+  h.log_end()
+  df
+}
+
+
 h.rd_preprocess_depends_on_column <- function(df) {
-  h.replace_TAG_PREVIOUS(df, "depends_on")
+  df <- h.replace_TAG_PREVIOUS(df, "depends_on")
+  df <- h.replace_section_with_ids(df, "depends_on")
 }
 
 h.rd_check_id_deps <- function(df) {
@@ -366,6 +382,7 @@ h.rd_preprocess_start_column <- function(df, date_origin) {
   h.log_start()
   
   df <- h.replace_TAG_PREVIOUS(df, "start")
+  df <- h.replace_section_with_ids(df, "start")
   
   TODAY <- as.character(lubridate::as_date(lubridate::now()))
 
