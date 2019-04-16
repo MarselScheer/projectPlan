@@ -23,7 +23,7 @@ import_xlsx <- function(fName, sheets) {
       sheets,
       function(s) {
         futile.logger::flog.info(glue::glue("Import {fName} - {s}"))
-        df <- readxl::read_xlsx(fName, sheet = s, skip = 0)
+        df <- readxl::read_xlsx(fName, sheet = s, skip = 0, col_types = "text")
         if (nrow(df) == 0) {
           futile.logger::flog.info(glue::glue("Skip the empty sheet -{s}"))
           return(NULL)
