@@ -130,7 +130,7 @@ h.collapse_time_lines <- function(dt, group_by, task_label) {
   min_dist_end_to_deadline <- function(deadline, dist_end_to_deadline) {
     min_dline <- suppressWarnings(min(deadline, na.rm = TRUE))
     if (is.infinite(min_dline)) {
-      return(NA)
+      return(difftime(NA, NA))
     }
     
     idx_min_dline <- which(min_dline == deadline)

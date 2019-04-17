@@ -216,7 +216,7 @@ d_in <- data.table::data.table(
   time_start = c(lubridate::ymd("2019-01-20"), lubridate::ymd("2019-01-26"), lubridate::ymd("2019-02-05"), lubridate::ymd("2019-01-05")),
   time_end   = c(lubridate::ymd("2019-01-23"), lubridate::ymd("2019-01-27"), lubridate::ymd("2019-02-15"), lubridate::ymd("2019-03-10")),
   deadline   = c(lubridate::as_date(NA), lubridate::as_date(NA), lubridate::ymd("2019-02-14"), lubridate::ymd("2019-03-05")),
-  dist_end_to_deadline = c(NA, NA, -1, -5),
+  dist_end_to_deadline = c(difftime(NA, NA), difftime(NA, NA), -1, -5),
   progress = c(100, 99, 100, 100)
 )
 d_out <- data.table::data.table(
@@ -226,7 +226,7 @@ d_out <- data.table::data.table(
   time_start = c(lubridate::ymd("2019-01-20"), lubridate::ymd("2019-01-05")),
   time_end   = c(lubridate::ymd("2019-01-23"), lubridate::ymd("2019-03-10")),
   deadline   = c(lubridate::as_date(NA), lubridate::ymd("2019-02-14")),
-  dist_end_to_deadline = c(NA, -1),
+  dist_end_to_deadline = c(difftime(NA, NA), -1),
   progress = c(100, 100),
   task = c("A completed", "B completed"),
   waiting = c(F, F),
