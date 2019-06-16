@@ -239,7 +239,7 @@ d_out <- data.table::data.table(
 )
 test_that(
   "Collapsing when all tasks have status aborted or are complete",
-  expect_equal(collapse_complete_projects(d_in), d_out)
+  expect_equivalent(collapse_complete_projects(d_in), d_out)
 )
 
 
