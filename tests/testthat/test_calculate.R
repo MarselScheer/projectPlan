@@ -237,9 +237,21 @@ d_out <- data.table::data.table(
   waiting = c(F, F),
   resource = "collapsed"
 )
+out <- collapse_complete_projects(d_in)
 test_that(
-  "Collapsing when all tasks have status aborted or are complete",
-  expect_equivalent(collapse_complete_projects(d_in), d_out)
+  "Collapsing when all tasks have status aborted or are complete", {
+    expect_equal(out$project, d_out$project)
+    expect_equal(out$section, d_out$section)
+    expect_equal(out$aborted, d_out$aborted)
+    expect_equal(out$time_start, d_out$time_start)
+    expect_equal(out$time_end, d_out$time_end)
+    expect_equal(out$deadline, d_out$deadline)
+    expect_equal(out$dist_end_to_deadline, d_out$dist_end_to_deadline)
+    expect_equal(out$progress, d_out$progress)
+    expect_equal(out$task, d_out$task)
+    expect_equal(out$waiting, d_out$waiting)
+    expect_equal(out$resource, d_out$resource)
+  }
 )
 
 
