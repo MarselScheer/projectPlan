@@ -9,6 +9,7 @@ Description: More about what it does (maybe more than one line)
     Use four spaces when indenting paragraphs within the Description.
 Imports:
     data.table (>= 1.11.6),
+    purrr (>= 0.3.2),
     glue (>= 1.2.0),
     readxl (>= 1.1.0),
     stringr (>= 1.3.1),
