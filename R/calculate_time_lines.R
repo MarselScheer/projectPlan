@@ -232,6 +232,10 @@ h.exclude_weekends <- function(start, end) {
     # if we stop working on sunday we actually have to work till tuesday
     futile.logger::flog.debug(glue::glue("The task ends on {end} which is a weekend. Hence, the actual end is 2 days on {end + 2}"))
     end <- end + 2
+  } else if (nmb_workweeks == 0 && lubridate::wday(end) < lubridate::wday(start)) {
+    # start this friday and end next monday. 
+    # in this cased nmb_workweeks is 0 but weekend isn't yet excluded.
+    end <- end + 2  
   }
   end
 }

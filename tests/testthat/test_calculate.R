@@ -14,6 +14,7 @@ test_that(
     expect_error(h.exclude_weekends(lubridate::ymd("2018-10-06"), lubridate::ymd("2018-10-01")), regexp = "end time.*is before.*start time")
     expect_identical(h.exclude_weekends(lubridate::ymd("2018-10-06"), lubridate::ymd("2018-10-08")), lubridate::ymd("2018-10-10"))
     expect_identical(h.exclude_weekends(lubridate::ymd("2018-10-03"), lubridate::ymd("2019-02-28")), lubridate::ymd("2019-04-29"))
+    expect_identical(h.exclude_weekends(lubridate::ymd("2019-06-14"), lubridate::ymd("2019-06-17")), lubridate::ymd("2019-06-19"))
   }
 )
 
@@ -58,6 +59,10 @@ test_that(
     expect_identical(
       h.calculate_end_time(lubridate::ymd("2018-10-05"), 5 + 5 + 5 + 6, NA),
       lubridate::ymd("2018-11-05")
+    )
+    expect_identical(
+      h.calculate_end_time(lubridate::ymd("2019-06-14"), 3, NA),
+      lubridate::ymd("2019-06-19")
     )
   }
 )
