@@ -7,9 +7,9 @@ futile.logger::flog.threshold(futile.logger::FATAL, name = futile.logger::flog.n
 
 test_that(
   "Conversion of numeric dates", {
-    expect_identical(h.convert_numeric_date(letters[1:3], date_origin = "1899-12-30"), letters[1:3])
-    expect_identical(h.convert_numeric_date(rep(NA_character_, 3), date_origin = "1899-12-30"), rep(NA_character_, 3))
-    expect_identical(h.convert_numeric_date(c("43529", "43530"), date_origin = "1899-12-30"), c("2019-03-05", "2019-03-06"))
+    expect_equal(h.convert_numeric_date(letters[1:3], date_origin = "1899-12-30"), letters[1:3])
+    expect_equal(h.convert_numeric_date(rep(NA_character_, 3), date_origin = "1899-12-30"), rep(NA_character_, 3))
+    expect_equal(h.convert_numeric_date(c("43529", "43530"), date_origin = "1899-12-30"), c("2019-03-05", "2019-03-06"))
   })
 
 
@@ -17,14 +17,14 @@ d_in <- data.table::data.table(depends_on = c("A"), start = c("TODAY"))
 d_expected <- data.table::data.table(depends_on = c("A"), start = as.character(NA), fixed_start_date = lubridate::as_date(lubridate::now()))
 test_that(
   "TODAY becomes the current date",
-  expect_identical(h.rd_preprocess_start_column(d_in, date_origin = "1899-12-30"), d_expected)
+  expect_equal(h.rd_preprocess_start_column(d_in, date_origin = "1899-12-30"), d_expected)
 )
 
 d_in <- data.table::data.table(depends_on = c("A"), start = c(NA))
 d_expected <- data.table::data.table(depends_on = c("A"), start = as.character(NA), fixed_start_date = lubridate::as_date(NA))
 test_that(
   "start-column contains only NA",
-  expect_identical(h.rd_preprocess_start_column(d_in, date_origin = "1899-12-30"), d_expected)
+  expect_equal(h.rd_preprocess_start_column(d_in, date_origin = "1899-12-30"), d_expected)
 )
 
 
@@ -32,7 +32,7 @@ d_in <- data.table::data.table(depends_on = c(NA, "A"), start = c(NA, "B"))
 d_expected <- data.table::data.table(depends_on = c(NA, "A"), start = c(NA, "B"), fixed_start_date = c(lubridate::as_date(lubridate::now()), NA))
 test_that(
   "Current date is default if no dependency and no start is defined",
-  expect_identical(h.rd_preprocess_start_column(d_in, date_origin = "1899-12-30"), d_expected)
+  expect_equal(h.rd_preprocess_start_column(d_in, date_origin = "1899-12-30"), d_expected)
 )
 
 
@@ -42,7 +42,7 @@ d_expected <- data.table::data.table(
 )
 test_that(
   "ymd and 'numeric' ín -end- are processed correctly", {
-    expect_identical(h.rd_preprocess_end_column(d_in, date_origin = "1899-12-30"), d_expected)
+    expect_equal(h.rd_preprocess_end_column(d_in, date_origin = "1899-12-30"), d_expected)
   }
 )
 
@@ -54,7 +54,7 @@ d_expected <- data.table::data.table(
 )
 test_that(
   "ymd ín -deadline- are processed correctly", {
-    expect_identical(h.rd_preprocess_deadline_column(d_in, date_origin = "1899-12-30"), d_expected)
+    expect_equal(h.rd_preprocess_deadline_column(d_in, date_origin = "1899-12-30"), d_expected)
     expect_error(h.rd_preprocess_deadline_column(data.table::data.table(deadline = "20-09-2018"), date_origin = "1899-12-30"), regexp = "must be.*ymd")
   }
 )
@@ -94,7 +94,7 @@ d_expected <- data.table::data.table(
 
 test_that(
   "combine ids within project in order to make them unique", {
-    expect_identical(h.rd_make_id_unique_within_project(d_in), d_expected)
+    expect_equal(h.rd_make_id_unique_within_project(d_in), d_expected)
   }
 )
 
@@ -135,7 +135,7 @@ d_expected <- data.table::data.table(
 d_out <- wrangle_raw_plan(d_in)
 test_that(
   "Complete raw data wrangling. check default values", {
-    expect_identical(d_out, d_expected)
+    expect_equal(d_out, d_expected)
   }
 )
 
@@ -177,7 +177,7 @@ d_expected <- data.table::data.table(
 d_out <- wrangle_raw_plan(d_in)
 test_that(
   "Complete raw data wrangling with combining ids", {
-    expect_identical(d_out, d_expected)
+    expect_equal(d_out, d_expected)
   }
 )
 
@@ -230,8 +230,8 @@ d_out_start <- data.table::rbindlist(
 
 test_that(
   "PREVIOUS tag is replaced correctly", {
-    expect_identical(h.replace_TAG_PREVIOUS(d_in, "depends_on"), d_out_dep)
-    expect_identical(h.replace_TAG_PREVIOUS(d_in, "start"), d_out_start)  
+    expect_equal(h.replace_TAG_PREVIOUS(d_in, "depends_on"), d_out_dep)
+    expect_equal(h.replace_TAG_PREVIOUS(d_in, "start"), d_out_start)  
   }
 )
 

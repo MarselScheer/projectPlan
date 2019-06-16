@@ -15,7 +15,7 @@ d_out <-
 
 test_that(
   "rearrange in a way that every dependency has its own row", {
-    expect_identical(h.one_row_for_every_dependency(d_in), d_out)
+    expect_equal(h.one_row_for_every_dependency(d_in), d_out)
     expect_null(h.one_row_for_every_dependency(d_nodeps))
   }
 )
@@ -48,7 +48,7 @@ d_out <- data.table::data.table(
 
 test_that(
   "For every arrow one row", {
-    expect_identical(h.calculate_arrows(d_in, lubridate::ymd("2017-01-01"), lubridate::ymd("2019-01-01")), d_out)
+    expect_equal(h.calculate_arrows(d_in, lubridate::ymd("2017-01-01"), lubridate::ymd("2019-01-01")), d_out)
     expect_null(h.calculate_arrows(d_nodeps, lubridate::ymd("2017-01-01"), lubridate::ymd("2019-01-01")))
   }
 )
@@ -56,7 +56,7 @@ test_that(
 
 test_that(
   "For every weekend one row", {
-    expect_identical(
+    expect_equal(
       h.make_weekend_rows(lubridate::ymd("2018-10-12"), lubridate::ymd("2018-10-15")),
       data.table::data.table(
         y = 0,
@@ -66,7 +66,7 @@ test_that(
         time_end = lubridate::ymd("2018-10-14")
       )
     )
-    expect_identical(
+    expect_equal(
       # 2018-10-14 is sunday
       h.make_weekend_rows(lubridate::ymd("2018-10-14"), lubridate::ymd("2018-10-15")),
       data.table::data.table(
@@ -77,7 +77,7 @@ test_that(
         time_end = lubridate::ymd("2018-10-14")
       )
     )
-    expect_identical(
+    expect_equal(
       # 2018-10-13 is saturday
       h.make_weekend_rows(lubridate::ymd("2018-10-13"), lubridate::ymd("2018-10-20")),
       data.table::data.table(

@@ -4,17 +4,17 @@ futile.logger::flog.threshold(futile.logger::FATAL, name = futile.logger::flog.n
 
 test_that(
   "Skip saturday and sunday", {
-    expect_identical(h.turn_weekend_day_to_monday(lubridate::ymd("2018-10-06")), lubridate::ymd("2018-10-08"))
-    expect_identical(h.turn_weekend_day_to_monday(lubridate::ymd("2018-10-14")), lubridate::ymd("2018-10-15"))
+    expect_equal(h.turn_weekend_day_to_monday(lubridate::ymd("2018-10-06")), lubridate::ymd("2018-10-08"))
+    expect_equal(h.turn_weekend_day_to_monday(lubridate::ymd("2018-10-14")), lubridate::ymd("2018-10-15"))
   }
 )
 
 test_that(
   "Weekends are excluded from a time span", {
     expect_error(h.exclude_weekends(lubridate::ymd("2018-10-06"), lubridate::ymd("2018-10-01")), regexp = "end time.*is before.*start time")
-    expect_identical(h.exclude_weekends(lubridate::ymd("2018-10-06"), lubridate::ymd("2018-10-08")), lubridate::ymd("2018-10-10"))
-    expect_identical(h.exclude_weekends(lubridate::ymd("2018-10-03"), lubridate::ymd("2019-02-28")), lubridate::ymd("2019-04-29"))
-    expect_identical(h.exclude_weekends(lubridate::ymd("2019-06-14"), lubridate::ymd("2019-06-17")), lubridate::ymd("2019-06-19"))
+    expect_equal(h.exclude_weekends(lubridate::ymd("2018-10-06"), lubridate::ymd("2018-10-08")), lubridate::ymd("2018-10-10"))
+    expect_equal(h.exclude_weekends(lubridate::ymd("2018-10-03"), lubridate::ymd("2019-02-28")), lubridate::ymd("2019-04-29"))
+    expect_equal(h.exclude_weekends(lubridate::ymd("2019-06-14"), lubridate::ymd("2019-06-17")), lubridate::ymd("2019-06-19"))
   }
 )
 
@@ -32,7 +32,7 @@ dt_out <- data.table::data.table(
 h.set_deadline_for_waiting_tasks(dt_in)
 test_that(
   "End time modification according to waiting status", {
-    expect_identical(dt_in, dt_out)
+    expect_equal(dt_in, dt_out)
   }
 )
 
@@ -40,27 +40,27 @@ test_that(
 
 test_that(
   "Calculate end times", {
-    expect_identical(
+    expect_equal(
       h.calculate_end_time(lubridate::ymd("2018-10-04"), 2, lubridate::ymd("2018-10-06")),
       lubridate::ymd("2018-10-08")
     )
-    expect_identical(
+    expect_equal(
       h.calculate_end_time(lubridate::ymd("2018-10-04"), 2, NA),
       lubridate::ymd("2018-10-08")
     )
-    expect_identical(
+    expect_equal(
       h.calculate_end_time(lubridate::ymd("2018-10-05"), 5, NA),
       lubridate::ymd("2018-10-12")
     )
-    expect_identical(
+    expect_equal(
       h.calculate_end_time(lubridate::ymd("2018-10-05"), 6, NA),
       lubridate::ymd("2018-10-15")
     )
-    expect_identical(
+    expect_equal(
       h.calculate_end_time(lubridate::ymd("2018-10-05"), 5 + 5 + 5 + 6, NA),
       lubridate::ymd("2018-11-05")
     )
-    expect_identical(
+    expect_equal(
       h.calculate_end_time(lubridate::ymd("2019-06-14"), 3, NA),
       lubridate::ymd("2019-06-19")
     )
@@ -81,11 +81,11 @@ dt_out <- data.table::copy(dt_in)
 test_that(
   "Calculate time lines under no dependency", {
     dt_out <- calculate_time_lines(dt_out)
-    # expect_identical(dt_out$time_start, c(lubridate::ymd("2018-10-05"), NA))
-    # expect_identical(dt_out$time_end, c(lubridate::ymd("2018-11-05"), NA))
+    # expect_equal(dt_out$time_start, c(lubridate::ymd("2018-10-05"), NA))
+    # expect_equal(dt_out$time_end, c(lubridate::ymd("2018-11-05"), NA))
     # h.calculate_time_lines_at(dt_out, 2)
-    expect_identical(dt_out$time_start, c(lubridate::ymd("2018-10-05"), lubridate::ymd("2018-10-05"), lubridate::ymd("2018-10-05")))
-    expect_identical(dt_out$time_end, c(lubridate::ymd("2018-10-08"), lubridate::ymd("2018-10-15"), lubridate::ymd("2018-11-05")))
+    expect_equal(dt_out$time_start, c(lubridate::ymd("2018-10-05"), lubridate::ymd("2018-10-05"), lubridate::ymd("2018-10-05")))
+    expect_equal(dt_out$time_end, c(lubridate::ymd("2018-10-08"), lubridate::ymd("2018-10-15"), lubridate::ymd("2018-11-05")))
   }
 )
 
@@ -106,8 +106,8 @@ end_expected <- c(lubridate::ymd("2018-10-08"), lubridate::ymd("2018-10-10"), lu
 test_that(
   "Calculate time lines under first order dependency", {
     h.calculate_time_lines_at(dt_out, 3)
-    expect_identical(dt_out$time_start, start_expected)
-    expect_identical(dt_out$time_end, end_expected)
+    expect_equal(dt_out$time_start, start_expected)
+    expect_equal(dt_out$time_end, end_expected)
   }
 )
 
@@ -117,8 +117,8 @@ dt_out <- data.table::copy(dt_in)
 test_that(
   "Calculate time lines under first order dependency with non sorted entries", {
     h.calculate_time_lines_at(dt_out, 1)
-    expect_identical(dt_out$time_start, start_expected[3:1])
-    expect_identical(dt_out$time_end, end_expected[3:1])
+    expect_equal(dt_out$time_start, start_expected[3:1])
+    expect_equal(dt_out$time_end, end_expected[3:1])
   }
 )
 
@@ -140,8 +140,8 @@ end_expected <- c(lubridate::ymd("2018-10-17"), lubridate::ymd("2018-10-16"), lu
 test_that(
   "Calculate time lines under second order dependency with non sorted entries", {
     h.calculate_time_lines_at(dt_out, 1)
-    expect_identical(dt_out$time_start, start_expected)
-    expect_identical(dt_out$time_end, end_expected)
+    expect_equal(dt_out$time_start, start_expected)
+    expect_equal(dt_out$time_end, end_expected)
   }
 )
 
@@ -161,8 +161,8 @@ end_expected <- c(lubridate::ymd("2018-10-09"), lubridate::ymd("2018-10-16"), lu
 test_that(
   "Calculate time lines, multiple entries depend on one entrie", {
     dt_out <- calculate_time_lines(dt_out)
-    expect_identical(dt_out$time_start, start_expected)
-    expect_identical(dt_out$time_end, end_expected)
+    expect_equal(dt_out$time_start, start_expected)
+    expect_equal(dt_out$time_end, end_expected)
   }
 )
 
@@ -178,14 +178,14 @@ h.calc_end_to_deadline(d_out)
 
 test_that(
   "Distance to deadline", {
-    expect_identical(
+    expect_equal(
       h.calc_dist_to_deadline(
         c(lubridate::ymd("2018-11-20"), lubridate::ymd("2018-10-19"), lubridate::ymd("2018-10-18"), lubridate::ymd("2018-10-22"), lubridate::ymd("2018-11-02")),
         c(lubridate::ymd("2018-11-23"), lubridate::ymd("2018-10-22"), lubridate::ymd("2018-11-02"), lubridate::ymd("2018-10-19"), lubridate::ymd("2018-10-18"))
       ),
       lubridate::as.difftime(c(3, 1, 11, -1, -11), units = "days")
     )
-    expect_identical(d_out, d_expected)
+    expect_equal(d_out, d_expected)
   }
 )
 
@@ -211,7 +211,7 @@ d_out <- data.table::data.table(
 )
 test_that(
   "Collapsing when all tasks have status aborted",
-  expect_identical(collapse_complete_sections(d_in), d_out)
+  expect_equal(collapse_complete_sections(d_in), d_out)
 )
 
 d_in <- data.table::data.table(
@@ -239,7 +239,7 @@ d_out <- data.table::data.table(
 )
 test_that(
   "Collapsing when all tasks have status aborted or are complete",
-  expect_identical(collapse_complete_projects(d_in), d_out)
+  expect_equal(collapse_complete_projects(d_in), d_out)
 )
 
 
@@ -255,8 +255,8 @@ d_in <- data.table::data.table(
 )
 test_that(
   "No collapsing if section/Project is not complete", {
-    expect_identical(collapse_complete_projects(d_in), d_in)
-    expect_identical(collapse_complete_sections(d_in), d_in)
+    expect_equal(collapse_complete_projects(d_in), d_in)
+    expect_equal(collapse_complete_sections(d_in), d_in)
   }
 )
 
