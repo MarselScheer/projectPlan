@@ -48,7 +48,7 @@ wrangle_raw_plan <- function(df, date_origin = "1899-12-30") {
 
   df <- h.rd_fill_with_default(df, "project", "UNKNOWN")
   df <- h.rd_fill_with_default(df, "section", "UNKNOWN")
-  df <- h.rd_fill_with_default(df, "id", "UNKNOWN")
+  df <- h.rd_fill_with_default(df, "id", "NOT_SPECIFIED_", log_filling = FALSE, create_unique_entries = TRUE)
   df <- h.rd_fill_with_default(df, "est_duration", "1")
   df <- h.rd_fill_with_default(df, "status", "", log_filling = FALSE)
   df <- h.rd_fill_with_default(df, "resource", "UNKNOWN")
@@ -411,7 +411,7 @@ h.rd_preprocess_start_column <- function(df, date_origin) {
   df
 }
 
-h.rd_fill_with_default <- function(df, colname, def, log_filling = TRUE) {
+h.rd_fill_with_default <- function(df, colname, def, log_filling = TRUE, create_unique_entries = FALSE) {
   h.log_start()
   
   idx <- is.na(df[[colname]])
@@ -424,6 +424,10 @@ h.rd_fill_with_default <- function(df, colname, def, log_filling = TRUE) {
     )
   }
   if (any(idx)) {
+    idx <- which(idx)
+    if (create_unique_entries) {
+      def <- paste0(def, idx)
+    }
     df[[colname]][idx] <- def
   }
   

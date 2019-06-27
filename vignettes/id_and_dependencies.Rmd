@@ -41,8 +41,10 @@ pA <- dplyr::tibble(
   resource = "R1")
 ```
 
-The intrinsic property of an *id* is that it is unique. Internally, the *id*-entry is combined with the project name.
-Therefore if the same *id* is used in different projects it is unique.
+The intrinsic property of an *id* is that it is unique. Note, if *id* is not provided, then entries of the form *NOT_SPECIFIED_#some_digit#*
+are generated automatically. One should avoid to use those entries to specify dependencies because it is very likely that the
+automatically generated digit-suffix will change. Internally, the *id*-entry is combined with the project name.
+Therefore, if the same *id* is used in different projects it is unique.
 However, especially at the beginning of a project when the plan is growing it could be handy to have one id for more than one tasks. 
 Using the same *id* within the same *section* is possible. If this happens, then the corresponding rows are combined
 together into one entry, i.e.:

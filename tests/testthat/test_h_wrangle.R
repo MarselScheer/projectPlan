@@ -102,7 +102,7 @@ test_that(
 d_in <- data.frame(
   project = c("A"),
   section = NA_character_,
-  id = NA_character_,
+  id = c(NA_character_, NA_character_),
   depends_on = NA_character_,
   start = NA_character_,
   end = NA_character_,
@@ -116,7 +116,7 @@ d_in <- data.frame(
 )
 d_expected <- data.table::data.table(
   project = c("A"),
-  id = "A::UNKNOWN",
+  id = c("A::NOT_SPECIFIED_1", "A::NOT_SPECIFIED_2"),
   depends_on = NA_character_,
   start = NA_character_,
   prior_ids = NA_character_,
