@@ -37,6 +37,7 @@ gantt_by_sections <- function(dt, xlim, show_dependencies = FALSE, text_size = 3
       h.mark_completed_tasks(pf)
   )
 
+  ret <- h.plot_status(ret, pf)
   ret <- h.plot_deadlines(ret, pf)
 
   if (show_dependencies) {
@@ -153,16 +154,51 @@ h.mark_completed_tasks <- function(pf) {
   ggplot2::geom_rect(data = sub, fill = "grey")
 }
 
+h.plot_status <- function(gp, pf) {
+  sub <- data.table::copy(pf)
+  # probably not the best way to reuse the existing size for the upcoming labels
+  size <- gp$layers[[1]]$aes_params$size
+  
+  idx <- sub$unscheduled
+  if (any(idx, na.rm = TRUE)) {
+    gp <- gp +
+      with(
+        NULL,
+        ggplot2::geom_label(
+          # two or more rows with the same id (for instance because resources were separated by rows) would generate mutiple deadline labels
+          data = dplyr::slice(dplyr::group_by(sub[idx], id), 1),
+          ggplot2::aes(y = y + 0.25, x = time_end, hjust = 0, vjust = 0), label = "U", fill = "yellow1", color = "black",
+          size = size
+        )
+      )
+  }
+  
+  
+  idx <- sub$waiting
+  if (any(idx, na.rm = TRUE)) {
+    gp <- gp +
+      with(
+        NULL,
+        ggplot2::geom_label(
+          # two or more rows with the same id (for instance because resources were separated by rows) would generate mutiple deadline labels
+          data = dplyr::slice(dplyr::group_by(sub[idx], id), 1),
+          ggplot2::aes(y = y - 0.25, x = time_end, hjust = 0, vjust = 1), label = "A", fill = "blue1", color = "white",
+          size = size
+        )
+      )
+  }
+  gp
+}
+
 h.plot_deadlines <- function(gp, pf) {
   sub <- data.table::copy(pf)
-
+  
   with(NULL, sub[, due_text := paste("Ends", dist_end_to_deadline, "days before deadline", sep = " ")])
-  with(NULL, sub[waiting == TRUE, due_text := paste0("Status AWAIT; ", due_text)])
   with(NULL, sub[aborted == TRUE, dist_end_to_deadline := NA])
   
   # probably not the best way to reuse the existing size for the upcoming labels
   size <- gp$layers[[1]]$aes_params$size
-  
+
   idx <- sub$dist_end_to_deadline <= 0
   if (any(idx, na.rm = TRUE)) {
     gp <- gp +

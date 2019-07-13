@@ -71,7 +71,8 @@ d_in <- data.table::data.table(
   fixed_end_date = lubridate::ymd(c("2018-09-15", "2018-09-16")),
   est_days = c(2, 3),
   waiting = c(F, T),
-  aborted = c(T, F)
+  aborted = c(T, F),
+  unscheduled = c(T, F)
 )
 
 d_expected <- data.table::data.table(
@@ -89,6 +90,7 @@ d_expected <- data.table::data.table(
   est_days = c(5),
   waiting = c(T),
   aborted = c(T),
+  unscheduled = c(T),
   nmb_combined_entries = 2L
 )
 
@@ -130,6 +132,7 @@ d_expected <- data.table::data.table(
   est_days = 1,
   waiting = FALSE,
   aborted = FALSE,
+  unscheduled = FALSE,
   nmb_combined_entries = 1L
 )
 d_out <- wrangle_raw_plan(d_in)
@@ -142,16 +145,16 @@ test_that(
 d_in <- data.frame(
   project = c("A"),
   section = c("0_prep"),
-  id = c("a", "a"),
-  depends_on = c("b, B::b", "b, b"),
-  start = c("2018-09-10", "2018-09-11"),
-  end = c("2018-09-20", "2018-10-25"),
-  est_duration = c("1", "2"),
-  status = c("aborted", "await"),
-  resource = c("r1, r2", "r2"),
-  task = c("t1", "t2"),
-  progress = c(0, 50),
-  deadline = c("2018-09-23", "2018-10-01"),
+  id = c("a", "a", "a"),
+  depends_on = c("b, B::b", "b, b", "B::b"),
+  start = c("2018-09-10", "2018-09-11", "2018-09-09"),
+  end = c("2018-09-20", "2018-10-25", "2018-10-01"),
+  est_duration = c("1", "2", "2"),
+  status = c("aborted", "await", "unscheduled"),
+  resource = c("r1, r2", "r2", "r3"),
+  task = c("t1", "t2", "t3"),
+  progress = c(0, 50, 70),
+  deadline = c("2018-09-23", "2018-10-01", "2018-10-02"),
   stringsAsFactors = FALSE
 )
 d_expected <- data.table::data.table(
@@ -161,16 +164,17 @@ d_expected <- data.table::data.table(
   start = NA_character_,
   prior_ids = list(c("A::b", "B::b")),
   section = c("A::0_prep"),
-  resource = c("r1, r2"),
-  task = c("t1, t2"),
-  progress = c(25),
+  resource = c("r1, r2, r3"),
+  task = c("t1, t2, t3"),
+  progress = c(40),
   deadline = lubridate::as_date(c("2018-09-24")),
-  fixed_start_date = lubridate::as_date(c("2018-09-10")),
+  fixed_start_date = lubridate::as_date(c("2018-09-09")),
   fixed_end_date = lubridate::as_date(c("2018-10-25")),
-  est_days = 3,
+  est_days = 5,
   waiting = TRUE,
   aborted = TRUE,
-  nmb_combined_entries = 2L,
+  unscheduled = TRUE,
+  nmb_combined_entries = 3L,
   stringsAsFactors = FALSE
 )
 

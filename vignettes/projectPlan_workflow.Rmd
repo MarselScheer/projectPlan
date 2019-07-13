@@ -86,7 +86,7 @@ A few notes on the columns in the spreadsheet (more details later):
     - a date (yyyy-mm-dd) when the task actually was started
 * est_duration is the estimated duration in days. 
 * end is end date (yyyy-mm-dd) of the task. Usually known when the task was completed or aborted. 
-* status can be empty or contain the special terms AWAIT or ABORTED. 
+* status can be empty or contain the special terms AWAIT, UNSCHEDULED or ABORTED. 
 * resource can be a comma separated list
 * progress is a number between 0 and 100
 * deadline is a date

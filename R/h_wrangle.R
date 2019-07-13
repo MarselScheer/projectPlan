@@ -197,6 +197,7 @@ h.rd_make_id_unique_within_project <- function(df) {
     est_days = sum(est_days, na.rm = TRUE),
     waiting = any(waiting),
     aborted = any(aborted),
+    unscheduled = any(unscheduled),
     nmb_combined_entries = .N
   ),
   by = .(project, id)
@@ -328,6 +329,7 @@ h.rd_preprocess_status_column <- function(df) {
   df$status <- toupper(df$status)
   df$waiting <- df$status == "AWAIT"
   df$aborted <- df$status == "ABORTED"
+  df$unscheduled <- df$status == "UNSCHEDULED"
   df$status <- NULL
   
   h.log_end()
