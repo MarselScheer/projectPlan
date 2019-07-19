@@ -167,13 +167,13 @@ h.plot_status <- function(gp, pf) {
         ggplot2::geom_label(
           # two or more rows with the same id (for instance because resources were separated by rows) would generate mutiple deadline labels
           data = dplyr::slice(dplyr::group_by(sub[idx], id), 1),
-          ggplot2::aes(y = y + 0.25, x = time_end, hjust = 0, vjust = 0), label = "U", fill = "yellow1", color = "black",
-          size = size
+          ggplot2::aes(y = y, x = time_start, hjust = 0, vjust = 0.5), 
+          label = "U", fill = "yellow1", color = "black", size = size
         )
       )
   }
   
-  
+  # TODO: for grouped tasks, this might overwrite the unscheduled-label
   idx <- sub$waiting
   if (any(idx, na.rm = TRUE)) {
     gp <- gp +
@@ -182,8 +182,8 @@ h.plot_status <- function(gp, pf) {
         ggplot2::geom_label(
           # two or more rows with the same id (for instance because resources were separated by rows) would generate mutiple deadline labels
           data = dplyr::slice(dplyr::group_by(sub[idx], id), 1),
-          ggplot2::aes(y = y - 0.25, x = time_end, hjust = 0, vjust = 1), label = "A", fill = "blue1", color = "white",
-          size = size
+          ggplot2::aes(y = y, x = time_start, hjust = 0, vjust = 0.5), 
+          label = "A", fill = "orange1", color = "black", size = size
         )
       )
   }
