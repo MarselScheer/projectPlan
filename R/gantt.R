@@ -123,7 +123,9 @@ h.create_gantt <- function(pf, xlim, xmin, xmax, text_size = 3) {
   with(
     NULL,
     ggplot2::ggplot(pf, ggplot2::aes(xmin = time_start, xmax = time_end, ymin = y - 0.3, ymax = y + 0.3)) +
-      ggplot2::geom_text(ggplot2::aes(x = time_end, y = y, label = task, hjust = 0), size = text_size) +
+      ggplot2::geom_text(ggplot2::aes(x = time_end, y = y, label = task, hjust = 0), 
+                         size = text_size, 
+                         nudge_x = max(as.numeric((xmax - xmin)) / 100, 1)) +
       ggplot2::geom_rect(ggplot2::aes(xmin = max(xmin, xlim[1]), xmax = xmax, ymin = min_y - 0.4, ymax = max_y + 0.4), color = "black", alpha = 0, linetype = 3) +
       ggplot2::geom_vline(xintercept = lubridate::as_date(lubridate::now()), size = 2, color = "red", alpha = 0.2) +
       ggplot2::geom_rect(data = we, ggplot2::aes(xmin = time_start, xmax = time_end + 1, ymin = 0, ymax = nrow(pf) + 1), alpha = 0.05) +
