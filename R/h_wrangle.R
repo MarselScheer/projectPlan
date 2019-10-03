@@ -56,11 +56,11 @@ wrangle_raw_plan <- function(df, date_origin = "1899-12-30") {
   df <- h.rd_fill_with_default(df, "progress", "0")
   df$progress <- as.numeric(df$progress)
 
+  df <- h.rd_preprocess_status_column(df)
   df <- h.rd_preprocess_depends_on_column(df)
   df <- h.rd_preprocess_start_column(df, date_origin = date_origin)
   df <- h.rd_preprocess_end_column(df, date_origin = date_origin)
   df <- h.rd_preprocess_est_duration_column(df)
-  df <- h.rd_preprocess_status_column(df)
   df <- h.rd_preprocess_deadline_column(df, date_origin = date_origin)
   h.rd_check_project_section_id_unique(df)
 
@@ -366,6 +366,16 @@ h.rd_preprocess_end_column <- function(df, date_origin) {
   
   df$end <- h.convert_numeric_date(df$end, date_origin = date_origin)
   df$fixed_end_date <- suppressWarnings(lubridate::ymd(df$end))
+  
+  idx <- !is.na(df$fixed_end_date) & df$waiting
+  if (any(idx)) {
+    h.log_rows(
+      df,
+      idx,
+      warn_msg = glue::glue("Some entries have an -end_date- AND are in waiting status.")
+    )
+  }
+  
   df$end <- NULL
   
   h.log_end()
