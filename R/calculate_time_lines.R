@@ -19,9 +19,10 @@ calculate_time_lines <- function(df) {
   df$time_end <- lubridate::as_date(df$time_end)
 
   # this way we can leverage call by reference
+  TODAY <- lubridate::as_date(lubridate::now())
   df <- data.table::data.table(df)
   for (i in 1:nrow(df)) {
-    h.calculate_time_lines_at(df, i)
+    h.calculate_time_lines_at(df, i, TODAY)
   }
   h.set_deadline_for_waiting_tasks(df)  
   h.calc_end_to_deadline(df)
@@ -252,7 +253,7 @@ h.calculate_end_time <- function(earliest_start_time, est_days, fixed_end_date) 
 }
 
 
-h.calculate_time_lines_at <- function(dt_ref, row) {
+h.calculate_time_lines_at <- function(dt_ref, row, today) {
   futile.logger::flog.debug(glue::glue("Calculate time lines for row -{row}-"), dt_ref[row, ], capture = TRUE)
   if (!is.na(dt_ref$time_start[row]) & !is.na(dt_ref$time_end[row])) {
     return()
@@ -277,7 +278,7 @@ h.calculate_time_lines_at <- function(dt_ref, row) {
     futile.logger::flog.info(glue::glue("Nonsorted entry -{dt_ref$id[row]}- must follow after -{na_id}-"))
 
     first_na_idx <- which(dt_ref$id == na_id)[1]
-    h.calculate_time_lines_at(dt_ref, first_na_idx)
+    h.calculate_time_lines_at(dt_ref, first_na_idx, today)
 
     prior_tasks <- with(NULL, dt_ref[id %in% ids_prior])
     futile.logger::flog.debug(glue::glue("Try to calculate earliest start time for row -{row}- based on prior tasks"), prior_tasks, capture = TRUE)
@@ -289,6 +290,7 @@ h.calculate_time_lines_at <- function(dt_ref, row) {
 
   with(NULL, dt_ref[row, time_start := earliest_start_time])
   with(NULL, dt_ref[row, time_end := end])
+  with(NULL, dt_ref[row & waiting == TRUE, time_end := pmax(time_end, today)])
   
   futile.logger::flog.debug(glue::glue("Timelines for the current row -{row}-"), dt_ref[row], capture = TRUE)
 

@@ -85,7 +85,7 @@ test_that(
     # expect_equal(dt_out$time_end, c(lubridate::ymd("2018-11-05"), NA))
     # h.calculate_time_lines_at(dt_out, 2)
     expect_equal(dt_out$time_start, c(lubridate::ymd("2018-10-05"), lubridate::ymd("2018-10-05"), lubridate::ymd("2018-10-05")))
-    expect_equal(dt_out$time_end, c(lubridate::ymd("2018-10-08"), lubridate::ymd("2018-10-15"), lubridate::ymd("2018-11-05")))
+    expect_equal(dt_out$time_end, c(lubridate::ymd("2018-10-08"), lubridate::as_date(lubridate::now()), lubridate::ymd("2018-11-05")))
   }
 )
 
