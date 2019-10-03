@@ -5,6 +5,11 @@ sudo: false
 cache: packages
 warnings_are_errors: false
 
+branches:
+  only:
+    master
+    development
+
 r:
 - 3.3
 - oldrel
