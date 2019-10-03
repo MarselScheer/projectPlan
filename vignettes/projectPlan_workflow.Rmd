@@ -193,13 +193,15 @@ the first three tasks. But making a rough plan took us 4 days instead of the pla
 We already know that we want to contact the company *Life&Cook* but we were not able to call the 
 company for a few days and therefore the project plan shows a gap between "ask friends ..." and 
 "make appointment ...". Furthermore, one of our friend told us that we should make the appointment 
-with Mrs. Gray because he knows her personally and we might get a better offer. Unfortunately 
+with Mrs. Gray because he knows her personally and is convinced that she will make a fair offer. Unfortunately 
 we have to wait until she calls back because she currently is on sick leave, therefore this task 
-has status *AWAIT*. We set the progress 
+has status *AWAIT*. Note, if the estimated end of the task is in the past but status is *AWAIT*, then end of the
+task is automatically set to today. We set the progress 
 for the task "make appointment" to *50* to indicate the we already started the task. Instead of 
 reformulate the task for the appointment one could simply add a comments column to the spreadsheet. 
 Currently such a comments column is ignored by *projectPlan*. However, a deadline is automatically 
-created for task in status *AWAIT*, where the estimated end of the task is used as the date for
+created for a task in status *AWAIT*, where the estimated end of the task (which is today if the 
+estimated end is in the past) is used as the date for
 the deadline. Of course, an existing deadline will not be modified. The corresponding gantt-chart is:
 
 ```{r, fig.width=12, fig.height=7}
