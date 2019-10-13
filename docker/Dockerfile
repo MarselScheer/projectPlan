@@ -11,4 +11,6 @@ RUN apt-get update && apt-get install -y \
        badgecreatr \
     && ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime \
     && git config --global user.mail "scheer@freescience.de" \
-    && git config --global user.name "m"
+    && git config --global user.name "m" \
+    && mv /root/.gitconfig /home/rstudio \
+    && chown rstudio:rstudio /home/rstudio/.gitconfig
