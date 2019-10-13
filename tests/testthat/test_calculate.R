@@ -85,9 +85,37 @@ test_that(
     # expect_equal(dt_out$time_end, c(lubridate::ymd("2018-11-05"), NA))
     # h.calculate_time_lines_at(dt_out, 2)
     expect_equal(dt_out$time_start, c(lubridate::ymd("2018-10-05"), lubridate::ymd("2018-10-05"), lubridate::ymd("2018-10-05")))
-    expect_equal(dt_out$time_end, c(lubridate::ymd("2018-10-08"), lubridate::ymd("2018-10-15"), lubridate::ymd("2018-11-05")))
+    expect_equal(dt_out$time_end, c(lubridate::ymd("2018-10-08"), lubridate::as_date(lubridate::now()), lubridate::ymd("2018-11-05")))
   }
 )
+
+dt_in <- data.table::data.table(
+  id = c("a", "b", "c"),
+  prior_ids = list(NA, NA, c("a", "b")),
+  fixed_start_date = c(lubridate::ymd("2018-10-05"), lubridate::ymd("2018-10-02"), lubridate::as_date(NA)),
+  fixed_end_date = lubridate::as_date(NA),
+  time_start = lubridate::as_date(NA),
+  time_end = lubridate::as_date(NA),
+  est_days = c(1, 6, 2),
+  waiting = c(F, F, T)
+)
+dt_out <- data.table::copy(dt_in)
+
+start_expected <- c(lubridate::ymd("2018-10-05"), lubridate::ymd("2018-10-02"), lubridate::ymd("2018-10-10"))
+end_expected_1 <- c(lubridate::ymd("2018-10-08"), lubridate::ymd("2018-10-10"), lubridate::ymd("2018-10-12"))
+end_expected_2 <- c(lubridate::ymd("2018-10-08"), lubridate::ymd("2018-10-10"), lubridate::ymd("2018-10-13"))
+test_that(
+  "Calculate time lines under first order dependency with waiting tasks", {
+    h.calculate_time_lines_at(dt_out, 3, today = lubridate::ymd("2018-10-11"))
+    expect_equal(dt_out$time_start, start_expected)
+    expect_equal(dt_out$time_end, end_expected_1)
+    dt_out <- data.table::copy(dt_in)
+    h.calculate_time_lines_at(dt_out, 3, today = lubridate::ymd("2018-10-13"))
+    expect_equal(dt_out$time_start, start_expected)
+    expect_equal(dt_out$time_end, end_expected_2)
+  }
+)
+
 
 dt_in <- data.table::data.table(
   id = c("a", "b", "c"),
@@ -110,6 +138,8 @@ test_that(
     expect_equal(dt_out$time_end, end_expected)
   }
 )
+
+
 
 dt_in <- dt_in[3:1]
 dt_out <- data.table::copy(dt_in)
