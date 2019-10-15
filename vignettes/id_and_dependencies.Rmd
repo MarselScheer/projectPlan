@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
-futile.logger::flog.threshold(futile.logger::WARN)
+logger::log_threshold(logger::WARN)
 
 library(projectPlan)
 suppressPackageStartupMessages(library(dplyr))

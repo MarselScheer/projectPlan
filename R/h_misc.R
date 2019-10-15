@@ -32,24 +32,25 @@ h.combine_comma_list_cols <- function(v, w = "") {
 h.log_rows <- function(df, idx, warn_msg, warn_columns = c("project", "section", "id"), error = FALSE) {
   if (any(idx, na.rm = TRUE)) {
     if (error) {
-      futile.logger::flog.error(warn_msg)
-      futile.logger::flog.error("Rows:", df[idx, ], capture = TRUE)
+      logger::log_error(warn_msg)
+      logger::log_error(h.capture_table(df[idx, ]))
       stop(warn_msg)
     } else {
-      futile.logger::flog.warn(glue::glue("{warn_msg} (change logging-threshold to INFO to see all columns)"), df[idx, .SD, .SDcols = warn_columns], capture = TRUE)
-      futile.logger::flog.info("Rows:", df[idx, ], capture = TRUE)
+      logger::log_warn("{warn_msg} (change logging-threshold to INFO to see all columns)")
+      logger::log_info(h.capture_table(df[idx, .SD, .SDcols = warn_columns]))
     }
   }
 }
 
+h.capture_table <- function(dt) {
+  ret <- c("Captured table: ", utils::capture.output(dt))
+  paste(ret, collapse = "\n")
+}
+
 h.log_start = function(){
-  mc <- sys.call(sys.parent())
-  mc <- capture.output(print(mc))
-  futile.logger::flog.trace(glue::glue("Start {mc}"))
+  logger::log_trace("Start")
 }
 h.log_end = function(){
-  mc <- sys.call(sys.parent())
-  mc <- capture.output(print(mc))
-  futile.logger::flog.trace(glue::glue("End {mc}"))
+  logger::log_trace("End")
 }
 

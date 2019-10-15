@@ -69,14 +69,14 @@ collapse_complete_projects <- function(dt) {
 collapse_section <- function(dt, project, section, task_label = "{project}::{section} collapsed") {
   if (missing(project)) {
     msg <- "The parameter project must be specified."
-    futile.logger::flog.error(msg)
+    logger::log_error(msg)
     stop(msg)
   }
   idx <- 
   
   if (missing(section)) {
     msg <- "The parameter section must be specified."
-    futile.logger::flog.error(msg)
+    logger::log_error(msg)
     stop(msg)
   }
   
@@ -84,7 +84,7 @@ collapse_section <- function(dt, project, section, task_label = "{project}::{sec
 
   if (all(idx == FALSE)) {
     msg <- glue::glue("project-section-combination -{project}::{section}- does not exist in the project plan.")
-    futile.logger::flog.error(msg)
+    logger::log_error(msg)
     stop(msg)
   }
   task_label <- as.character(glue::glue(task_label))
@@ -98,14 +98,16 @@ collapse_section <- function(dt, project, section, task_label = "{project}::{sec
 h.collapse_project <- function(dt, project, task_label) {
   if (missing(project)) {
     msg <- "Parameter project must be specified."
-    futile.logger::flog.error(glue::glue("{msg} Valid entries for example are: "), head(unique(dt$project)), capture = TRUE)
+    logger::log_error("{msg} Valid entries for example are: ")
+    logger::log_error(h.capture_table(head(unique(dt$project))))
     stop(msg)
   }
   idx <- dt$project == project
   
   if (all(idx == FALSE)) {
     msg <- glue::glue("The project -{project}- does not exist in the project plan.")
-    futile.logger::flog.error(glue::glue("{msg} Valid entries for example are: "), head(unique(dt$project)), capture = TRUE)
+    logger::log_error("{msg} Valid entries for example are: ")
+    logger::log_error(h.capture_table(head(unique(dt$project))))
     stop(msg)
   }
   task_label = as.character(glue::glue(task_label))
@@ -123,7 +125,7 @@ h.collapse_time_lines <- function(dt, group_by, task_label) {
   not_aborted = !ret$aborted
   if (all(ret$progress[not_aborted] == 100)) {
     if (all(ret$aborted)) {
-      futile.logger::flog.info(glue::glue("Collapsing time lines if all tasks are aborted, will present them as completed. This was done for {task_label}"))
+      logger::log_info("Collapsing time lines if all tasks are aborted, will present them as completed. This was done for {task_label}")
     }
     all_complete <- TRUE
   }
@@ -197,10 +199,10 @@ h.calc_end_to_deadline <- function(df) {
 
 h.turn_weekend_day_to_monday <- function(day) {
   if (lubridate::wday(day) == 7) {
-    futile.logger::flog.debug(glue::glue("Change the saturday {day} to monday {day + 2}"))
+    logger::log_debug("Change the saturday {day} to monday {day + 2}")
     day <- day + 2
   } else if (lubridate::wday(day) == 1) {
-    futile.logger::flog.debug(glue::glue("Change the sunday {day} to monday {day + 1}"))
+    logger::log_debug("Change the sunday {day} to monday {day + 1}")
     day <- day + 1
   }
   day
@@ -209,19 +211,19 @@ h.turn_weekend_day_to_monday <- function(day) {
 h.exclude_weekends <- function(start, end) {
   if (end < start) {
     msg <- glue::glue("Specified end time {end} is before the start time {start}")
-    futile.logger::flog.error(msg)
+    logger::log_error(msg)
     stop(msg)
   }
 
   shift <- h.turn_weekend_day_to_monday(start) - start
   if (shift > 0) {
-    futile.logger::flog.warn(glue::glue("start {start} is on a weekend. Shift end {end} by {shift} day(s)."))
-    futile.logger::flog.debug(glue::glue("In order to correctly exclude weekends, also start {start} is shifted by {shift} day(s) locally but not in the project plan"))
+    logger::log_warn("start {start} is on a weekend. Shift end {end} by {shift} day(s).")
+    logger::log_debug("In order to correctly exclude weekends, also start {start} is shifted by {shift} day(s) locally but not in the project plan")
     start <- start + shift
     end <- end + shift
   }
 
-  futile.logger::flog.debug(glue::glue("Exclude weekends between {start} and {end}"))
+  logger::log_debug("Exclude weekends between {start} and {end}")
   nmb_workdays <- as.integer(end - start)
   nmb_workweeks <- floor(nmb_workdays / 5)
   nmb_days_remain <- nmb_workdays %% 5
@@ -231,7 +233,7 @@ h.exclude_weekends <- function(start, end) {
   if (lubridate::wday(end) %in% c(1, 7)) {
     # if we stop working on saturday we actually have to work till monday
     # if we stop working on sunday we actually have to work till tuesday
-    futile.logger::flog.debug(glue::glue("The task ends on {end} which is a weekend. Hence, the actual end is 2 days on {end + 2}"))
+    logger::log_debug("The task ends on {end} which is a weekend. Hence, the actual end is 2 days on {end + 2}")
     end <- end + 2
   } else if (nmb_workweeks == 0 && lubridate::wday(end) < lubridate::wday(start)) {
     # start this friday and end next monday. 
@@ -254,7 +256,8 @@ h.calculate_end_time <- function(earliest_start_time, est_days, fixed_end_date) 
 
 
 h.calculate_time_lines_at <- function(dt_ref, row, today) {
-  futile.logger::flog.debug(glue::glue("Calculate time lines for row -{row}-"), dt_ref[row, ], capture = TRUE)
+  logger::log_debug("Calculate time lines for row -{row}-")
+  logger::log_debug(h.capture_table(dt_ref[row, ]))
   if (!is.na(dt_ref$time_start[row]) & !is.na(dt_ref$time_end[row])) {
     return()
   }
@@ -271,20 +274,22 @@ h.calculate_time_lines_at <- function(dt_ref, row, today) {
     earliest_start_time <- fsd
   }
 
-  futile.logger::flog.debug(glue::glue("Try to calculate earliest start time for row -{row}- based on prior tasks"), prior_tasks, capture = TRUE)
+  logger::log_debug("Try to calculate earliest start time for row -{row}- based on prior tasks")
+  logger::log_debug(h.capture_table(prior_tasks))
   while (is.na(earliest_start_time)) {
     prior_tasks <- with(NULL, prior_tasks[is.na(time_end)])
     na_id <- prior_tasks$id[1]
-    futile.logger::flog.info(glue::glue("Nonsorted entry -{dt_ref$id[row]}- must follow after -{na_id}-"))
+    logger::log_info("Nonsorted entry -{dt_ref$id[row]}- must follow after -{na_id}-")
 
     first_na_idx <- which(dt_ref$id == na_id)[1]
     h.calculate_time_lines_at(dt_ref, first_na_idx, today)
 
     prior_tasks <- with(NULL, dt_ref[id %in% ids_prior])
-    futile.logger::flog.debug(glue::glue("Try to calculate earliest start time for row -{row}- based on prior tasks"), prior_tasks, capture = TRUE)
+    logger::log_debug("Try to calculate earliest start time for row -{row}- based on prior tasks")
+    logger::log_debug(h.capture_table(prior_tasks))
     earliest_start_time <- max(prior_tasks$time_end)
   }
-  futile.logger::flog.debug(glue::glue("Earliest start time found for row -{row}-: {earliest_start_time}"))
+  logger::log_debug("Earliest start time found for row -{row}-: {earliest_start_time}")
 
   end <- h.calculate_end_time(earliest_start_time, dt_ref$est_days[row], dt_ref$fixed_end_date[row])
 
@@ -292,10 +297,11 @@ h.calculate_time_lines_at <- function(dt_ref, row, today) {
   with(NULL, dt_ref[row, time_end := end])
   with(NULL, dt_ref[row & waiting == TRUE, time_end := pmax(time_end, today)])
   
-  futile.logger::flog.debug(glue::glue("Timelines for the current row -{row}-"), dt_ref[row], capture = TRUE)
-
+  logger::log_debug("Timelines for the current row -{row}-")
+  logger::log_debug(h.capture_table(dt_ref[row]))
 
   if (end < earliest_start_time) {
-    futile.logger::flog.warn("-time_start- is before -time_end-", dt_ref[row, ], capture = TRUE)
+    logger::log_warn("-time_start- is before -time_end-")
+    logger::log_warn(h.capture_table(dt_ref[row]))
   }
 }

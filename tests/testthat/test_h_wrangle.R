@@ -1,8 +1,6 @@
 testthat::context("Wrangle")
-# library(projectPlan)
 
-futile.logger::flog.threshold(futile.logger::FATAL, name = futile.logger::flog.namespace())
-
+logger::log_threshold(logger::FATAL, namespace = "projectPlan")
 
 
 test_that(
@@ -27,9 +25,12 @@ test_that(
   expect_equal(h.rd_preprocess_start_column(d_in, date_origin = "1899-12-30"), d_expected)
 )
 
-
-d_in <- data.table::data.table(depends_on = c(NA, "A"), start = c(NA, "B"))
-d_expected <- data.table::data.table(depends_on = c(NA, "A"), start = c(NA, "B"), fixed_start_date = c(lubridate::as_date(lubridate::now()), NA))
+d_in <- data.table::data.table(
+  project = "p", section = "s", id = "i",
+  depends_on = c(NA, "A"), start = c(NA, "B"))
+d_expected <- data.table::data.table(
+  project = "p", section = "s", id = "i",
+  depends_on = c(NA, "A"), start = c(NA, "B"), fixed_start_date = c(lubridate::as_date(lubridate::now()), NA))
 test_that(
   "Current date is default if no dependency and no start is defined",
   expect_equal(h.rd_preprocess_start_column(d_in, date_origin = "1899-12-30"), d_expected)
@@ -46,14 +47,13 @@ test_that(
   }
 )
 
-
 d_in <- data.table::data.table(deadline = c("2018-09-20", "2018-10-27"))
 d_expected <- data.table::data.table(
   deadline = c(lubridate::ymd("2018-09-20"), lubridate::ymd("2018-10-29")),
   raw_deadline = c("2018-09-20", "2018-10-27")
 )
 test_that(
-  "ymd ín -deadline- are processed correctly", {
+  "ymd in -deadline- are processed correctly", {
     expect_equal(h.rd_preprocess_deadline_column(d_in, date_origin = "1899-12-30"), d_expected)
     expect_error(h.rd_preprocess_deadline_column(data.table::data.table(deadline = "20-09-2018"), date_origin = "1899-12-30"), regexp = "must be.*ymd")
   }
