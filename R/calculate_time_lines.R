@@ -156,7 +156,7 @@ h.collapse_project <- function(dt, project, task_label) {
   if (missing(project)) {
     msg <- "Parameter project must be specified."
     logger::log_error("{msg} Valid entries for example are: ")
-    logger::log_error(h.capture_table(head(unique(dt$project))))
+    logger::log_error(h.capture_table(utils::head(unique(dt$project))))
     stop(msg)
   }
   idx <- dt$project == project
@@ -164,7 +164,7 @@ h.collapse_project <- function(dt, project, task_label) {
   if (all(idx == FALSE)) {
     msg <- glue::glue("The project -{project}- does not exist in the project plan.")
     logger::log_error("{msg} Valid entries for example are: ")
-    logger::log_error(h.capture_table(head(unique(dt$project))))
+    logger::log_error(h.capture_table(utils::head(unique(dt$project))))
     stop(msg)
   }
   task_label = as.character(glue::glue(task_label))
