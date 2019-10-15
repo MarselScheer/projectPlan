@@ -1,7 +1,6 @@
 testthat::context("gantt")
-# library(projectPlan)
 
-futile.logger::flog.threshold(futile.logger::FATAL, name = futile.logger::flog.namespace())
+logger::log_threshold(logger::FATAL, namespace = "projectPlan")
 
 d_in <- data.table::data.table(id = 1:2, depends_on = list(letters[1:3], letters[2:5]))
 d_nodeps <- data.table::data.table(id = 1:2, depends_on = list(NA, NA))

@@ -1,6 +1,6 @@
 testthat::context("Calculate")
 
-futile.logger::flog.threshold(futile.logger::FATAL, name = futile.logger::flog.namespace())
+logger::log_threshold(logger::FATAL, namespace = "projectPlan")
 
 test_that(
   "Skip saturday and sunday", {

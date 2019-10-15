@@ -56,7 +56,7 @@ raw_plan <- data.table::rbindlist(
 )
 suppressPackageStartupMessages(library(dplyr))
 suppressPackageStartupMessages(library(projectPlan))
-dummy <- futile.logger::flog.threshold(futile.logger::WARN)
+logger::log_threshold(logger::WARN)
 ```
 
 Imagine a simple 4-task-plan, where 
