@@ -1,5 +1,5 @@
 .onAttach <- function(libname, pkgname) {
-  packageStartupMessage("Package projectPlan leverage the logger-package. Use logger::log_threshold(logger::WARN/INFO/...) to modify the visibility of messages.")
+  packageStartupMessage("Package projectPlan leverage the logger-package. Use logger::log_threshold(level = logger::WARN/INFO/..., namespace = 'projectPlan') to modify the visibility of messages.")
 }
 
 .onLoad <- function(libname, pkgname) {
