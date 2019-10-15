@@ -12,7 +12,7 @@
 #' @seealso \link{wrangle_raw_plan}
 #' @export
 import_xlsx <- function(fName, sheets) {
-  logger::log_info(glue::glue("Import {fName}."))
+  logger::log_info("Import {fName}.")
 
   if (missing(sheets)) {
     sheets <- readxl::excel_sheets(fName)
@@ -22,15 +22,15 @@ import_xlsx <- function(fName, sheets) {
     lapply(
       sheets,
       function(s) {
-        logger::log_info(glue::glue("Import {fName} - {s}"))
+        logger::log_info("Import {fName} - {s}")
         df <- readxl::read_xlsx(fName, sheet = s, skip = 0, col_types = "text")
         if (nrow(df) == 0) {
-          logger::log_info(glue::glue("Skip the empty sheet -{s}"))
+          logger::log_info("Skip the empty sheet -{s}")
           return(NULL)
         }
         if (!("project" %in% names(df))) {
           empty_rows <- with(df, is.na(section) & is.na(id) & is.na(start) & is.na(end) & is.na(resource) & is.na(task))
-          logger::log_info(glue::glue("No project column found. Create one using the sheetname -{s}"))
+          logger::log_info("No project column found. Create one using the sheetname -{s}")
           df$project <- NA_character_
           df$project[!empty_rows] <- s
         }

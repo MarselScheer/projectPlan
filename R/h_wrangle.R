@@ -129,7 +129,7 @@ h.rd_check_id_deps <- function(df) {
 
   unknow_ids <- setdiff(prior_ids, id_col)
   if (length(unknow_ids) > 0) {
-    logger::log_warn(glue::glue("Dependencies to unknown ids were specified. Please check that the following ids are correct: "))
+    logger::log_warn("Dependencies to unknown ids were specified. Please check that the following ids are correct: ")
     logger::log_warn(h.capture_table(data.frame(unknow_ids = unknow_ids)))
   }
   
@@ -403,7 +403,7 @@ h.rd_preprocess_start_column <- function(df, date_origin) {
 
   idx <- df$start == "TODAY"
   if (any(idx, na.rm = TRUE)) {
-    logger::log_info(glue::glue("Convert 'TODAY' in column -start- to the current date -{TODAY}-"))  
+    logger::log_info("Convert 'TODAY' in column -start- to the current date -{TODAY}-")  
   }
   
   df$start <- h.convert_numeric_date(df$start, date_origin = date_origin)
@@ -444,11 +444,11 @@ h.rd_fill_with_default <- function(df, colname, def, log_filling = TRUE, create_
 h.rd_remove_unnessary_rows <- function(df) {
   h.log_start()
   
-  logger::log_info(glue::glue("Remove rows where project, section, id, start, end, resource, task are empty"))
+  logger::log_info("Remove rows where project, section, id, start, end, resource, task are empty")
 
   discard <- with(df, is.na(project) & is.na(section) & is.na(id) & is.na(start) & is.na(end) & is.na(resource) & is.na(task))
 
-  logger::log_debug(glue::glue("Remove {sum(discard)} rows"))
+  logger::log_debug("Remove {sum(discard)} rows")
 
   ret <- df[!discard, ]
   
@@ -461,11 +461,11 @@ h.rd_select_cols <- function(df) {
   h.log_start()
   
   cols <- c("project", "section", "id", "depends_on", "start", "end", "est_duration", "status", "resource", "task", "progress", "deadline")
-  logger::log_info(glue::glue("Select the necessary columns -{h.comma_list(cols)}-"))
+  logger::log_info("Select the necessary columns -{h.comma_list(cols)}-")
 
   missing_cols <- setdiff(cols, names(df))
   if (length(missing_cols) > 0) {
-    logger::log_warn(glue::glue("Create missing column(s): -{h.comma_list(missing_cols)}-"))
+    logger::log_warn("Create missing column(s): -{h.comma_list(missing_cols)}-")
 
     new_cols <- data.table(matrix(NA, nrow = nrow(df), ncol = length(missing_cols)))
     names(new_cols) <- missing_cols

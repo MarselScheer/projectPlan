@@ -36,7 +36,7 @@ h.log_rows <- function(df, idx, warn_msg, warn_columns = c("project", "section",
       logger::log_error(h.capture_table(df[idx, ]))
       stop(warn_msg)
     } else {
-      logger::log_warn(glue::glue("{warn_msg} (change logging-threshold to INFO to see all columns)"))
+      logger::log_warn("{warn_msg} (change logging-threshold to INFO to see all columns)")
       logger::log_info(h.capture_table(df[idx, .SD, .SDcols = warn_columns]))
     }
   }
