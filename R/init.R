@@ -3,7 +3,7 @@
 }
 
 .onLoad <- function(libname, pkgname) {
-  pkg_logger <- logger::layout_glue_generator(format = '{node}/{pid}/{namespace}/{fn} {time} {level}: {msg}')
+  pkg_logger <- logger::layout_glue_generator(format = '{level} -- {time} -- {namespace}/{call}: {msg}')
   logger::log_layout(pkg_logger, namespace = pkgname)
   logger::log_threshold(logger::WARN, name = pkgname)
 }
