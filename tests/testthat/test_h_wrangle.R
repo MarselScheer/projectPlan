@@ -47,14 +47,13 @@ test_that(
   }
 )
 
-
 d_in <- data.table::data.table(deadline = c("2018-09-20", "2018-10-27"))
 d_expected <- data.table::data.table(
   deadline = c(lubridate::ymd("2018-09-20"), lubridate::ymd("2018-10-29")),
   raw_deadline = c("2018-09-20", "2018-10-27")
 )
 test_that(
-  "ymd ín -deadline- are processed correctly", {
+  "ymd in -deadline- are processed correctly", {
     expect_equal(h.rd_preprocess_deadline_column(d_in, date_origin = "1899-12-30"), d_expected)
     expect_error(h.rd_preprocess_deadline_column(data.table::data.table(deadline = "20-09-2018"), date_origin = "1899-12-30"), regexp = "must be.*ymd")
   }
