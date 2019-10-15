@@ -48,13 +48,9 @@ h.capture_table <- function(dt) {
 }
 
 h.log_start = function(){
-  mc <- sys.call(sys.parent())
-  mc <- capture.output(print(mc))
-  logger::log_trace(glue::glue("Start {mc}"))
+  logger::log_trace("Start")
 }
 h.log_end = function(){
-  mc <- sys.call(sys.parent())
-  mc <- capture.output(print(mc))
-  logger::log_trace(glue::glue("End {mc}"))
+  logger::log_trace("End")
 }
 
