@@ -23,7 +23,8 @@ library(DT)
 
 # Introduction
 
-The columns *id* is used to identify tasks in the work plan. This allows to specify dependencies between
+The columns *id* is used to identify tasks in the work plan. It is not necessary to specify
+the *id* but this allows to declare dependencies between
 tasks. There can be logic dependencies where a task cannot start if another has not been finished, for instance
 first comes the fundament, then the walls and then the roof. Other tasks may need to be executed
 sequentially simply because because there are not enough resources.
