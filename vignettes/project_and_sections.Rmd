@@ -41,7 +41,9 @@ pA <- dplyr::tibble(
   section = "prep", task = paste0("task", 1:2), id = paste0("i", 1:2), start = "TODAY", depends_on = "", deadline = NA,
   est_duration = 1:2,
   progress = 0, 
-  resource = "R1")
+  resource = "R1", 
+  end = "",
+  status = "")
 
 pB <- pA
 pB$project = "B"
@@ -59,22 +61,7 @@ pp %>%
   projectPlan::gantt_by_sections()
 ```
 
-Usually, dependencies between tasks can be specified by using the entry in the *id* column. However, to reference
-an id from another project you have to use *::*, similar to the notation that is necessary if you want to explicitly
-state the namespace in *R*. In order to specify that id *i1* of project *A* depends on *i1* of project *B* one enters
-*B::i1*. Note, that we need to remove the *start*-time for the first entry, otherwise the *start*-time would be used
-and not the time calculated due to the dependency.
-
-```{r, echo=FALSE, fig.height=5, fig.width=10}
-pp$depends_on[1] = "B::i1"
-pp$start[1] = NA
-DT::datatable(pp)
-pp %>% 
-  projectPlan::wrangle_raw_plan() %>% 
-  projectPlan::calculate_time_lines() %>% 
-  projectPlan::gantt_by_sections(show_dependencies = TRUE)
-```
-This example also shows that the same *id*'s can be used in different projects.
+See the article about id's and dependencies on how to define dependencies between projects. 
 
 # *section* column
 
