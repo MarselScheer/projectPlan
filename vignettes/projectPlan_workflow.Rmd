@@ -21,37 +21,10 @@ suppressPackageStartupMessages(library(dplyr))
 library(DT)
 ```
 
-# Introduction
-
-A VERY simplified scene is the following.
-
-* Peter: "How long will it take to realize 'this' and 'that'?" 
-* Bob: "With enough resources our department maybe need 3 months. But other departments will need to be involved!" 
-* Peter: "OK. Can you make a timeline for that?"
-* Bob: "Give me an hour. I create a rough version."
-
-Bob starts making a rough plan containg 10 major chunks, estimated durations and assign resources for those chunks 
-and thinks about dependencies between the chunks.
-
-One hour later ...
-
-* Bob: "I am done, but I have no idea if customer service needs to prepare a training and how long this will take. Furthermore, 
-production needs to make some changes, too."
-* Peter: "Lets discuss this in the next head meeting."
-
-The outcome of the head meeting is that the project should be realized, but there are some restriction: 
-
-* customer service must complete the training before launch
-* the production team cannot start before they finished another project
-
-The next step is adding this information to the plan and start refining the 10 major chunks. Once the project starts you start keep 
-track of the tasks, i.e. the actual start time, progress, end time. You add other things that might pop up or you dont want to forget 
-during the project.
-
-During all phases this package could be helpful. For this vignette we try to work through a simple project hopefully every can grasp, 
-i.e. replace an old kitchen in a household with a new one.
-
 # A Simple plan grows
+
+For this vignette we try to work through a simple project hopefully every can grasp, 
+i.e. replace an old kitchen in a household with a new one.
 
 ## Planning
 
@@ -68,73 +41,53 @@ We start with a simple list
 
 It is easy to see that there are already some dependencies. For instance, no one will install our new kitchen if did not paid for it! 
 Depending on how rough the plan is, we might need to measure the kitchen first. So we open up LibreOffice Calc enter every point in one 
-row and save it as xlsx-file. So the usual workflow is to edit the plan for instance using LibreOffice Calc, import the plan with R and 
+row and save it as an xlsx-file. The usual workflow is to edit the plan for instance using LibreOffice Calc, import the plan with R and 
 let R do the caclualtions. 
 
-We create the following spreadsheet: 
-![spreadsheet](./LibreOfficeCalc.png)
+The installed package provides an xlsx that already contains the structure that is necessary to start using the package. Executing
+the following line will show the location of the xlsx:
+```{r, eval=FALSE}
+system.file("template","projects.xlsx", package = "projectPlan")
+```
+
+It contains the plan we roughly sketched at the beginning of this section.
+```{r}
+#raw_plan <- system.file("template","projects.xlsx", package = "projectPlan") %>%
+raw_plan <- "./inst/template/projects.xlsx" %>%
+  projectPlan::import_xlsx()
+DT::datatable(raw_plan)
+```
 
 A few notes on the columns in the spreadsheet (more details later): 
 
 * section is used just to get a bit more structure into the tasks
-* id is used identify a task (to be used in depends_on-columns)
+* id is used identify a task (to be used in depends_on/start-columns)
 * task is clear
-* depends_on defines dependencies, for instance we need to measure the kitchen before we make new (rough) plan for the kitchen
+* depends_on defines dependencies, for instance we need to measure the kitchen before we make a (rough) plan for the kitchen
 * start can be 
     - TODAY (this is substitute by the current date) or 
     - an id (for instance, we can ask our friends at any time but we decided to do this after we made our rough plan. So this is not a dependency! We just planned to do it after a certain task)
-    - a date (yyyy-mm-dd) when the task actually was started
+    - a hardcoded date (yyyy-mm-dd), for instance when the task actually was started
 * est_duration is the estimated duration in days. 
-* end is end date (yyyy-mm-dd) of the task. Usually known when the task was completed or aborted. 
+* end is end date (yyyy-mm-dd) of the task. For instance when the task was completed or aborted. 
 * status can be empty or contain the special terms AWAIT, UNSCHEDULED or ABORTED. 
 * resource can be a comma separated list
 * progress is a number between 0 and 100
 * deadline is a date
 * other columns are ignored by *projectPlan*
 
-*projectPlan::import_xlsx* will import ALL sheets and use the sheet name as the project name. The sheet name will be ignored if one has 
-a column *project*. Note, that the deadline for the last task (installation of the new kitchen) in the screenshot is fixed, 
-while in the following will be dynamically about 3 month in the future.
+As you can see the xlsx also has three other columns that will not be used by the package but those columns are
+quite handy in practice:
 
-```{r, eval=FALSE}
-raw_plan <- projectPlan::import_xlsx("projects.xlsx")
-```
+* now is a column to mark a task somehow that allows to easily find it in the spreadsheet application. For instance, if you plan to work on four tasks over the day this column can contain a string like !NOW! in order to find them quickly with using the search-functionality of the spreadsheet-application
+* microtask is a column to split up a task in further smaller tasks. For instance, after the installation of the kitchen we want to check the functionality of various things.
+* comments is of course a column for kind of information/documentation.
+
+*projectPlan::import_xlsx* will import ALL sheets and use the sheet name as the project name. The sheet name will be ignored if one has 
+a column *project*. 
+
 ```{r echo=FALSE}
-raw_plan <- structure(list(
-  section = c(
-    "0_prep", "0_prep", "0_prep", "1_offer",
-    "1_offer", "1_offer", "2_installation", "2_installation"
-  ), id = c(
-    "meas",
-    "rough_plan", "friends", "appointment_plan", "plan", "buy", "appointment_install",
-    "installation"
-  ), task = c(
-    "measure kitchen", "make a rough plan",
-    "ask friends which companies they can recommend", "make appointment with company for planning",
-    "plan new kitchen", "buy new kitchen", "make appointment for installation",
-    "installation of the new kitchen"
-  ), depends_on = c(
-    NA, "meas",
-    NA, "friends", "appointment_plan", "plan", "plan", "appointment_install"
-  ), start = c("TODAY", NA, "rough_plan", NA, NA, NA, NA, NA),
-  end = c("", "", "", "", "", "", "", ""), 
-  est_duration = c(1, 2, 2, 5, 1, 1, 1, 1),
-  status = c("", "", "", "", "", "", "", ""), 
-  resource = c(
-    "I", "I", "I, friend1, friend2",
-    "I", "I, company", "I", "I", "I, company"
-  ), progress = c(
-    0,
-    0, 0, 0, 0, 0, 0, 0
-  ), deadline = structure(c(NA, NA, NA, 
-    NA, NA, NA, NA, as.numeric(Sys.Date()) + 90), class = "Date"), project = c(
-    "kitchen", "kitchen", "kitchen",
-    "kitchen", "kitchen", "kitchen", "kitchen", "kitchen"
-  )
-), row.names = c(
-  NA,
-  -8L
-), class = c("data.table", "data.frame"))
+raw_plan$deadline[nrow(raw_plan)] <- as.character(lubridate::as_date(lubridate::now()) + 40)
 ```
 
 
@@ -153,11 +106,10 @@ timelines %>%
   DT::datatable()
 ```
 
-We can also easily visualize the timelines. Note, the *separate_rows* calls to get one row for every resource in the timeline:
+We can also easily visualize the timelines.
 
 ```{r, fig.width=10, fig.height=7}
 timelines %>% 
-  tidyr::separate_rows(resource) %>% 
   projectPlan::gantt_by_sections(show_dependencies = TRUE)
 ```
 
@@ -176,6 +128,7 @@ raw_plan$end[3] = as.character(project_start + 7)
 raw_plan$progress[1:3] = 100
 
 raw_plan$start[4] = as.character(project_start + 12)
+raw_plan$status[1:3] = ""
 raw_plan$status[4] = "AWAIT"
 raw_plan$task[4] = "make appointment with Life&Cook.\nWAIT for Mrs. Gray (sick leave) to call back."
 raw_plan$progress[4] = 50
@@ -208,7 +161,7 @@ the deadline. Of course, an existing deadline will not be modified. The correspo
 raw_plan %>% 
   projectPlan::wrangle_raw_plan() %>% 
   projectPlan::calculate_time_lines() %>% 
-  tidyr::separate_rows(resource) %>% 
+  #tidyr::separate_rows(resource) %>% 
   projectPlan::gantt_by_sections(show_dependencies = TRUE)
 ```
 
@@ -230,6 +183,7 @@ raw_plan$progress[6] <- 100
 raw_plan$start[7] <- as.character(project_start + 20)
 raw_plan$end[7] <- as.character(project_start + 21)
 raw_plan$progress[7] <- 100
+raw_plan$id[7] <- "appointment_install"
 
 raw_plan$start[8] <- as.character(project_start + 80)
 raw_plan$end[8] <- as.character(project_start + 81)
@@ -241,7 +195,7 @@ dispose_note$id <- "dispose_note"
 dispose_note$task <- "note to Life&Cook (1 week before installation) if they should dispose the kitchen"
 dispose_note$start <- NA
 dispose_note$end <- NA
-dispose_note$deadline <- lubridate::as_date(raw_plan$start[8]) - 7 
+dispose_note$deadline <- as.character(lubridate::as_date(raw_plan$start[8]) - 7)
 dispose_note$depends_on <- "sell_kitchen::sell"
 raw_plan <- 
   dplyr::bind_rows(raw_plan[1:7], dispose_note, raw_plan[8])
@@ -282,12 +236,12 @@ sell_kitchen <- structure(list(
     NA_character_, NA_character_
   ), 
   end = c("", "", "", ""),
-  est_duration = c(1, 1, 30, 1), 
-  status = c("", "", "", ""),
+  est_duration = c("1", "1", "30", "1"), 
+  status = c("unscheduled", "unscheduled", "unscheduled", "unscheduled"),
   resource = c(
     "I",
     "I", "I", "I, buyer"
-  ), progress = c(0, 0, 0, 0), deadline = structure(c(
+  ), progress = c("0", "0", "0", "0"), deadline = structure(c(
     NA_real_,
     NA_real_, NA_real_, NA_real_
   ), class = c("POSIXct", "POSIXt"), tzone = "UTC"),
@@ -307,13 +261,13 @@ containing all projects. Hence, we can easily calculate timeline taking all proj
 and there possible dependencies into account: 
 
 ```{r, fig.width=15, fig.height=7}
+debugonce(projectPlan::wrangle_raw_plan)
 tmp_time_lines <- raw_plan %>%
-  dplyr::bind_rows(sell_kitchen) %>% 
+  dplyr::bind_rows(sell_kitchen) %>%
   projectPlan::wrangle_raw_plan() %>%
   projectPlan::calculate_time_lines()
 
 tmp_time_lines %>%
-  tidyr::separate_rows(resource) %>%
   projectPlan::gantt_by_sections(show_dependencies = TRUE)
 ```
 
