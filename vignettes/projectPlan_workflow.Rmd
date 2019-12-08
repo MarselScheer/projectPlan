@@ -52,8 +52,7 @@ system.file("template","projects.xlsx", package = "projectPlan")
 
 It contains the plan we roughly sketched at the beginning of this section.
 ```{r}
-#raw_plan <- system.file("template","projects.xlsx", package = "projectPlan") %>%
-raw_plan <- "./inst/template/projects.xlsx" %>%
+raw_plan <- system.file("template","projects.xlsx", package = "projectPlan") %>%
   projectPlan::import_xlsx()
 DT::datatable(raw_plan)
 ```
@@ -87,7 +86,7 @@ quite handy in practice:
 a column *project*. 
 
 ```{r echo=FALSE}
-raw_plan$deadline[nrow(raw_plan)] <- as.character(lubridate::as_date(lubridate::now()) + 40)
+raw_plan$deadline[nrow(raw_plan)] <- as.character(lubridate::as_date(lubridate::now()) + 70)
 ```
 
 
@@ -125,6 +124,8 @@ raw_plan$end[2] = as.character(project_start + 6)
 
 raw_plan$start[3] = as.character(project_start + 6)
 raw_plan$end[3] = as.character(project_start + 7)
+raw_plan$comments[3] <- paste0(as.character(project_start + 7), ": .ask-for-XYZ: None has experience with XYZ")
+raw_plan$microtasks[3] <- ".ask-for-XYZ (D)"
 raw_plan$progress[1:3] = 100
 
 raw_plan$start[4] = as.character(project_start + 12)
@@ -146,7 +147,7 @@ the first three tasks. But making a rough plan took us 4 days instead of the pla
 We already know that we want to contact the company *Life&Cook* but we were not able to call the 
 company for a few days and therefore the project plan shows a gap between "ask friends ..." and 
 "make appointment ...". Furthermore, one of our friend told us that we should make the appointment 
-with Mrs. Gray because he knows her personally and is convinced that she will make a fair offer. Unfortunately 
+with Mrs. Gray because he knows her personally and is convinced that she will make a fair offer. Unfortunately, 
 we have to wait until she calls back because she currently is on sick leave, therefore this task 
 has status *AWAIT*. Note, if the estimated end of the task is in the past but status is *AWAIT*, then end of the
 task is automatically set to today. We set the progress 
@@ -184,17 +185,21 @@ raw_plan$start[7] <- as.character(project_start + 20)
 raw_plan$end[7] <- as.character(project_start + 21)
 raw_plan$progress[7] <- 100
 raw_plan$id[7] <- "appointment_install"
+raw_plan$comments[7] <- paste0(as.character(project_start + 20), ": ", ".get-written-confirmation: see email")
+raw_plan$microtasks[7] <- ".get-written-confirmation (D)" 
 
 raw_plan$start[8] <- as.character(project_start + 80)
 raw_plan$end[8] <- as.character(project_start + 81)
 raw_plan$task[8] <- "INSTALLATION. APPOINTMENT CONFIRMED BY LIFE&COOK"
 raw_plan$depends_on <- ""
+raw_plan$status <- NA
 
 dispose_note <- raw_plan[8]
 dispose_note$id <- "dispose_note"
 dispose_note$task <- "note to Life&Cook (1 week before installation) if they should dispose the kitchen"
 dispose_note$start <- NA
 dispose_note$end <- NA
+dispose_note$microtasks <- NA
 dispose_note$deadline <- as.character(lubridate::as_date(raw_plan$start[8]) - 7)
 dispose_note$depends_on <- "sell_kitchen::sell"
 raw_plan <- 
@@ -237,7 +242,7 @@ sell_kitchen <- structure(list(
   ), 
   end = c("", "", "", ""),
   est_duration = c("1", "1", "30", "1"), 
-  status = c("unscheduled", "unscheduled", "unscheduled", "unscheduled"),
+  status = c("", "", "", "unscheduled"),
   resource = c(
     "I",
     "I", "I", "I, buyer"
@@ -261,7 +266,6 @@ containing all projects. Hence, we can easily calculate timeline taking all proj
 and there possible dependencies into account: 
 
 ```{r, fig.width=15, fig.height=7}
-debugonce(projectPlan::wrangle_raw_plan)
 tmp_time_lines <- raw_plan %>%
   dplyr::bind_rows(sell_kitchen) %>%
   projectPlan::wrangle_raw_plan() %>%
@@ -273,4 +277,4 @@ tmp_time_lines %>%
 
 The gantt-chart now easily reveals that if the project *sell_kitchen* goes as planned,
 then we can inform *Life&Cook* `r as.numeric(tmp_time_lines[id == "kitchen::dispose_note"]$dist_end_to_deadline)` days 
-before we reach the last time when we can hire life&cook to dispose our kitchen.
+before we reach the last time when we can hire Life&Cook to dispose our kitchen.
