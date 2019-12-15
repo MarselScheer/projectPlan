@@ -86,84 +86,60 @@
 <div id="projectplan" class="section level1">
 <div class="page-header"><h1 class="hasAnchor">
 <a href="#projectplan" class="anchor"></a>projectPlan</h1></div>
-<p>The aim of the package is to calculate time lines for different task that may depend on each other.</p>
+<p>The aim of the package is to calculate time lines for different task that may depend on each other and visualize the results in a Gantt-chart.</p>
 <div id="example" class="section level2">
 <h2 class="hasAnchor">
 <a href="#example" class="anchor"></a>Example</h2>
-<div class="sourceCode" id="cb1"><pre class="sourceCode R"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="co">#&gt; Warning in data.table(project = "A", section = "1_impl", id = c("c",</span></a>
-<a class="sourceLine" id="cb1-2" data-line-number="2"><span class="co">#&gt; "ca", : Item 7 is of size 2 but maximum size is 3 (recycled leaving</span></a>
-<a class="sourceLine" id="cb1-3" data-line-number="3"><span class="co">#&gt; remainder of 1 items)</span></a></code></pre></div>
-<p>Imagine a simple 4-task-plan, where</p>
-<ul>
-<li>1 task was already completed</li>
-<li>1 task started on <em>2018-10-23</em> where it is estimated that it will take 10 days to be completed</li>
-<li>2 tasks are depending somehow on the first two tasks</li>
-</ul>
-<!-- end list --><div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" data-line-number="1">raw_plan</a>
-<a class="sourceLine" id="cb2-2" data-line-number="2"><span class="co">#&gt;    project section id depends_on      start        end resource task</span></a>
-<a class="sourceLine" id="cb2-3" data-line-number="3"><span class="co">#&gt; 1:       A  0_prep  a       &lt;NA&gt; 2018-10-22 2018-10-24       R1   T1</span></a>
-<a class="sourceLine" id="cb2-4" data-line-number="4"><span class="co">#&gt; 2:       A  0_prep  b       &lt;NA&gt; 2018-10-23         10       R2   T2</span></a>
-<a class="sourceLine" id="cb2-5" data-line-number="5"><span class="co">#&gt; 3:       A  1_impl  c          a       &lt;NA&gt;          7       R1   T3</span></a>
-<a class="sourceLine" id="cb2-6" data-line-number="6"><span class="co">#&gt; 4:       A  1_impl ca          a       &lt;NA&gt;          7       R2  T3a</span></a>
-<a class="sourceLine" id="cb2-7" data-line-number="7"><span class="co">#&gt; 5:       A  1_impl  d       a, b       &lt;NA&gt;          6       R1   T4</span></a>
-<a class="sourceLine" id="cb2-8" data-line-number="8"><span class="co">#&gt;    progress   deadline</span></a>
-<a class="sourceLine" id="cb2-9" data-line-number="9"><span class="co">#&gt; 1:      100       &lt;NA&gt;</span></a>
-<a class="sourceLine" id="cb2-10" data-line-number="10"><span class="co">#&gt; 2:       50       &lt;NA&gt;</span></a>
-<a class="sourceLine" id="cb2-11" data-line-number="11"><span class="co">#&gt; 3:        0 2018-11-05</span></a>
-<a class="sourceLine" id="cb2-12" data-line-number="12"><span class="co">#&gt; 4:        0 2018-11-05</span></a>
-<a class="sourceLine" id="cb2-13" data-line-number="13"><span class="co">#&gt; 5:        0 2018-11-14</span></a></code></pre></div>
+<p>Imagine a simple 4-task-plan, where after the data base is ready an exploratory data anlysis can be performed and based on that a first baseline model can be created.</p>
+<p><img src="reference/figures/README-gantt-1.png"><!-- --></p>
+<p>Instead of calculating and ordering the tasks manually one only defines the tasks, its duration and the dependencies between them:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" data-line-number="1">raw_plan <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb1-2" data-line-number="2"><span class="st">  </span>dplyr<span class="op">::</span><span class="kw"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span>(project, id, depends_on, task, start, est_duration)</a>
+<a class="sourceLine" id="cb1-3" data-line-number="3"><span class="co">#&gt; # A tibble: 4 x 6</span></a>
+<a class="sourceLine" id="cb1-4" data-line-number="4"><span class="co">#&gt;   project  id     depends_on       task                  start est_duration</span></a>
+<a class="sourceLine" id="cb1-5" data-line-number="5"><span class="co">#&gt;   &lt;chr&gt;    &lt;chr&gt;  &lt;chr&gt;            &lt;chr&gt;                 &lt;chr&gt;        &lt;int&gt;</span></a>
+<a class="sourceLine" id="cb1-6" data-line-number="6"><span class="co">#&gt; 1 Analysis eda    DataBase::server EDA                   ""               1</span></a>
+<a class="sourceLine" id="cb1-7" data-line-number="7"><span class="co">#&gt; 2 Analysis &lt;NA&gt;   eda              Create baseline model ""               2</span></a>
+<a class="sourceLine" id="cb1-8" data-line-number="8"><span class="co">#&gt; 3 DataBase server ""               Set up server         TODAY            1</span></a>
+<a class="sourceLine" id="cb1-9" data-line-number="9"><span class="co">#&gt; 4 DataBase &lt;NA&gt;   ""               Create maintenance p… TODAY            2</span></a></code></pre></div>
 <p>Then using this package one can easily calculate when a task will start and be finished (excluding weekends). If a deadline is unmet or a task is due today a warning is logged.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" data-line-number="1">plan &lt;-<span class="st"> </span></a>
-<a class="sourceLine" id="cb3-2" data-line-number="2"><span class="st">  </span>projectPlan<span class="op">::</span><span class="kw"><a href="https://rdrr.io/pkg/projectPlan/man/wrangle_raw_plan.html">wrangle_raw_plan</a></span>(raw_plan) <span class="op">%&gt;%</span><span class="st"> </span></a>
-<a class="sourceLine" id="cb3-3" data-line-number="3"><span class="st">  </span>projectPlan<span class="op">::</span><span class="kw"><a href="https://rdrr.io/pkg/projectPlan/man/calculate_time_lines.html">calculate_time_lines</a></span>()</a>
-<a class="sourceLine" id="cb3-4" data-line-number="4"><span class="co">#&gt; WARN [2018-11-01 07:18:29] DEADLINE TODAY OR ALREADY UNMET (change logging-threshold to INFO to see all columns)</span></a>
-<a class="sourceLine" id="cb3-5" data-line-number="5"><span class="co">#&gt; </span></a>
-<a class="sourceLine" id="cb3-6" data-line-number="6"><span class="co">#&gt;    project   section   id time_start   time_end   deadline progress</span></a>
-<a class="sourceLine" id="cb3-7" data-line-number="7"><span class="co">#&gt; 1:       A A::1_impl A::d 2018-11-06 2018-11-14 2018-11-14        0</span></a>
-<a class="sourceLine" id="cb3-8" data-line-number="8"><span class="co">#&gt;    resource task</span></a>
-<a class="sourceLine" id="cb3-9" data-line-number="9"><span class="co">#&gt; 1:       R1   T4</span></a></code></pre></div>
-<div class="sourceCode" id="cb4"><pre class="sourceCode R"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" data-line-number="1"><span class="co">#&gt;    project    id depends_on start prior_ids   section resource task</span></a>
-<a class="sourceLine" id="cb4-2" data-line-number="2"><span class="co">#&gt; 1:       A  A::a         NA  &lt;NA&gt;        NA A::0_prep       R1   T1</span></a>
-<a class="sourceLine" id="cb4-3" data-line-number="3"><span class="co">#&gt; 2:       A  A::b         NA  &lt;NA&gt;        NA A::0_prep       R2   T2</span></a>
-<a class="sourceLine" id="cb4-4" data-line-number="4"><span class="co">#&gt; 3:       A  A::c       A::a  &lt;NA&gt;      A::a A::1_impl       R1   T3</span></a>
-<a class="sourceLine" id="cb4-5" data-line-number="5"><span class="co">#&gt; 4:       A A::ca       A::a  &lt;NA&gt;      A::a A::1_impl       R2  T3a</span></a>
-<a class="sourceLine" id="cb4-6" data-line-number="6"><span class="co">#&gt; 5:       A  A::d  A::a,A::b  &lt;NA&gt; A::a,A::b A::1_impl       R1   T4</span></a>
-<a class="sourceLine" id="cb4-7" data-line-number="7"><span class="co">#&gt;    progress   deadline fixed_start_date fixed_end_date est_days waiting</span></a>
-<a class="sourceLine" id="cb4-8" data-line-number="8"><span class="co">#&gt; 1:      100       &lt;NA&gt;       2018-10-22     2018-10-24        0   FALSE</span></a>
-<a class="sourceLine" id="cb4-9" data-line-number="9"><span class="co">#&gt; 2:       50       &lt;NA&gt;       2018-10-23           &lt;NA&gt;       10   FALSE</span></a>
-<a class="sourceLine" id="cb4-10" data-line-number="10"><span class="co">#&gt; 3:        0 2018-11-05             &lt;NA&gt;           &lt;NA&gt;        7   FALSE</span></a>
-<a class="sourceLine" id="cb4-11" data-line-number="11"><span class="co">#&gt; 4:        0 2018-11-05             &lt;NA&gt;           &lt;NA&gt;        7   FALSE</span></a>
-<a class="sourceLine" id="cb4-12" data-line-number="12"><span class="co">#&gt; 5:        0 2018-11-14             &lt;NA&gt;           &lt;NA&gt;        6   FALSE</span></a>
-<a class="sourceLine" id="cb4-13" data-line-number="13"><span class="co">#&gt;    nmb_combined_entries time_start   time_end dist_end_to_deadline</span></a>
-<a class="sourceLine" id="cb4-14" data-line-number="14"><span class="co">#&gt; 1:                    1 2018-10-22 2018-10-24              NA days</span></a>
-<a class="sourceLine" id="cb4-15" data-line-number="15"><span class="co">#&gt; 2:                    1 2018-10-23 2018-11-06              NA days</span></a>
-<a class="sourceLine" id="cb4-16" data-line-number="16"><span class="co">#&gt; 3:                    1 2018-10-24 2018-11-02               1 days</span></a>
-<a class="sourceLine" id="cb4-17" data-line-number="17"><span class="co">#&gt; 4:                    1 2018-10-24 2018-11-02               1 days</span></a>
-<a class="sourceLine" id="cb4-18" data-line-number="18"><span class="co">#&gt; 5:                    1 2018-11-06 2018-11-14               0 days</span></a></code></pre></div>
-<p>With the calculated time lines a gantt chart can be plotted</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" data-line-number="1"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span>(ggplot2)</a>
-<a class="sourceLine" id="cb5-2" data-line-number="2">projectPlan<span class="op">::</span><span class="kw"><a href="https://rdrr.io/pkg/projectPlan/man/gantt_by_sections.html">gantt_by_sections</a></span>(plan, <span class="dt">show_dependencies =</span> <span class="ot">TRUE</span>)</a></code></pre></div>
-<p><img src="README-gantt-1.png"><!-- --></p>
-<p>Note that the number of days the end date of a task is away from the corresponding deadline is adjusted for weekends, for instance <em>T3</em> will be done by Thrusday night and the deadline is on the following Monday. Hence, there is one day left, i.e. Friday, before the deadline is reached. The label attached to the vertical bar displays the distance in days from today to the next deadline.</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" data-line-number="1">plan &lt;-<span class="st"> </span></a>
+<a class="sourceLine" id="cb2-2" data-line-number="2"><span class="st">  </span>raw_plan <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb2-3" data-line-number="3"><span class="st">  </span>projectPlan<span class="op">::</span><span class="kw"><a href="https://rdrr.io/pkg/projectPlan/man/wrangle_raw_plan.html">wrangle_raw_plan</a></span>() <span class="op">%&gt;%</span><span class="st"> </span></a>
+<a class="sourceLine" id="cb2-4" data-line-number="4"><span class="st">  </span>projectPlan<span class="op">::</span><span class="kw"><a href="https://rdrr.io/pkg/projectPlan/man/calculate_time_lines.html">calculate_time_lines</a></span>()</a></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode R"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" data-line-number="1"><span class="co">#&gt;    project                    task time_start   time_end</span></a>
+<a class="sourceLine" id="cb3-2" data-line-number="2"><span class="co">#&gt; 1 DataBase           Set up server 2019-12-15 2019-12-17</span></a>
+<a class="sourceLine" id="cb3-3" data-line-number="3"><span class="co">#&gt; 2 DataBase Create maintenance plan 2019-12-15 2019-12-18</span></a>
+<a class="sourceLine" id="cb3-4" data-line-number="4"><span class="co">#&gt; 3 Analysis                     EDA 2019-12-17 2019-12-18</span></a>
+<a class="sourceLine" id="cb3-5" data-line-number="5"><span class="co">#&gt; 4 Analysis   Create baseline model 2019-12-18 2019-12-20</span></a>
+<a class="sourceLine" id="cb3-6" data-line-number="6"><span class="co">#&gt;   dist_end_to_deadline</span></a>
+<a class="sourceLine" id="cb3-7" data-line-number="7"><span class="co">#&gt; 1              NA days</span></a>
+<a class="sourceLine" id="cb3-8" data-line-number="8"><span class="co">#&gt; 2               2 days</span></a>
+<a class="sourceLine" id="cb3-9" data-line-number="9"><span class="co">#&gt; 3              NA days</span></a>
+<a class="sourceLine" id="cb3-10" data-line-number="10"><span class="co">#&gt; 4              NA days</span></a></code></pre></div>
+<p>With the calculated time lines a gantt chart can be plotted (see the initial plot) using:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb4-1" data-line-number="1"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span>(ggplot2)</a>
+<a class="sourceLine" id="cb4-2" data-line-number="2">projectPlan<span class="op">::</span><span class="kw"><a href="https://rdrr.io/pkg/projectPlan/man/gantt_by_sections.html">gantt_by_sections</a></span>(plan, <span class="dt">show_dependencies =</span> <span class="ot">TRUE</span>)</a></code></pre></div>
+<p>Note that the number of days the end date of a task is away from the corresponding deadline is adjusted for weekends, for instance if it is planned that the task is done by Thrusday night and the deadline is on the following Monday, then there is one day left, i.e. Friday, before the deadline is reached. The label attached to the vertical bar displays the distance in days from today to the next deadline.</p>
 </div>
 <div id="other-packages-for-visualization" class="section level2">
 <h2 class="hasAnchor">
 <a href="#other-packages-for-visualization" class="anchor"></a>Other packages for visualization</h2>
-<p>Once the time lines are calculated it is easy to leverage other visualization packages</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" data-line-number="1">plan <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb6-2" data-line-number="2"><span class="st">  </span>dplyr<span class="op">::</span><span class="kw"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span>(</a>
-<a class="sourceLine" id="cb6-3" data-line-number="3">    <span class="dt">id =</span> <span class="dv">1</span><span class="op">:</span><span class="kw">n</span>(), <span class="dt">content =</span> task, <span class="dt">start =</span> <span class="kw"><a href="https://rdrr.io/r/base/character.html">as.character</a></span>(time_start), <span class="dt">end =</span> <span class="kw"><a href="https://rdrr.io/r/base/character.html">as.character</a></span>(time_end),</a>
-<a class="sourceLine" id="cb6-4" data-line-number="4">    <span class="dt">group =</span> <span class="kw"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span>(<span class="kw"><a href="https://rdrr.io/r/base/factor.html">as.factor</a></span>(.<span class="op">$</span>section))) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb6-5" data-line-number="5"><span class="st">  </span>dplyr<span class="op">::</span><span class="kw"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span>(id, content, start, end, project, section, group) <span class="op">%&gt;%</span></a>
-<a class="sourceLine" id="cb6-6" data-line-number="6"><span class="st">  </span>timevis<span class="op">::</span><span class="kw">timevis</span>(<span class="dt">groups =</span> <span class="kw">distinct</span>(<span class="kw"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span>(<span class="dt">id =</span> <span class="kw"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span>(<span class="kw"><a href="https://rdrr.io/r/base/factor.html">as.factor</a></span>(.<span class="op">$</span>section)), <span class="dt">content =</span> .<span class="op">$</span>section)))</a></code></pre></div>
-<p><img src="./README-timevis-1.png" alt="timevis"></p>
+<p>Once the time lines are calculated it is easy to leverage other visualization packages (note that this is a screenshot that was created manually, therefore the timeline might be different from the initial plot)</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" data-line-number="1">plan <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb5-2" data-line-number="2"><span class="st">  </span>dplyr<span class="op">::</span><span class="kw"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span>(</a>
+<a class="sourceLine" id="cb5-3" data-line-number="3">    <span class="dt">id =</span> <span class="dv">1</span><span class="op">:</span><span class="kw">n</span>(), <span class="dt">content =</span> task, <span class="dt">start =</span> <span class="kw"><a href="https://rdrr.io/r/base/character.html">as.character</a></span>(time_start), <span class="dt">end =</span> <span class="kw"><a href="https://rdrr.io/r/base/character.html">as.character</a></span>(time_end),</a>
+<a class="sourceLine" id="cb5-4" data-line-number="4">    <span class="dt">group =</span> <span class="kw"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span>(<span class="kw"><a href="https://rdrr.io/r/base/factor.html">as.factor</a></span>(.<span class="op">$</span>section))) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb5-5" data-line-number="5"><span class="st">  </span>dplyr<span class="op">::</span><span class="kw"><a href="https://dplyr.tidyverse.org/reference/select.html">select</a></span>(id, content, start, end, project, section, group) <span class="op">%&gt;%</span></a>
+<a class="sourceLine" id="cb5-6" data-line-number="6"><span class="st">  </span>timevis<span class="op">::</span><span class="kw"><a href="https://rdrr.io/pkg/timevis/man/timevis.html">timevis</a></span>(<span class="dt">groups =</span> <span class="kw">distinct</span>(<span class="kw"><a href="https://rdrr.io/r/base/data.frame.html">data.frame</a></span>(<span class="dt">id =</span> <span class="kw"><a href="https://rdrr.io/r/base/numeric.html">as.numeric</a></span>(<span class="kw"><a href="https://rdrr.io/r/base/factor.html">as.factor</a></span>(.<span class="op">$</span>section)), <span class="dt">content =</span> .<span class="op">$</span>section)))</a></code></pre></div>
+<p><img src="reference/figures/README-timevis-1.png" alt="timevis"></p>
 </div>
 <div id="installation" class="section level2">
 <h2 class="hasAnchor">
 <a href="#installation" class="anchor"></a>Installation</h2>
 <p>You can install projectPlan from github with:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" data-line-number="1"><span class="co"># install.packages("devtools")</span></a>
-<a class="sourceLine" id="cb7-2" data-line-number="2">devtools<span class="op">::</span><span class="kw"><a href="https://rdrr.io/pkg/devtools/man/remote-reexports.html">install_github</a></span>(<span class="st">"MarselScheer/projectPlan"</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb6-1" data-line-number="1"><span class="co"># install.packages("devtools")</span></a>
+<a class="sourceLine" id="cb6-2" data-line-number="2">devtools<span class="op">::</span><span class="kw"><a href="https://rdrr.io/pkg/devtools/man/remote-reexports.html">install_github</a></span>(<span class="st">"MarselScheer/projectPlan"</span>)</a></code></pre></div>
 </div>
 </div>
 
