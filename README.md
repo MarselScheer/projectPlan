@@ -48,10 +48,10 @@ plan <-
 ```
 
     #>    project                    task time_start   time_end
-    #> 1 DataBase           Set up server 2019-12-15 2019-12-17
-    #> 2 DataBase Create maintenance plan 2019-12-15 2019-12-18
-    #> 3 Analysis                     EDA 2019-12-17 2019-12-18
-    #> 4 Analysis   Create baseline model 2019-12-18 2019-12-20
+    #> 1 DataBase           Set up server 2019-12-17 2019-12-18
+    #> 2 DataBase Create maintenance plan 2019-12-17 2019-12-19
+    #> 3 Analysis                     EDA 2019-12-18 2019-12-19
+    #> 4 Analysis   Create baseline model 2019-12-19 2019-12-23
     #>   dist_end_to_deadline
     #> 1              NA days
     #> 2               2 days
