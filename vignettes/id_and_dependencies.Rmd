@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
-logger::log_threshold(logger::WARN)
+logger::log_threshold(logger::WARN, namespace = "projectPlan")
 
 library(projectPlan)
 suppressPackageStartupMessages(library(dplyr))
@@ -23,7 +23,8 @@ library(DT)
 
 # Introduction
 
-The columns *id* is used to identify tasks in the work plan. This allows to specify dependencies between
+The columns *id* is used to identify tasks in the work plan. It is not necessary to specify
+the *id* but this allows to declare dependencies between
 tasks. There can be logic dependencies where a task cannot start if another has not been finished, for instance
 first comes the fundament, then the walls and then the roof. Other tasks may need to be executed
 sequentially simply because because there are not enough resources.
@@ -38,7 +39,9 @@ pA <- dplyr::tibble(
   section = c("0_prep", "1_design"), task = paste0("task", 1:2), id = paste0("i", 1:2), start = "TODAY", depends_on = "", deadline = NA,
   est_duration = 1:2,
   progress = 0, 
-  resource = "R1")
+  resource = "R1",
+  status = NA,
+  end = NA)
 ```
 
 The intrinsic property of an *id* is that it is unique. Note, if *id* is not provided, then entries of the form *NOT_SPECIFIED_#some_digit#*
@@ -54,7 +57,7 @@ together into one entry, i.e.:
 * minimum of the deadlines is calculated
 * sum of the estimated days necessary is calculated
 * if start and end date are given, then minimum of start and maximum of the end date are used for the combined entry
-* if any task waiting, then the combined entry also gets a waiting status
+* if any task is in status waiting, then the combined entry also gets a waiting status
 
 Note that using the same *id* in different *sections* results in a warning
 
@@ -85,7 +88,7 @@ pA$start[2] <- ""
 DT::datatable(pA)
 ```
 
-In order to visually this logic dependency (arrow from one task to another) one has to set the parameter *show_dependencies* to 
+In order to see this logic dependency (arrow from one task to another) one has to set the parameter *show_dependencies* to 
 *TRUE*:
 
 ```{r, fig.height=5, fig.width=10}
@@ -101,6 +104,9 @@ Instead of stating the dependcy directly one could simply use the term *PREVIOUS
 pA$depends_on[2] <- "PREVIOUS"
 DT::datatable(pA)
 ```
+
+However, if one inserts a new task between task1 and task2, then of course task2 
+depends on the new task and not anymore on task1.
 
 # Non-Logic dependencies
 
@@ -145,7 +151,9 @@ pA <- dplyr::tibble(
   section = "prep", task = paste0("task", 1:2), id = paste0("i", 1:2), start = "TODAY", depends_on = "", deadline = NA,
   est_duration = 1:2,
   progress = 0, 
-  resource = "R1")
+  resource = "R1",
+  status = NA,
+  end = NA)
 
 pB <- pA
 pB$project = "B"

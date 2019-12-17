@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
-logger::log_threshold(logger::WARN)
+logger::log_threshold(logger::WARN, namespace = "projectPlan")
 
 library(projectPlan)
 suppressPackageStartupMessages(library(dplyr))
@@ -23,7 +23,7 @@ library(DT)
 
 # Introduction
 
-The duration of a task is defined by the two columns *start* and *end*. The duration of the task
+The duration of a task is defined by the two columns *start* and *end*, which 
 can be implicitly (due to dependencies and estimated durations of a task) or explicitly defined.
 
 # Explicit start and end dates
@@ -32,12 +32,12 @@ This is the easiest case. Just provide the date in the format *yyyy-mm-dd* for s
 If you use a Excel dates are stored as numeric numbers. In order convert this numeric back to a 
 date a origin is necessary, which can be passed to *projectPlan::wrangle_raw_plan*. 
 Unfortunately, Excel uses two different origins. For dates (post-1901) from Windows Excel origin 
-should by 1899-12-30 (is the default value). For dates (post-1901) from Mac Excel origin should 
-by 1904-01-01. 
+should be 1899-12-30 (is the default value). For dates (post-1901) from Mac Excel origin should 
+be 1904-01-01. 
 
-It is recommended to set the start date to the actual date when the task was started. 
-This way it is directly documented when the task was started. It is also recommend to set the
-actual end date once the task was completed.
+One possible workflow is to set the start date to the actual date when the task was started. 
+This way it is directly documented when the task was started and also to set the
+actual end date once the task was completed. 
 
 ```{r}
 pA <- dplyr::tibble(
@@ -49,6 +49,12 @@ pA <- dplyr::tibble(
   resource = "R1")
 DT::datatable(pA)
 ```
+All dates are interpreted as 'begin of business day' (BOB) which is just a conventation made 
+for this package. Of course, it would also be reasonable
+to define the end date as 'end of busibness day'. However, there is already a third date and
+other dates might follow. Hence, it is probably easier to always think in BOB. So a task that
+started on 2018-12-10 and ended on 2018-12-11 was accomplished within one day.
+
 
 # Implicit start and end dates
 
@@ -79,7 +85,7 @@ pA %>%
   DT::datatable()
 ```
 
-Note that *TODAY* for the start time of id *i1* was subsituted by the date the function *wrangle_raw_plan*
+Note that *TODAY* for the start time of id *i1* was subsituted by the date the function *projectPlan::wrangle_raw_plan*
 was executed.
 
 See the corresponding vignette for more details on id's and dependencies.
