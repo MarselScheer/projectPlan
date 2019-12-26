@@ -1,42 +1,32 @@
 #' Prepares a raw project plan for further processing
 #'
 #' This function is usually called first, for instance after a raw project
-#' plan was imported from an speadsheet.
+#' plan was imported from an speadsheet, see \link{import_xlsx}.
 #'
 #' @param df Essential columns that must be provided are
-#'
-#'   task: description of the task, e.g. write architecture
-#'
-#'   resource: the resource that is working on that task
-#'
-#'   id: an identifier for the task. used to declare dependencies
-#'
-#'   section: a section is usually assigned to a set of tasks
-#'
-#'   project: a project is usually assigned to a set of sections
-#'
-#'   depends_on: a comma separated list of id's that the current task depends on or NA
-#'
-#'   start: a date when the task starts, NA or 'TODAY'. At the beginning of a project, this is usually NA and \link{calculate_time_lines} tries to calculate an explicit date
-#'
-#'   end: a date when the task ends or an integer (representing number of days the task will take to be completed) or 'WAIT'
-#'
-#'   progress: number between 0 and 100, indicating the progress of the task
-#'
-#'   deadline: NA or a date when the task must be completed
-#'   
+#'   \describe{
+#'   \item{task}{description of the task, e.g. write architecture}
+#'   \item{resource}{the resource that is working on that task}
+#'   \item{id}{an identifier for the task. used to declare dependencies}
+#'   \item{section}{a section is usually assigned to a set of tasks}
+#'   \item{project}{a project is usually assigned to a set of sections}
+#'   \item{depends_on}{a comma separated list of id's that the current task depends on or NA}
+#'   \item{start}{a date when the task starts. Note, the start-date can be defined implicitly, see 
+#'                the corresponding vignette.} 
+#'   \item{end}{a date when the task ends}
+#'   \item{est_duration}{number of estimated workdays this task will take}
+#'   \item{status}{of the task, i.e. 'unscheduled', 'await', 'aborted'}
+#'   \item{resource}{character for the resource that is allocated to the corresponding task}
+#'   \item{progress}{number between 0 and 100, indicating the progress of the task}
+#'   \item{deadline}{NA or a date when the task must be completed}
+#'   }
 #' @param date_origin Reference date in format YYYY-mm-dd for converting an integer to a date. 
 #'   For dates (post-1901) from Windows Excel origin should by 1899-12-30 (is the default value). 
 #'   For dates (post-1901) from Mac Excel origin should by 1904-01-01. 
 #'
 #' @return \code{data.table} with columns preprocessed for calculating time lines with \link{calculate_time_lines}.
 #'
-#' @details The column start can contain the word 'TODAY' which is replaced by the current date.
-#'   The column end can contain the word 'WAIT' which marks the task as a waiting task and internally it is assumed that the
-#'   task ends today.
-#'
 #' @seealso \link{import_xlsx}, \link{calculate_time_lines}
-#'
 #' @export
 wrangle_raw_plan <- function(df, date_origin = "1899-12-30") {
   h.log_start()
