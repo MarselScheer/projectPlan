@@ -25,6 +25,24 @@
 #'   For dates (post-1901) from Mac Excel origin should by 1904-01-01. 
 #'
 #' @return \code{data.table} with columns preprocessed for calculating time lines with \link{calculate_time_lines}.
+#' \describe{
+#'   \item{project}{copy from df where NA's are replaced by 'UNKNOWN'}
+#'   \item{section}{copy from df where NA's are replaced by 'UNKNOWN'}
+#'   \item{id}{copy from df where NA's are replaced by NOT_SPECIFIED_<number> 
+#'             and a prefix for the project}
+#'   \item{depends_on}{copy from df but adjusted for the project-prefix and PREVIOUS-tag}
+#'   \item{start}{copy from df but adjusted for the project-prefix and PREVIOUS-tag}
+#'   \item{prior_ids}{concatenation of depends_on and start}
+#'   \item{resource}{copy from df where NA's are replaced by 'UNKNOWN'}
+#'   \item{task}{copy from df where NA's are replaced by 'UNKNOWN'}
+#'   \item{progress}{copy from df where NA's are replaced by 0}
+#'   \item{deadline}{'copy' from df as date-object}
+#'   \item{fixed_start_date}{'copy' of start from df as date-object}
+#'   \item{fixed_end_date}{'copy' of end from df as date-object}
+#'   \item{est_days}{copy of est_duration}
+#'   \item{waiting/aborted/unscheduled}{TRUE/FALSE according to the status-column from df}
+#'   \item{nmb_combined_entries}{number of tasks that were combined to one because of the same id}
+#' }
 #'
 #' @seealso \link{import_xlsx}, \link{calculate_time_lines}
 #' @export
