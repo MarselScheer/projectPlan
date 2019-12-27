@@ -1,8 +1,8 @@
-#' Visualization of the project plan stratified according to sections
+#' Visualization of the project plan as a Gantt-chart stratified according to projects and sections
 #'
 #' The gantt-chart shows one block for every defined section and uses resources to color the rectangles.
 #'
-#' @param dt \code{data.table} create from \link{calculate_time_lines}
+#' @param dt \code{data.table} created by \link{calculate_time_lines}
 #' @param xlim limits for the x-axis
 #' @param show_dependencies visualize the dependencies between the tasks as arrows
 #' @param text_size size of the font
