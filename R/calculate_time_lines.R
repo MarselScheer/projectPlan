@@ -39,6 +39,19 @@ calculate_time_lines <- function(df) {
   df
 }
 
+#' Combines all tasks of a project to one entry
+#' 
+#' This function is especially helpful if one wants to show a complete project
+#' only as one entry in the Gantt-chart
+#' @param dt time lines processed by \link{calculate_time_lines}
+#'
+#' @param projects that will be combined to one entry each
+#' @param task_label the label that is used for the corresonding collapsed entry
+#'
+#' @return dt but all entries for the provided projects are collapsed to one entry. 
+#'         Start and end time for the collapsed entry are the minimum and maximum
+#'         start and end times of the single tasks and deadline is set to the minimum
+#'         deadline (if available).
 #' @export
 collapse_projects <- function(dt, projects, task_label = "{project} collapsed") {
   ret <- dt
@@ -48,6 +61,16 @@ collapse_projects <- function(dt, projects, task_label = "{project} collapsed") 
   ret
 }
 
+#' Combines all sections that do not contain an 'uncompleted' task to one entry
+#' 
+#' This function is especially helpful if one wants to show a completed sections
+#' only as one entry in the Gantt-chart
+#' @param dt time lines processed by \link{calculate_time_lines}
+#'
+#' @return dt but all sections that do not contain an 'uncompleted' task are collapsed to one entry. 
+#'         Start and end time for the collapsed entry are the minimum and maximum
+#'         start and end times of the single tasks and deadline is set to the minimum
+#'         deadline (if available).
 #' @export
 collapse_complete_sections <- function(dt) {
   
@@ -63,6 +86,16 @@ collapse_complete_sections <- function(dt) {
   dt
 }
 
+#' Combines all projects that do not contain an 'uncompleted' task to one entry
+#' 
+#' This function is especially helpful if one wants to show a completed project
+#' only as one entry in the Gantt-chart
+#' @param dt time lines processed by \link{calculate_time_lines}
+#'
+#' @return dt but all projects that do not contain an 'uncompleted' task are collapsed to one entry. 
+#'         Start and end time for the collapsed entry are the minimum and maximum
+#'         start and end times of the single tasks and deadline is set to the minimum
+#'         deadline (if available).
 #' @export
 collapse_complete_projects <- function(dt) {
   
@@ -75,6 +108,20 @@ collapse_complete_projects <- function(dt) {
 }
 
 
+#' Combines all tasks of a section to one entry
+#' 
+#' This function is especially helpful if one wants to show a complete section
+#' only as one entry in the Gantt-chart
+#' @param dt time lines processed by \link{calculate_time_lines}
+#'
+#' @param project that conatins the section that should be collapsed 
+#' @param section that will be collapsed to one entry
+#' @param task_label the label that is used for the corresonding collapsed entry
+#'
+#' @return dt but all entries for the provided section in the provided project are collapsed to one entry. 
+#'         Start and end time for the collapsed entry are the minimum and maximum
+#'         start and end times of the single tasks and deadline is set to the minimum
+#'         deadline (if available).
 #' @export
 collapse_section <- function(dt, project, section, task_label = "{project}::{section} collapsed") {
   if (missing(project)) {
