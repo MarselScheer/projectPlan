@@ -16,6 +16,9 @@
 #'   \link{wrangle_raw_plan}
 #'
 #' @seealso \link{wrangle_raw_plan}
+#' @examples
+#' import_xlsx(system.file("template","projects.xlsx", package = "projectPlan"))
+#' 
 #' @export
 import_xlsx <- function(fName, sheets) {
   logger::log_info("Import {fName}.")

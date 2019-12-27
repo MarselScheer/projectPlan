@@ -8,6 +8,11 @@
 #' @param text_size size of the font
 #'
 #' @return ggplot2-object displaying a gantt-chart
+#' @examples 
+#' raw_plan <- import_xlsx(system.file("template","projects.xlsx", package = "projectPlan"))
+#' pre_plan <- wrangle_raw_plan(raw_plan)
+#' prj_plan <- calculate_time_lines(pre_plan)
+#' gantt_by_sections(prj_plan, show_dependencies = TRUE)
 #' @export
 gantt_by_sections <- function(dt, xlim, show_dependencies = FALSE, text_size = 3) {
   xmin <- min(dt$time_start, na.rm = TRUE)

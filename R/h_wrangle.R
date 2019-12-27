@@ -45,6 +45,9 @@
 #' }
 #'
 #' @seealso \link{import_xlsx}, \link{calculate_time_lines}
+#' @examples
+#' raw_plan <- import_xlsx(system.file("template","projects.xlsx", package = "projectPlan"))
+#' wrangle_raw_plan(raw_plan)
 #' @export
 wrangle_raw_plan <- function(df, date_origin = "1899-12-30") {
   h.log_start()

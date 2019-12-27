@@ -16,6 +16,10 @@
 #' }
 #'
 #' @seealso \link{wrangle_raw_plan}, \link{gantt_by_sections}
+#' @examples 
+#' raw_plan <- import_xlsx(system.file("template","projects.xlsx", package = "projectPlan"))
+#' pre_plan <- wrangle_raw_plan(raw_plan)
+#' calculate_time_lines(pre_plan)
 #' @export
 #' @import data.table
 calculate_time_lines <- function(df) {
