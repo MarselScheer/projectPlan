@@ -78,7 +78,7 @@ collapse_complete_sections <- function(dt) {
     all(progress[!aborted] == 100)
   }
   
-  complete_sections <- dt[, .(complete = is.completed(progress, aborted)), by = "section"][complete == TRUE]
+  complete_sections <- with(NULL, dt[, .(complete = is.completed(progress, aborted)), by = "section"][complete == TRUE])
   for (proj_sec in complete_sections$section) {
     proj_sec <- unlist(strsplit(proj_sec, "::"))
     dt <- collapse_section(dt, project = proj_sec[1], section = proj_sec[2], task_label = "{project}::{section} completed")
@@ -103,7 +103,7 @@ collapse_complete_projects <- function(dt) {
     all(progress[!aborted] == 100)
   }
   
-  complete_projects <- dt[, .(complete = is.completed(progress, aborted)), by = "project"][complete == TRUE]
+  complete_projects <- with(NULL, dt[, .(complete = is.completed(progress, aborted)), by = "project"][complete == TRUE])
   collapse_projects(dt, projects = complete_projects$project, task_label = "{project} completed")
 }
 
@@ -156,7 +156,7 @@ h.collapse_project <- function(dt, project, task_label) {
   if (missing(project)) {
     msg <- "Parameter project must be specified."
     logger::log_error("{msg} Valid entries for example are: ")
-    logger::log_error(h.capture_table(head(unique(dt$project))))
+    logger::log_error(h.capture_table(utils::head(unique(dt$project))))
     stop(msg)
   }
   idx <- dt$project == project
@@ -164,7 +164,7 @@ h.collapse_project <- function(dt, project, task_label) {
   if (all(idx == FALSE)) {
     msg <- glue::glue("The project -{project}- does not exist in the project plan.")
     logger::log_error("{msg} Valid entries for example are: ")
-    logger::log_error(h.capture_table(head(unique(dt$project))))
+    logger::log_error(h.capture_table(utils::head(unique(dt$project))))
     stop(msg)
   }
   task_label = as.character(glue::glue(task_label))
