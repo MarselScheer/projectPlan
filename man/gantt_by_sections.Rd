@@ -2,12 +2,12 @@
 % Please edit documentation in R/gantt.R
 \name{gantt_by_sections}
 \alias{gantt_by_sections}
-\title{Visualization of the project plan stratified according to sections}
+\title{Visualization of the project plan as a Gantt-chart stratified according to projects and sections}
 \usage{
 gantt_by_sections(dt, xlim, show_dependencies = FALSE, text_size = 3)
 }
 \arguments{
-\item{dt}{\code{data.table} create from \link{calculate_time_lines}}
+\item{dt}{\code{data.table} created by \link{calculate_time_lines}}
 
 \item{xlim}{limits for the x-axis}
 
@@ -20,4 +20,10 @@ ggplot2-object displaying a gantt-chart
 }
 \description{
 The gantt-chart shows one block for every defined section and uses resources to color the rectangles.
+}
+\examples{
+raw_plan <- import_xlsx(system.file("template","projects.xlsx", package = "projectPlan"))
+pre_plan <- wrangle_raw_plan(raw_plan)
+prj_plan <- calculate_time_lines(pre_plan)
+gantt_by_sections(prj_plan, show_dependencies = TRUE)
 }

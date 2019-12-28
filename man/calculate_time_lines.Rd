@@ -7,17 +7,28 @@
 calculate_time_lines(df)
 }
 \arguments{
-\item{df}{A \code{data.frame} containing one task in each row.}
+\item{df}{A \code{data.frame} preprocessed by \link{wrangle_raw_plan}.}
 }
 \value{
 A \code{data.table} object with explicit start and end times for every (grouped) task
+\describe{
+  \item{misc. columns}{columns from df}
+  \item{time_start/end}{calculated start- and end-time of a task}
+  \item{dist_end_to_deadline}{number of workdays (weekends exludede) from the calculated end-time 
+                              to the specified deadline}
+}
 }
 \description{
 Usually this function is called after a raw plan with tasks was prepared by \link{wrangle_raw_plan}.
 It takes a set of tasks and their estimated duration as well as
 dependencies between those tasks. This implicitly defines start and end dates
 for each task and this function calculates the corresponding explicit
-start and end times.
+start and end times
+}
+\examples{
+raw_plan <- import_xlsx(system.file("template","projects.xlsx", package = "projectPlan"))
+pre_plan <- wrangle_raw_plan(raw_plan)
+calculate_time_lines(pre_plan)
 }
 \seealso{
 \link{wrangle_raw_plan}, \link{gantt_by_sections}

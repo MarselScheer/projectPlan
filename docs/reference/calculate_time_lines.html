@@ -40,7 +40,7 @@
 It takes a set of tasks and their estimated duration as well as
 dependencies between those tasks. This implicitly defines start and end dates
 for each task and this function calculates the corresponding explicit
-start and end times." />
+start and end times" />
 <meta name="twitter:card" content="summary" />
 
 
@@ -135,7 +135,7 @@ start and end times." />
 It takes a set of tasks and their estimated duration as well as
 dependencies between those tasks. This implicitly defines start and end dates
 for each task and this function calculates the corresponding explicit
-start and end times.</p>
+start and end times</p>
     </div>
 
     <pre class="usage"><span class='fu'>calculate_time_lines</span>(<span class='no'>df</span>)</pre>
@@ -145,17 +145,81 @@ start and end times.</p>
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>df</th>
-      <td><p>A <code>data.frame</code> containing one task in each row.</p></td>
+      <td><p>A <code>data.frame</code> preprocessed by <a href='wrangle_raw_plan.html'>wrangle_raw_plan</a>.</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>A <code>data.table</code> object with explicit start and end times for every (grouped) task</p>
+    <p>A <code>data.table</code> object with explicit start and end times for every (grouped) task</p><dl class='dl-horizontal'>
+  <dt>misc. columns</dt><dd><p>columns from df</p></dd>
+  <dt>time_start/end</dt><dd><p>calculated start- and end-time of a task</p></dd>
+  <dt>dist_end_to_deadline</dt><dd><p>number of workdays (weekends exludede) from the calculated end-time 
+                              to the specified deadline</p></dd>
+
+</dl>
+
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><a href='wrangle_raw_plan.html'>wrangle_raw_plan</a>, <a href='gantt_by_sections.html'>gantt_by_sections</a></p></div>
 
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'><span class='no'>raw_plan</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='import_xlsx.html'>import_xlsx</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/system.file.html'>system.file</a></span>(<span class='st'>"template"</span>,<span class='st'>"projects.xlsx"</span>, <span class='kw'>package</span> <span class='kw'>=</span> <span class='st'>"projectPlan"</span>))
+<span class='no'>pre_plan</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='wrangle_raw_plan.html'>wrangle_raw_plan</a></span>(<span class='no'>raw_plan</span>)
+<span class='fu'>calculate_time_lines</span>(<span class='no'>pre_plan</span>)</div><div class='output co'>#&gt; WARN -- 2019-12-28 09:25:25 -- projectPlan/h.exclude_weekends(earliest_start_time, end): start 2019-12-28 is on a weekend. Shift end 2019-12-29 by 2 day(s).</div><div class='output co'>#&gt;    project                       id                                  depends_on
+#&gt; 1: kitchen kitchen::NOT_SPECIFIED_1                                          NA
+#&gt; 2: kitchen       kitchen::roughplan                    kitchen::NOT_SPECIFIED_1
+#&gt; 3: kitchen kitchen::NOT_SPECIFIED_3                                          NA
+#&gt; 4: kitchen kitchen::NOT_SPECIFIED_4 kitchen::NOT_SPECIFIED_3,kitchen::roughplan
+#&gt; 5: kitchen            kitchen::plan                    kitchen::NOT_SPECIFIED_4
+#&gt; 6: kitchen             kitchen::buy                               kitchen::plan
+#&gt; 7: kitchen kitchen::NOT_SPECIFIED_7                               kitchen::plan
+#&gt; 8: kitchen kitchen::NOT_SPECIFIED_8       kitchen::buy,kitchen::NOT_SPECIFIED_7
+#&gt;                 start                                   prior_ids
+#&gt; 1:                 NA                                          NA
+#&gt; 2:                 NA                    kitchen::NOT_SPECIFIED_1
+#&gt; 3: kitchen::roughplan                          kitchen::roughplan
+#&gt; 4:                 NA kitchen::NOT_SPECIFIED_3,kitchen::roughplan
+#&gt; 5:                 NA                    kitchen::NOT_SPECIFIED_4
+#&gt; 6:                 NA                               kitchen::plan
+#&gt; 7:                 NA                               kitchen::plan
+#&gt; 8:                 NA       kitchen::buy,kitchen::NOT_SPECIFIED_7
+#&gt;                    section   resource
+#&gt; 1:         kitchen::0_prep          I
+#&gt; 2:         kitchen::0_prep          I
+#&gt; 3:         kitchen::0_prep  F1, F2, I
+#&gt; 4:        kitchen::1_offer Company, I
+#&gt; 5:        kitchen::1_offer Company, I
+#&gt; 6:        kitchen::1_offer          I
+#&gt; 7: kitchen::2_installation          I
+#&gt; 8: kitchen::2_installation Company, I
+#&gt;                                              task progress   deadline
+#&gt; 1:                                measure kitchen        0       &lt;NA&gt;
+#&gt; 2:                              make a rough plan        0       &lt;NA&gt;
+#&gt; 3: ask friends which companies they can recommend        0       &lt;NA&gt;
+#&gt; 4:     make appointment with company for planning        0       &lt;NA&gt;
+#&gt; 5:                               plan new kitchen        0       &lt;NA&gt;
+#&gt; 6:                                buy new kitchen        0       &lt;NA&gt;
+#&gt; 7:              make appointment for installation        0       &lt;NA&gt;
+#&gt; 8:                installation of the new kitchen        0 2020-02-07
+#&gt;    fixed_start_date fixed_end_date est_days waiting aborted unscheduled
+#&gt; 1:       2019-12-28           &lt;NA&gt;        1   FALSE   FALSE        TRUE
+#&gt; 2:             &lt;NA&gt;           &lt;NA&gt;        2   FALSE   FALSE        TRUE
+#&gt; 3:             &lt;NA&gt;           &lt;NA&gt;        2   FALSE   FALSE        TRUE
+#&gt; 4:             &lt;NA&gt;           &lt;NA&gt;        5   FALSE   FALSE        TRUE
+#&gt; 5:             &lt;NA&gt;           &lt;NA&gt;        1   FALSE   FALSE        TRUE
+#&gt; 6:             &lt;NA&gt;           &lt;NA&gt;        1   FALSE   FALSE        TRUE
+#&gt; 7:             &lt;NA&gt;           &lt;NA&gt;        1   FALSE   FALSE        TRUE
+#&gt; 8:             &lt;NA&gt;           &lt;NA&gt;        1   FALSE   FALSE        TRUE
+#&gt;    nmb_combined_entries time_start   time_end dist_end_to_deadline
+#&gt; 1:                    1 2019-12-28 2019-12-31              NA days
+#&gt; 2:                    1 2019-12-31 2020-01-02              NA days
+#&gt; 3:                    1 2020-01-02 2020-01-06              NA days
+#&gt; 4:                    1 2020-01-06 2020-01-13              NA days
+#&gt; 5:                    1 2020-01-13 2020-01-14              NA days
+#&gt; 6:                    1 2020-01-14 2020-01-15              NA days
+#&gt; 7:                    1 2020-01-14 2020-01-15              NA days
+#&gt; 8:                    1 2020-01-15 2020-01-16              16 days</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
@@ -163,6 +227,7 @@ start and end times.</p>
       <li><a href="#arguments">Arguments</a></li>
       <li><a href="#value">Value</a></li>
       <li><a href="#see-also">See also</a></li>
+      <li><a href="#examples">Examples</a></li>
     </ul>
 
   </div>

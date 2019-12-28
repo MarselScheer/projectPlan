@@ -9,15 +9,25 @@ import_xlsx(fName, sheets)
 \arguments{
 \item{fName}{File name of the xlsx-file that should be imported}
 
-\item{sheets}{list of sheet-names that are imported. If not specified all sheets from the xlsx-file are imported.
-If the sheet does not contain a project-column, then the name of the sheet is used as a project name.}
+\item{sheets}{list of sheet-names that are imported. If not specified all 
+sheets from the xlsx-file are imported. If the sheet does not contain 
+a project-column, then the name of the sheet is used as a project name.}
 }
 \value{
-One \code{data.table} containing all imported sheets. Usually, such an object needs to be preprocessed by
+One \code{data.table} containing all imported sheets. 
+  Usually, such an object needs to be preprocessed by
   \link{wrangle_raw_plan}
 }
 \description{
-Import-helper-function for excel-sheets
+Note that the package comes with a template-xlsx-file that contains all
+the columns that are expected by the package to work properly.
+This template is located in the template-folder of the installed package.
+Alternatively, you can download the template from 
+https://github.com/MarselScheer/projectPlan/inst/template
+}
+\examples{
+import_xlsx(system.file("template","projects.xlsx", package = "projectPlan"))
+
 }
 \seealso{
 \link{wrangle_raw_plan}

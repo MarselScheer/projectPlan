@@ -36,7 +36,11 @@
 
 
 <meta property="og:title" content="Import-helper-function for excel-sheets — import_xlsx" />
-<meta property="og:description" content="Import-helper-function for excel-sheets" />
+<meta property="og:description" content="Note that the package comes with a template-xlsx-file that contains all
+the columns that are expected by the package to work properly.
+This template is located in the template-folder of the installed package.
+Alternatively, you can download the template from 
+https://github.com/MarselScheer/projectPlan/inst/template" />
 <meta name="twitter:card" content="summary" />
 
 
@@ -127,7 +131,11 @@
     </div>
 
     <div class="ref-description">
-    <p>Import-helper-function for excel-sheets</p>
+    <p>Note that the package comes with a template-xlsx-file that contains all
+the columns that are expected by the package to work properly.
+This template is located in the template-folder of the installed package.
+Alternatively, you can download the template from 
+https://github.com/MarselScheer/projectPlan/inst/template</p>
     </div>
 
     <pre class="usage"><span class='fu'>import_xlsx</span>(<span class='no'>fName</span>, <span class='no'>sheets</span>)</pre>
@@ -141,19 +149,68 @@
     </tr>
     <tr>
       <th>sheets</th>
-      <td><p>list of sheet-names that are imported. If not specified all sheets from the xlsx-file are imported.
-If the sheet does not contain a project-column, then the name of the sheet is used as a project name.</p></td>
+      <td><p>list of sheet-names that are imported. If not specified all 
+sheets from the xlsx-file are imported. If the sheet does not contain 
+a project-column, then the name of the sheet is used as a project name.</p></td>
     </tr>
     </table>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p>One <code>data.table</code> containing all imported sheets. Usually, such an object needs to be preprocessed by
+    <p>One <code>data.table</code> containing all imported sheets. 
+  Usually, such an object needs to be preprocessed by
   <a href='wrangle_raw_plan.html'>wrangle_raw_plan</a></p>
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><a href='wrangle_raw_plan.html'>wrangle_raw_plan</a></p></div>
 
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'><span class='fu'>import_xlsx</span>(<span class='fu'><a href='https://rdrr.io/r/base/system.file.html'>system.file</a></span>(<span class='st'>"template"</span>,<span class='st'>"projects.xlsx"</span>, <span class='kw'>package</span> <span class='kw'>=</span> <span class='st'>"projectPlan"</span>))</div><div class='output co'>#&gt;           section        id          depends_on    start  end deadline
+#&gt; 1:         0_prep      &lt;NA&gt;                &lt;NA&gt;    TODAY &lt;NA&gt;     &lt;NA&gt;
+#&gt; 2:         0_prep roughplan            PREVIOUS     &lt;NA&gt; &lt;NA&gt;     &lt;NA&gt;
+#&gt; 3:         0_prep      &lt;NA&gt;                &lt;NA&gt; PREVIOUS &lt;NA&gt;     &lt;NA&gt;
+#&gt; 4:        1_offer      &lt;NA&gt; PREVIOUS, roughplan     &lt;NA&gt; &lt;NA&gt;     &lt;NA&gt;
+#&gt; 5:        1_offer      plan            PREVIOUS     &lt;NA&gt; &lt;NA&gt;     &lt;NA&gt;
+#&gt; 6:        1_offer       buy            PREVIOUS     &lt;NA&gt; &lt;NA&gt;     &lt;NA&gt;
+#&gt; 7: 2_installation      &lt;NA&gt;                plan     &lt;NA&gt; &lt;NA&gt;     &lt;NA&gt;
+#&gt; 8: 2_installation      &lt;NA&gt;       PREVIOUS, buy     &lt;NA&gt; &lt;NA&gt;    43868
+#&gt;    est_duration      status   resource
+#&gt; 1:            1 unscheduled          I
+#&gt; 2:            2 unscheduled          I
+#&gt; 3:            2 unscheduled  I, F1, F2
+#&gt; 4:            5 unscheduled I, Company
+#&gt; 5:            1 unscheduled I, Company
+#&gt; 6:            1 unscheduled          I
+#&gt; 7:            1 unscheduled          I
+#&gt; 8:            1 unscheduled I, Company
+#&gt;                                              task progress
+#&gt; 1:                                measure kitchen        0
+#&gt; 2:                              make a rough plan        0
+#&gt; 3: ask friends which companies they can recommend        0
+#&gt; 4:     make appointment with company for planning        0
+#&gt; 5:                               plan new kitchen        0
+#&gt; 6:                                buy new kitchen        0
+#&gt; 7:              make appointment for installation        0
+#&gt; 8:                installation of the new kitchen        0
+#&gt;                                                                                                                            comments
+#&gt; 1:                                                                                                                             &lt;NA&gt;
+#&gt; 2:                                                                                                                             &lt;NA&gt;
+#&gt; 3: Yyyy-mm-dd: \n.ask-for-XYZ: The company XYZ has opened a new store here. Should try to find if someone has experience with them.
+#&gt; 4:                                                                                                                             &lt;NA&gt;
+#&gt; 5:                                                                                                                             &lt;NA&gt;
+#&gt; 6:                                                                                                                             &lt;NA&gt;
+#&gt; 7:                                                                                                                             &lt;NA&gt;
+#&gt; 8:                                                                                                                             &lt;NA&gt;
+#&gt;                                                  microtasks  now project
+#&gt; 1:                                                     &lt;NA&gt; &lt;NA&gt; kitchen
+#&gt; 2:                                                     &lt;NA&gt; &lt;NA&gt; kitchen
+#&gt; 3:                                             .ask-for-XYZ &lt;NA&gt; kitchen
+#&gt; 4:                                                     &lt;NA&gt; &lt;NA&gt; kitchen
+#&gt; 5:                                                     &lt;NA&gt; &lt;NA&gt; kitchen
+#&gt; 6:                                                     &lt;NA&gt; &lt;NA&gt; kitchen
+#&gt; 7:                                .get-written-confirmation &lt;NA&gt; kitchen
+#&gt; 8: .check-fridge\n.check-oven\n.check-stove\n.check-drawers &lt;NA&gt; kitchen</div><div class='input'>
+</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
@@ -161,6 +218,7 @@ If the sheet does not contain a project-column, then the name of the sheet is us
       <li><a href="#arguments">Arguments</a></li>
       <li><a href="#value">Value</a></li>
       <li><a href="#see-also">See also</a></li>
+      <li><a href="#examples">Examples</a></li>
     </ul>
 
   </div>
