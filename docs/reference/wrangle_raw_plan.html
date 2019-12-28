@@ -37,7 +37,7 @@
 
 <meta property="og:title" content="Prepares a raw project plan for further processing — wrangle_raw_plan" />
 <meta property="og:description" content="This function is usually called first, for instance after a raw project
-plan was imported from an speadsheet." />
+plan was imported from an speadsheet, see import_xlsx." />
 <meta name="twitter:card" content="summary" />
 
 
@@ -129,7 +129,7 @@ plan was imported from an speadsheet." />
 
     <div class="ref-description">
     <p>This function is usually called first, for instance after a raw project
-plan was imported from an speadsheet.</p>
+plan was imported from an speadsheet, see <a href='import_xlsx.html'>import_xlsx</a>.</p>
     </div>
 
     <pre class="usage"><span class='fu'>wrangle_raw_plan</span>(<span class='no'>df</span>, <span class='kw'>date_origin</span> <span class='kw'>=</span> <span class='st'>"1899-12-30"</span>)</pre>
@@ -139,17 +139,23 @@ plan was imported from an speadsheet.</p>
     <colgroup><col class="name" /><col class="desc" /></colgroup>
     <tr>
       <th>df</th>
-      <td><p>Essential columns that must be provided are</p>
-<p>task: description of the task, e.g. write architecture</p>
-<p>resource: the resource that is working on that task</p>
-<p>id: an identifier for the task. used to declare dependencies</p>
-<p>section: a section is usually assigned to a set of tasks</p>
-<p>project: a project is usually assigned to a set of sections</p>
-<p>depends_on: a comma separated list of id's that the current task depends on or NA</p>
-<p>start: a date when the task starts, NA or 'TODAY'. At the beginning of a project, this is usually NA and <a href='calculate_time_lines.html'>calculate_time_lines</a> tries to calculate an explicit date</p>
-<p>end: a date when the task ends or an integer (representing number of days the task will take to be completed) or 'WAIT'</p>
-<p>progress: number between 0 and 100, indicating the progress of the task</p>
-<p>deadline: NA or a date when the task must be completed</p></td>
+      <td><p>Essential columns that must be provided are</p><dl class='dl-horizontal'>
+<dt>task</dt><dd><p>description of the task, e.g. write architecture</p></dd>
+<dt>resource</dt><dd><p>the resource that is working on that task</p></dd>
+<dt>id</dt><dd><p>an identifier for the task. used to declare dependencies</p></dd>
+<dt>section</dt><dd><p>a section is usually assigned to a set of tasks</p></dd>
+<dt>project</dt><dd><p>a project is usually assigned to a set of sections</p></dd>
+<dt>depends_on</dt><dd><p>a comma separated list of id's that the current task depends on or NA</p></dd>
+<dt>start</dt><dd><p>a date when the task starts. Note, the start-date can be defined implicitly, see 
+             the corresponding vignette.</p></dd> 
+<dt>end</dt><dd><p>a date when the task ends</p></dd>
+<dt>est_duration</dt><dd><p>number of estimated workdays this task will take</p></dd>
+<dt>status</dt><dd><p>of the task, i.e. 'unscheduled', 'await', 'aborted'</p></dd>
+<dt>resource</dt><dd><p>character for the resource that is allocated to the corresponding task</p></dd>
+<dt>progress</dt><dd><p>number between 0 and 100, indicating the progress of the task</p></dd>
+<dt>deadline</dt><dd><p>NA or a date when the task must be completed</p></dd>
+
+</dl></td>
     </tr>
     <tr>
       <th>date_origin</th>
@@ -161,24 +167,94 @@ For dates (post-1901) from Mac Excel origin should by 1904-01-01.</p></td>
 
     <h2 class="hasAnchor" id="value"><a class="anchor" href="#value"></a>Value</h2>
 
-    <p><code>data.table</code> with columns preprocessed for calculating time lines with <a href='calculate_time_lines.html'>calculate_time_lines</a>.</p>
-    <h2 class="hasAnchor" id="details"><a class="anchor" href="#details"></a>Details</h2>
+    <p><code>data.table</code> with columns preprocessed for calculating time lines with <a href='calculate_time_lines.html'>calculate_time_lines</a>.</p><dl class='dl-horizontal'>
+  <dt>project</dt><dd><p>copy from df where NA's are replaced by 'UNKNOWN'</p></dd>
+  <dt>section</dt><dd><p>copy from df where NA's are replaced by 'UNKNOWN'</p></dd>
+  <dt>id</dt><dd><p>copy from df where NA's are replaced by NOT_SPECIFIED_&lt;number&gt; 
+            and a prefix for the project</p></dd>
+  <dt>depends_on</dt><dd><p>copy from df but adjusted for the project-prefix and PREVIOUS-tag</p></dd>
+  <dt>start</dt><dd><p>copy from df but adjusted for the project-prefix and PREVIOUS-tag</p></dd>
+  <dt>prior_ids</dt><dd><p>concatenation of depends_on and start</p></dd>
+  <dt>resource</dt><dd><p>copy from df where NA's are replaced by 'UNKNOWN'</p></dd>
+  <dt>task</dt><dd><p>copy from df where NA's are replaced by 'UNKNOWN'</p></dd>
+  <dt>progress</dt><dd><p>copy from df where NA's are replaced by 0</p></dd>
+  <dt>deadline</dt><dd><p>'copy' from df as date-object</p></dd>
+  <dt>fixed_start_date</dt><dd><p>'copy' of start from df as date-object</p></dd>
+  <dt>fixed_end_date</dt><dd><p>'copy' of end from df as date-object</p></dd>
+  <dt>est_days</dt><dd><p>copy of est_duration</p></dd>
+  <dt>waiting/aborted/unscheduled</dt><dd><p>TRUE/FALSE according to the status-column from df</p></dd>
+  <dt>nmb_combined_entries</dt><dd><p>number of tasks that were combined to one because of the same id</p></dd>
 
-    <p>The column start can contain the word 'TODAY' which is replaced by the current date.
-  The column end can contain the word 'WAIT' which marks the task as a waiting task and internally it is assumed that the
-  task ends today.</p>
+</dl>
+
     <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
 
     <div class='dont-index'><p><a href='import_xlsx.html'>import_xlsx</a>, <a href='calculate_time_lines.html'>calculate_time_lines</a></p></div>
 
+    <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
+    <pre class="examples"><div class='input'><span class='no'>raw_plan</span> <span class='kw'>&lt;-</span> <span class='fu'><a href='import_xlsx.html'>import_xlsx</a></span>(<span class='fu'><a href='https://rdrr.io/r/base/system.file.html'>system.file</a></span>(<span class='st'>"template"</span>,<span class='st'>"projects.xlsx"</span>, <span class='kw'>package</span> <span class='kw'>=</span> <span class='st'>"projectPlan"</span>))
+<span class='fu'>wrangle_raw_plan</span>(<span class='no'>raw_plan</span>)</div><div class='output co'>#&gt;    project                       id                                  depends_on
+#&gt; 1: kitchen kitchen::NOT_SPECIFIED_1                                          NA
+#&gt; 2: kitchen       kitchen::roughplan                    kitchen::NOT_SPECIFIED_1
+#&gt; 3: kitchen kitchen::NOT_SPECIFIED_3                                          NA
+#&gt; 4: kitchen kitchen::NOT_SPECIFIED_4 kitchen::NOT_SPECIFIED_3,kitchen::roughplan
+#&gt; 5: kitchen            kitchen::plan                    kitchen::NOT_SPECIFIED_4
+#&gt; 6: kitchen             kitchen::buy                               kitchen::plan
+#&gt; 7: kitchen kitchen::NOT_SPECIFIED_7                               kitchen::plan
+#&gt; 8: kitchen kitchen::NOT_SPECIFIED_8       kitchen::buy,kitchen::NOT_SPECIFIED_7
+#&gt;                 start                                   prior_ids
+#&gt; 1:                 NA                                          NA
+#&gt; 2:                 NA                    kitchen::NOT_SPECIFIED_1
+#&gt; 3: kitchen::roughplan                          kitchen::roughplan
+#&gt; 4:                 NA kitchen::NOT_SPECIFIED_3,kitchen::roughplan
+#&gt; 5:                 NA                    kitchen::NOT_SPECIFIED_4
+#&gt; 6:                 NA                               kitchen::plan
+#&gt; 7:                 NA                               kitchen::plan
+#&gt; 8:                 NA       kitchen::buy,kitchen::NOT_SPECIFIED_7
+#&gt;                    section   resource
+#&gt; 1:         kitchen::0_prep          I
+#&gt; 2:         kitchen::0_prep          I
+#&gt; 3:         kitchen::0_prep  F1, F2, I
+#&gt; 4:        kitchen::1_offer Company, I
+#&gt; 5:        kitchen::1_offer Company, I
+#&gt; 6:        kitchen::1_offer          I
+#&gt; 7: kitchen::2_installation          I
+#&gt; 8: kitchen::2_installation Company, I
+#&gt;                                              task progress   deadline
+#&gt; 1:                                measure kitchen        0       &lt;NA&gt;
+#&gt; 2:                              make a rough plan        0       &lt;NA&gt;
+#&gt; 3: ask friends which companies they can recommend        0       &lt;NA&gt;
+#&gt; 4:     make appointment with company for planning        0       &lt;NA&gt;
+#&gt; 5:                               plan new kitchen        0       &lt;NA&gt;
+#&gt; 6:                                buy new kitchen        0       &lt;NA&gt;
+#&gt; 7:              make appointment for installation        0       &lt;NA&gt;
+#&gt; 8:                installation of the new kitchen        0 2020-02-07
+#&gt;    fixed_start_date fixed_end_date est_days waiting aborted unscheduled
+#&gt; 1:       2019-12-28           &lt;NA&gt;        1   FALSE   FALSE        TRUE
+#&gt; 2:             &lt;NA&gt;           &lt;NA&gt;        2   FALSE   FALSE        TRUE
+#&gt; 3:             &lt;NA&gt;           &lt;NA&gt;        2   FALSE   FALSE        TRUE
+#&gt; 4:             &lt;NA&gt;           &lt;NA&gt;        5   FALSE   FALSE        TRUE
+#&gt; 5:             &lt;NA&gt;           &lt;NA&gt;        1   FALSE   FALSE        TRUE
+#&gt; 6:             &lt;NA&gt;           &lt;NA&gt;        1   FALSE   FALSE        TRUE
+#&gt; 7:             &lt;NA&gt;           &lt;NA&gt;        1   FALSE   FALSE        TRUE
+#&gt; 8:             &lt;NA&gt;           &lt;NA&gt;        1   FALSE   FALSE        TRUE
+#&gt;    nmb_combined_entries
+#&gt; 1:                    1
+#&gt; 2:                    1
+#&gt; 3:                    1
+#&gt; 4:                    1
+#&gt; 5:                    1
+#&gt; 6:                    1
+#&gt; 7:                    1
+#&gt; 8:                    1</div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="sidebar">
     <h2>Contents</h2>
     <ul class="nav nav-pills nav-stacked">
       <li><a href="#arguments">Arguments</a></li>
       <li><a href="#value">Value</a></li>
-      <li><a href="#details">Details</a></li>
       <li><a href="#see-also">See also</a></li>
+      <li><a href="#examples">Examples</a></li>
     </ul>
 
   </div>
