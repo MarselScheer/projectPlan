@@ -1,11 +1,9 @@
 .onAttach <- function(libname, pkgname) {
-  packageStartupMessage("Package projectPlan leverage the futile.logger-package. Use futile.logger::flog.threshold() to modify the visibility of messages.")
+  packageStartupMessage("Package projectPlan leverage the logger-package. Use logger::log_threshold(level = logger::WARN/INFO/..., namespace = 'projectPlan') to modify the visibility of messages.")
 }
 
 .onLoad <- function(libname, pkgname) {
-  futile.logger::flog.layout(
-    futile.logger::layout.format("[~l] [~t] [~n.~f] ~m"),
-    name = pkgname
-  )
-  futile.logger::flog.threshold(futile.logger::WARN, name = pkgname)
+  pkg_logger <- logger::layout_glue_generator(format = '{level} -- {time} -- {namespace}/{call}: {msg}')
+  logger::log_layout(pkg_logger, namespace = pkgname)
+  logger::log_threshold(logger::WARN, name = pkgname)
 }

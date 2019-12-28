@@ -1,0 +1,91 @@
+---
+title: "Start and end dates"
+author: "Marsel Scheer"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Start and end dates}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+logger::log_threshold(logger::WARN, namespace = "projectPlan")
+
+library(projectPlan)
+suppressPackageStartupMessages(library(dplyr))
+library(DT)
+```
+
+# Introduction
+
+The duration of a task is defined by the two columns *start* and *end*, which 
+can be implicitly (due to dependencies and estimated durations of a task) or explicitly defined.
+
+# Explicit start and end dates
+
+This is the easiest case. Just provide the date in the format *yyyy-mm-dd* for start and end date.
+If you use a Excel dates are stored as numeric numbers. In order convert this numeric back to a 
+date a origin is necessary, which can be passed to *projectPlan::wrangle_raw_plan*. 
+Unfortunately, Excel uses two different origins. For dates (post-1901) from Windows Excel origin 
+should be 1899-12-30 (is the default value). For dates (post-1901) from Mac Excel origin should 
+be 1904-01-01. 
+
+One possible workflow is to set the start date to the actual date when the task was started. 
+This way it is directly documented when the task was started and also to set the
+actual end date once the task was completed. 
+
+```{r}
+pA <- dplyr::tibble(
+  project = c("A"), 
+  section = "prep", task = paste0("task", 1:2), id = paste0("i", 1:2), 
+  start = c("2018-12-10", "2018-12-11"),
+  end   = c("2018-12-15", "2018-12-12"),
+  progress = 0, 
+  resource = "R1")
+DT::datatable(pA)
+```
+All dates are interpreted as 'begin of business day' (BOB) which is just a conventation made 
+for this package. Of course, it would also be reasonable
+to define the end date as 'end of busibness day'. However, there is already a third date and
+other dates might follow. Hence, it is probably easier to always think in BOB. So a task that
+started on 2018-12-10 and ended on 2018-12-11 was accomplished within one day.
+
+
+# Implicit start and end dates
+
+Lets look at a simple dependency, where id *i2* depends on id *i1*, which it self is implicitly defined by the *TODAY*-entry 
+in column *start*:
+```{r}
+pA <- dplyr::tibble(
+  project = c("A"), 
+  section = "prep", task = paste0("task", 1:2), id = paste0("i", 1:2), 
+  start = c("TODAY", NA_character_),
+  end   = c(NA_character_, NA_character_),
+  depends_on = c(NA_character_, "i1"),
+  est_duration = c(2,4),
+  deadline = c(NA_character_, NA_character_),
+  status = c("", ""),
+  progress = 0, 
+  resource = "R1")
+DT::datatable(pA)
+```
+
+Wrangling this simple plan allows to calculate the timelines for both tasks:
+
+```{r}
+pA %>% 
+  projectPlan::wrangle_raw_plan() %>% 
+  calculate_time_lines() %>% 
+  select(task, time_start, time_end) %>% 
+  DT::datatable()
+```
+
+Note that *TODAY* for the start time of id *i1* was subsituted by the date the function *projectPlan::wrangle_raw_plan*
+was executed.
+
+See the corresponding vignette for more details on id's and dependencies.

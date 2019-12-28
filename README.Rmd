@@ -6,7 +6,7 @@ output: github_document
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
-  fig.path = "README-"
+  fig.path = "man/figures/README-"
 )
 ```
 
@@ -20,86 +20,86 @@ cat(paste(badge_license(), ""))
 
 # projectPlan
 
-The aim of the package is to calculate time lines for different task that may depend on each other.
+The aim of the package is to calculate time lines for different task that may depend on each other and
+visualize the results in a Gantt-chart.
 
 ## Example
 
-```{r raw_plan, echo=FALSE}
-library(data.table)
-raw_plan <- data.table::rbindlist(
-  list(
-    data.table(
-      project = "A",
-      section = "0_prep",
-      id = c("a", "b"),
-      depends_on = NA,
-      start = c("2018-10-22", "2018-10-23"),
-      end = c("2018-10-24", "10"),
-      resource = c("R1", "R2"),
-      task = c("T1", "T2"),
-      progress = c(100, 50),
-      deadline = NA
-    ),
-    data.table(
-      project = "A",
-      section = "1_impl",
-      id = c("c", "d"),
-      depends_on = c("a", "a, b"),
-      start = NA,
-      end = c(7, 6),
-      resource = c("R1", "R2"),
-      task = c("T3", "T4"),
-      progress = c(0, 0),
-      deadline = c("2018-11-05", "2018-11-14")
-    )
-  )
-)
+Imagine a simple 4-task-plan, where after the data base is ready
+an exploratory data anlysis can be performed and based on that 
+a first baseline model can be created.
+
+
+```{r gantt, fig.width=12, echo=FALSE}
+suppressPackageStartupMessages(library(data.table))
 suppressPackageStartupMessages(library(dplyr))
 suppressPackageStartupMessages(library(projectPlan))
-dummy <- futile.logger::flog.threshold(futile.logger::WARN)
+logger::log_threshold(logger::ERROR, namespace = "projectPlan")
+
+raw_plan <- dplyr::bind_rows(
+ dplyr::tibble(
+  project = c("Analysis"), 
+  section = "prep", task = c("EDA", "Create baseline model"), id = c("eda", NA), start = "", depends_on = c("DataBase::server", "eda"), deadline = NA,
+  est_duration = 1:2,
+  progress = 0, 
+  resource = "R1",
+  status = NA,
+  end = NA),
+ dplyr::tibble(
+  project = c("DataBase"), 
+  section = "prep", task = c("Set up server", "Create maintenance plan"), id = c("server", NA), start = "TODAY", depends_on = "", deadline = c(NA, as.character(lubridate::as_date(lubridate::now())+5)),
+  est_duration = 1:2,
+  progress = 0, 
+  resource = c("R2", "R3"),
+  status = NA,
+  end = NA)
+) 
+raw_plan %>% 
+  projectPlan::wrangle_raw_plan() %>% 
+  projectPlan::calculate_time_lines() %>% 
+  projectPlan::gantt_by_sections(show_dependencies = TRUE)
 ```
 
-Imagine a simple 4-task-plan, where 
-
-* 1 task was already completed 
-* 1 task started on *`r raw_plan$start[2]`* where it is estimated that it will take `r raw_plan$end[2]` days to be completed
-* 2 tasks are depending somehow on the first two tasks
-
+Instead of calculating and ordering the tasks manually one only defines the tasks, its 
+duration and the dependencies between them:
 
 ```{r show_raw_plan}
-raw_plan
+raw_plan %>% 
+  dplyr::select(project, id, depends_on, task, start, est_duration)
 ```
-
 
 Then using this package one can easily calculate when a task will start and be finished (excluding weekends).
 If a deadline is unmet or a task is due today a warning is logged.
 
 ```{r plan}
 plan <- 
-  projectPlan::wrangle_raw_plan(raw_plan) %>% 
+  raw_plan %>% 
+  projectPlan::wrangle_raw_plan() %>% 
   projectPlan::calculate_time_lines()
 ```
 
 ```{r print_plan, echo=FALSE}
-print(plan)
+plan %>% 
+  dplyr::select(project, task, time_start, time_end, dist_end_to_deadline) %>% 
+  dplyr::arrange(time_start)
 ```
 
-With the calculated time lines a gantt chart can be plotted
+With the calculated time lines a gantt chart can be plotted (see the initial plot) using:
 
-```{r gantt, fig.width=10}
+```{r, eval=FALSE}
 library(ggplot2)
 projectPlan::gantt_by_sections(plan, show_dependencies = TRUE)
 ```
 
 Note that the number of days the end date of a task is away from the corresponding deadline
-is adjusted for weekends, for instance *T3* will be done by Thrusday night and the deadline is on the 
-following Monday. Hence, there is one day left, i.e. Friday, before the deadline is reached.
+is adjusted for weekends, for instance if it is planned that the task is done by Thrusday 
+night and the deadline is on the following Monday, then there is one day left, i.e. Friday, 
+before the deadline is reached.
 The label attached to the vertical bar displays the distance in days from today to the next deadline.
-
 
 ## Other packages for visualization
 
-Once the time lines are calculated it is easy to leverage other visualization packages
+Once the time lines are calculated it is easy to leverage other visualization packages (note that this is a screenshot that was created manually, therefore the timeline might be different from the initial plot)
 
 ```{r timevis, eval=FALSE}
 plan %>%
@@ -110,7 +110,7 @@ plan %>%
   timevis::timevis(groups = distinct(data.frame(id = as.numeric(as.factor(.$section)), content = .$section)))
 ```
 
-![timevis](./README-timevis-1.png)
+![timevis](man/figures/README-timevis-1.png)
 
 ## Installation
 

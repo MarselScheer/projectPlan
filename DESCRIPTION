@@ -1,19 +1,21 @@
 Package: projectPlan
 Type: Package
 Title: Supports creating project plans and time lines
-Version: 0.1.0
+Version: 0.0.0.9000
 Date: 2018-09-29
 Authors@R: person("Marsel", "Scheer", role = c("aut", "cre"), email = "scheer@freescience.de") 
 Maintainer: Marsel Scheer <scheer@freescience.de>
 Description: More about what it does (maybe more than one line)
     Use four spaces when indenting paragraphs within the Description.
+Depends: R (>= 3.3.3)    
 Imports:
     data.table (>= 1.11.6),
+    purrr (>= 0.3.2),
     glue (>= 1.2.0),
     readxl (>= 1.1.0),
     stringr (>= 1.3.1),
     lubridate (>= 1.7.4),
-    futile.logger (>= 1.4.3)
+    logger (>= 0.1.0)
 Suggests:
   ggplot2,
   testthat,
@@ -25,5 +27,5 @@ Suggests:
 License: GPL-3
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.1
 VignetteBuilder: knitr

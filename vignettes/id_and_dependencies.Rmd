@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
-futile.logger::flog.threshold(futile.logger::WARN)
+logger::log_threshold(logger::WARN, namespace = "projectPlan")
 
 library(projectPlan)
 suppressPackageStartupMessages(library(dplyr))
@@ -23,7 +23,8 @@ library(DT)
 
 # Introduction
 
-The columns *id* is used to identify tasks in the work plan. This allows to specify dependencies between
+The columns *id* is used to identify tasks in the work plan. It is not necessary to specify
+the *id* but this allows to declare dependencies between
 tasks. There can be logic dependencies where a task cannot start if another has not been finished, for instance
 first comes the fundament, then the walls and then the roof. Other tasks may need to be executed
 sequentially simply because because there are not enough resources.
@@ -36,13 +37,17 @@ under considerations.
 pA <- dplyr::tibble(
   project = c("A"), 
   section = c("0_prep", "1_design"), task = paste0("task", 1:2), id = paste0("i", 1:2), start = "TODAY", depends_on = "", deadline = NA,
-  end = 1:2,
+  est_duration = 1:2,
   progress = 0, 
-  resource = "R1")
+  resource = "R1",
+  status = NA,
+  end = NA)
 ```
 
-The intrinsic property of an *id* is that it is unique. Internally, the *id*-entry is combined with the project name.
-Therefore if the same *id* is used in different projects it is unique.
+The intrinsic property of an *id* is that it is unique. Note, if *id* is not provided, then entries of the form *NOT_SPECIFIED_#some_digit#*
+are generated automatically. One should avoid to use those entries to specify dependencies because it is very likely that the
+automatically generated digit-suffix will change. Internally, the *id*-entry is combined with the project name.
+Therefore, if the same *id* is used in different projects it is unique.
 However, especially at the beginning of a project when the plan is growing it could be handy to have one id for more than one tasks. 
 Using the same *id* within the same *section* is possible. If this happens, then the corresponding rows are combined
 together into one entry, i.e.:
@@ -52,7 +57,7 @@ together into one entry, i.e.:
 * minimum of the deadlines is calculated
 * sum of the estimated days necessary is calculated
 * if start and end date are given, then minimum of start and maximum of the end date are used for the combined entry
-* if any task waiting, then the combined entry also gets a waiting status
+* if any task is in status waiting, then the combined entry also gets a waiting status
 
 Note that using the same *id* in different *sections* results in a warning
 
@@ -83,7 +88,7 @@ pA$start[2] <- ""
 DT::datatable(pA)
 ```
 
-In order to visually this logic dependency (arrow from one task to another) one has to set the parameter *show_dependencies* to 
+In order to see this logic dependency (arrow from one task to another) one has to set the parameter *show_dependencies* to 
 *TRUE*:
 
 ```{r, fig.height=5, fig.width=10}
@@ -93,7 +98,15 @@ pA %>%
   projectPlan::gantt_by_sections(show_dependencies = TRUE)
 ```
 
+Instead of stating the dependcy directly one could simply use the term *PREVIOUS*. 
 
+```{r, echo=FALSE}
+pA$depends_on[2] <- "PREVIOUS"
+DT::datatable(pA)
+```
+
+However, if one inserts a new task between task1 and task2, then of course task2 
+depends on the new task and not anymore on task1.
 
 # Non-Logic dependencies
 
@@ -116,6 +129,15 @@ pA %>%
 ```
 
 
+Again, instead of stating the dependcy directly one could simply use the term *PREVIOUS*. 
+
+```{r, echo=FALSE}
+pA$depends_on[2] <- ""
+pA$start[2] <- "PREVIOUS"
+DT::datatable(pA)
+```
+
+
 # Dependencies between different projects
 
 As stated at the beginning, internally, the *id* is combined with the project name. For instance, *id = i1* in
@@ -123,13 +145,15 @@ project *A* is internally stored as *A::i1*. This is also the reason why *id = i
 *B* at the same time without any conflicts. In order to define that a task depends on another task of a different 
 project one has to specify the 'whole' id, that is *projectname::id*.
 
-```{r}
+```{r, echo=FALSE}
 pA <- dplyr::tibble(
   project = c("A"), 
   section = "prep", task = paste0("task", 1:2), id = paste0("i", 1:2), start = "TODAY", depends_on = "", deadline = NA,
-  end = 1:2,
+  est_duration = 1:2,
   progress = 0, 
-  resource = "R1")
+  resource = "R1",
+  status = NA,
+  end = NA)
 
 pB <- pA
 pB$project = "B"

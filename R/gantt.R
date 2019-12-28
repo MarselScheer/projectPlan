@@ -1,13 +1,18 @@
-#' Visualization of the project plan stratified according to sections
+#' Visualization of the project plan as a Gantt-chart stratified according to projects and sections
 #'
 #' The gantt-chart shows one block for every defined section and uses resources to color the rectangles.
 #'
-#' @param dt \code{data.table} create from \link{calculate_time_lines}
+#' @param dt \code{data.table} created by \link{calculate_time_lines}
 #' @param xlim limits for the x-axis
 #' @param show_dependencies visualize the dependencies between the tasks as arrows
 #' @param text_size size of the font
 #'
 #' @return ggplot2-object displaying a gantt-chart
+#' @examples 
+#' raw_plan <- import_xlsx(system.file("template","projects.xlsx", package = "projectPlan"))
+#' pre_plan <- wrangle_raw_plan(raw_plan)
+#' prj_plan <- calculate_time_lines(pre_plan)
+#' gantt_by_sections(prj_plan, show_dependencies = TRUE)
 #' @export
 gantt_by_sections <- function(dt, xlim, show_dependencies = FALSE, text_size = 3) {
   xmin <- min(dt$time_start, na.rm = TRUE)
@@ -37,6 +42,7 @@ gantt_by_sections <- function(dt, xlim, show_dependencies = FALSE, text_size = 3
       h.mark_completed_tasks(pf)
   )
 
+  ret <- h.plot_status(ret, pf)
   ret <- h.plot_deadlines(ret, pf)
 
   if (show_dependencies) {
@@ -122,7 +128,9 @@ h.create_gantt <- function(pf, xlim, xmin, xmax, text_size = 3) {
   with(
     NULL,
     ggplot2::ggplot(pf, ggplot2::aes(xmin = time_start, xmax = time_end, ymin = y - 0.3, ymax = y + 0.3)) +
-      ggplot2::geom_text(ggplot2::aes(x = time_end, y = y, label = task, hjust = 0), size = text_size) +
+      ggplot2::geom_text(ggplot2::aes(x = time_end, y = y, label = task, hjust = 0), 
+                         size = text_size, 
+                         nudge_x = max(as.numeric((xlim[2] - xlim[1])) / 100, 1)) +
       ggplot2::geom_rect(ggplot2::aes(xmin = max(xmin, xlim[1]), xmax = xmax, ymin = min_y - 0.4, ymax = max_y + 0.4), color = "black", alpha = 0, linetype = 3) +
       ggplot2::geom_vline(xintercept = lubridate::as_date(lubridate::now()), size = 2, color = "red", alpha = 0.2) +
       ggplot2::geom_rect(data = we, ggplot2::aes(xmin = time_start, xmax = time_end + 1, ymin = 0, ymax = nrow(pf) + 1), alpha = 0.05) +
@@ -153,10 +161,50 @@ h.mark_completed_tasks <- function(pf) {
   ggplot2::geom_rect(data = sub, fill = "grey")
 }
 
+h.plot_status <- function(gp, pf) {
+  sub <- data.table::copy(pf)
+  # probably not the best way to reuse the existing size for the upcoming labels
+  size <- gp$layers[[1]]$aes_params$size
+  
+  idx <- sub$unscheduled
+  if (any(idx, na.rm = TRUE)) {
+    gp <- gp +
+      with(
+        NULL,
+        ggplot2::geom_label(
+          # two or more rows with the same id (for instance because resources were separated by rows) would generate mutiple deadline labels
+          data = dplyr::slice(dplyr::group_by(sub[idx], id), 1),
+          ggplot2::aes(y = y, x = time_start, hjust = 0, vjust = 0.5), 
+          label = "U", fill = "yellow1", color = "black", size = size
+        )
+      )
+  }
+  
+  # TODO: for grouped tasks, this might overwrite the unscheduled-label
+  idx <- sub$waiting
+  if (any(idx, na.rm = TRUE)) {
+    gp <- gp +
+      with(
+        NULL,
+        ggplot2::geom_label(
+          # two or more rows with the same id (for instance because resources were separated by rows) would generate mutiple deadline labels
+          data = dplyr::slice(dplyr::group_by(sub[idx], id), 1),
+          ggplot2::aes(y = y, x = time_start, hjust = 0, vjust = 0.5), 
+          label = "A", fill = "orange1", color = "black", size = size
+        )
+      )
+  }
+  gp
+}
+
 h.plot_deadlines <- function(gp, pf) {
   sub <- data.table::copy(pf)
-
-  with(NULL, sub[, due_text := paste("Ends", dist_end_to_deadline, "days\nbefore deadline", sep = " ")])
+  
+  with(NULL, sub[, due_text := paste("Ends", dist_end_to_deadline, "days before deadline", sep = " ")])
+  with(NULL, sub[aborted == TRUE, dist_end_to_deadline := NA])
+  
+  # probably not the best way to reuse the existing size for the upcoming labels
+  size <- gp$layers[[1]]$aes_params$size
 
   idx <- sub$dist_end_to_deadline <= 0
   if (any(idx, na.rm = TRUE)) {
@@ -165,8 +213,9 @@ h.plot_deadlines <- function(gp, pf) {
         NULL,
         ggplot2::geom_label(
           # two or more rows with the same id (for instance because resources were separated by rows) would generate mutiple deadline labels
-          data = sub[idx] %>% group_by(id) %>% slice(1),
-          ggplot2::aes(y = y, x = time_start, label = due_text, hjust = 1), fill = "red3", color = "white"
+          data = dplyr::slice(dplyr::group_by(sub[idx], id), 1),
+          ggplot2::aes(y = y, x = time_start, label = due_text, hjust = 1), fill = "red3", color = "white",
+          size = size
         )
       )
   }
@@ -178,8 +227,9 @@ h.plot_deadlines <- function(gp, pf) {
         NULL,
         ggplot2::geom_label(
           # two or more rows with the same id (for instance because resources were separated by rows) would generate mutiple deadline labels
-          data = sub[idx] %>% group_by(id) %>% slice(1),
-          ggplot2::aes(y = y, x = time_start, label = due_text, hjust = 1), fill = "green4", color = "white"
+          data = dplyr::slice(dplyr::group_by(sub[idx], id), 1),
+          ggplot2::aes(y = y, x = time_start, label = due_text, hjust = 1), fill = "green4", color = "white",
+          size = size
         )
       )
   }
@@ -188,8 +238,8 @@ h.plot_deadlines <- function(gp, pf) {
   if (any(idx, na.rm = TRUE)) {
     today <- lubridate::as_date(lubridate::now())
 
-    next_deadlines_idx <- which(min(sub$deadline[idx]) == sub$deadline[idx])
-    next_deadline <- sub$deadline[idx][1]
+    next_deadline <- min(sub$deadline[idx])
+    next_deadlines_idx <- which(next_deadline == sub$deadline[idx])
     next_deadline_tasks <- paste(unique(sub$task[idx][next_deadlines_idx]), collapse = "; ")
 
     dist <- h.calc_dist_to_deadline(today, next_deadline)
@@ -201,12 +251,14 @@ h.plot_deadlines <- function(gp, pf) {
       ggplot2::geom_label(
         ggplot2::aes(y = 0, x = today, label = paste("Next deadline in\n", dist, "days", sep = " "), hjust = 1),
         fill = fill,
-        color = "white"
+        color = "white",
+        size = size
       ) +
       ggplot2::geom_label(
         ggplot2::aes(y = 0, x = today, label = next_deadline_tasks, hjust = 0),
         fill = fill,
-        color = "white"
+        color = "white",
+        size = size
       )
   }
 
