@@ -127,7 +127,7 @@ h.replace_TAG_PREVIOUS <- function(df, col) {
 
 h.replace_section_with_ids <- function(df, col) {
   h.log_start()
-  
+
   project_section <- paste(df$project, df$section, sep = h.SEPERATOR)
   project_id <- paste(df$project, df$id, sep = h.SEPERATOR)
   idx <- purrr::map(df[[col]], ~ which(project_section == .x))
@@ -145,6 +145,12 @@ h.rd_preprocess_depends_on_column <- function(df) {
   df <- h.replace_section_with_ids(df, "depends_on")
 }
 
+#' Check that all ids of priors really exist in the id-column
+#'
+#' Warns if referenced ids of priors does not exist
+#' @param df contains columns id and prior_ids
+#'
+#' @return NULL
 h.rd_check_id_deps <- function(df) {
   h.log_start()
   
@@ -162,13 +168,18 @@ h.rd_check_id_deps <- function(df) {
 }
 
 
+#' Warns if no explicit start date nor prior ids are given
+#'
+#' @param df contains depends_on, start
+#'
+#' @return NULL
 h.rd_check_start_time_available <- function(df) {
   h.log_start()
   
   logger::log_info("Check that the start time is at least implicitly defined.")
 
 
-  # var is only for logger
+  # df_log is only nicer logging
   h.comma_list <- Vectorize(h.comma_list)
   df_log <- data.table::copy(df)
   cols <- c("depends_on", "start")
@@ -185,12 +196,25 @@ h.rd_check_start_time_available <- function(df) {
   
 }
 
+#' Combine rows with the same id to one row
+#'
+#' Futhermore this functions extends the ids given by the user
+#' with the corresponding project name which is the internally used id
+#' 
+#' @param df project-plan with depends_on, start, prior_ids, section,
+#'   resource, task, progress, deadline, fixed_start_date, 
+#'   fixed_end_date, est_days, waiting, aborted, unscheduled
+#'
+#' @return df where every internal id (project::id) is unique and 
+#'   entries of depends_on, start, prior_ids where extend to follow
+#'   project::id.
 h.rd_make_id_unique_within_project <- function(df) {
   h.log_start()
   
   date_min <- function(v) {
     if (all(is.na(v))) {
-      # strange behaviour if all NA then min (with na.rm = TRUE) will return Inf as expected, but NA is displayed.
+      # strange behaviour if all NA then min (with na.rm = TRUE) will 
+      # return Inf as expected, but NA is displayed.
       return(lubridate::as_date(NA))
     }
     min(v, na.rm = TRUE)
@@ -198,12 +222,15 @@ h.rd_make_id_unique_within_project <- function(df) {
 
   date_max <- function(v) {
     if (all(is.na(v))) {
-      # strange behaviour if all NA then max (with na.rm = TRUE) will return -Inf as expected, but NA is displayed.
+      # strange behaviour if all NA then max (with na.rm = TRUE) will 
+      # return -Inf as expected, but NA is displayed.
       return(lubridate::as_date(NA))
     }
     max(v, na.rm = TRUE)
   }
 
+  # if project and id are the same for two rows they got combined
+  # into one row:
   df <- data.table::data.table(df)
   ret <- with(NULL, df[, .(
     depends_on = h.combine_comma_list_cols(depends_on),
@@ -225,13 +252,20 @@ h.rd_make_id_unique_within_project <- function(df) {
   by = .(project, id)
   ])
 
+  # combining could be a mistake, so inform the user about what
+  # was combined
   combined_entries <- with(NULL, ret[nmb_combined_entries > 1])
   if (nrow(combined_entries) > 0) {
     logger::log_info("Some id-entries were combined (within the project) into one entry, this means for instance that the estimated days are summed up.")
     logger::log_info(h.capture_table(combined_entries))
   }
 
+  # TODO: separate function for extending ids to internal_ids
   add_prefix_preserve_other_projects <- function(prefix, str) {
+    # internally the full id is the combination of project and id
+    # the user provided (where h.SEPERATOR is used to paste them together). 
+    # Here the entries in str are extended with
+    # the corresponding prefix IF they do not already use h.SEPERATOR
     if (is.na(str)) {
       return(NA_character_)
     }
@@ -248,11 +282,13 @@ h.rd_make_id_unique_within_project <- function(df) {
 
   with(
     NULL,
-    ret[, ":="(section = paste(project, section, sep = h.SEPERATOR),
-    id = paste(project, id, sep = h.SEPERATOR),
-    depends_on = vadd_prefix_preserve_other_projects(project, depends_on),
-    start = vadd_prefix_preserve_other_projects(project, start),
-    prior_ids = vadd_prefix_preserve_other_projects(project, prior_ids))]
+    ret[, ":="(
+      section = paste(project, section, sep = h.SEPERATOR),
+      id = paste(project, id, sep = h.SEPERATOR),
+      depends_on = vadd_prefix_preserve_other_projects(project, depends_on),
+      start = vadd_prefix_preserve_other_projects(project, start),
+      prior_ids = vadd_prefix_preserve_other_projects(project, prior_ids))
+    ]
   )
   ret <- h.unique(ret)
   
@@ -308,6 +344,11 @@ h.unique <- function(dt) {
 
 
 
+#' Logs which id is used in different sections of the same project
+#'
+#' @param df contains project, section, id
+#'
+#' @return NULL
 h.rd_check_project_section_id_unique <- function(df) {
   h.log_start()
   #dont want that data.table::setorder change the order of df
@@ -322,14 +363,23 @@ h.rd_check_project_section_id_unique <- function(df) {
   h.log_rows(
     df_copy,
     df_copy$id %in% id_in_multiple_sections,
-    warn_msg = glue::glue("The same id -{h.comma_list(id_in_multiple_sections)}- used in different 'sections' of the same 'project' is probably an error")
+    warn_msg = glue::glue(
+      "The same id -{h.comma_list(id_in_multiple_sections)}- ",
+      "used in different 'sections' of the same 'project' ", 
+      "is probably an error")
   )
   
   h.log_end()
   
 }
 
-
+#' Converts excel date for deadline into a R-date-object
+#'
+#' @param df contains deadline
+#' @param date_origin date that is represented by the integer zero
+#'
+#' @return df with raw_deadline (original column) and deadline as date, where
+#'   deadlines that are on a weekend are shifted to the next monday
 h.rd_preprocess_deadline_column <- function(df, date_origin) {
   h.log_start()
   
@@ -569,3 +619,4 @@ h.rd_select_cols <- function(df) {
   
   ret  
 }
+

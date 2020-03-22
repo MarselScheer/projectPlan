@@ -38,7 +38,7 @@ h.comma_list_2_uniq_vec <- function(str) {
 #' Combines two strings (with comma as separators) to one string
 #'
 #' @param v string with entries separated by commas
-#' @param w as v
+#' @param w as v. By default just an empty string
 #'
 #' @return unique entries of v and w together as string with comma 
 #'   as a separator
