@@ -85,28 +85,41 @@ wrangle_raw_plan <- function(df, date_origin = "1899-12-30") {
 }
 
 
+#' Replace TAG_PREVIOUS with the id of the previous row
+#'
+#' @param df contains columns project, id and the column provided by col
+#' @param col name of a column in df. Entries must be like "a,b,c"
+#'
+#' @return df where TAG_PREVIOUS in col is replace with the id of the previous row
 h.replace_TAG_PREVIOUS <- function(df, col) {
   if (nrow(df) <= 1) {
     return(df)
   }
   
+  # locate the rows that contain TAG_PREVIOUS in column col, in order to know where it needs
+  # to be replaced
   idx <- which(purrr::map_lgl(df[[col]], ~ any(h.split_comma_list(.x) == h.TAG_PREVIOUS)))
 
+  
+  # TAG_PREVIOUS in the first row does not make sense
   if (any(idx == 1, na.rm = TRUE)) {
     msg <- glue::glue("The tag -{h.TAG_PREVIOUS}- is not allowed as a first entry in column -{col}- in the first project. Ignore this entry")
     h.log_rows(df, idx[1], msg, warn_columns = c("project", "section", "id", col))
     idx <- idx[-1]
   }
 
+  # replace TAG_PREVIOUS in "row" with the id from "row - 1"
   ret <- data.table::copy(df)
   ret[[col]][idx] <- purrr::map_chr(
     idx,
     function(row) {
+      # input is of form "a,b,c", split it into the single components and then replace TAG_PREVIOUS
       dep_ids <- h.split_comma_list(ret[[col]][row])
       if (any(dep_ids == h.TAG_PREVIOUS)) {
         prev_id <- paste0(ret[["project"]][row - 1], h.SEPERATOR, ret[["id"]][row - 1])
         dep_ids <- c(dep_ids[dep_ids != h.TAG_PREVIOUS], prev_id)
       }
+      #input was "a,b,c" need to convert it back to this format
       h.comma_list(dep_ids)
     })
   ret
@@ -248,11 +261,22 @@ h.rd_make_id_unique_within_project <- function(df) {
   ret
 }
 
+#' Remove duplicated rows from a data.table 
+#'
+#' @param dt contains columns depends_on, start, prior_ids
+#'
+#' @details before unique is applied the columns depends_on, start, prior_ids
+#'   are processed by normalizing them. For instance a rows where depends_on
+#'   contain "a,b,c,b", "c,b,a,a" are logical the same, and they are both
+#'   normalized to "a,b,c".
+#' @return dt with duplicated rows removed and where entries in depends_on, 
+#'   start and prior_ids converted from "a,b,c" to list(c("a", "b", "c"))
 h.unique <- function(dt) {
   h.log_start()
   
   # since data.table 1.12.0 unique does not work anymore if a column is a list 
   v_to_comma_list <- Vectorize(h.combine_comma_list_cols)
+  # want to remove duplicate elements in depends_on, start, prior_ids
   with(NULL,
        dt[, ":="(
          depends_on = v_to_comma_list(depends_on),
@@ -262,12 +286,14 @@ h.unique <- function(dt) {
   dt <- unique(dt)
   
   to_list <- function(str) {
+    # turn "a,b,c" into list(c("a", "b", "c")) for
     if (is.na(str)) {
       return(NA_character_)
     }
     list(h.split_comma_list(str))
   }
   v_to_list <- Vectorize(to_list)
+  
   ret <- with(NULL,
        dt[, ":="(
          depends_on = v_to_list(depends_on),
@@ -327,6 +353,11 @@ h.rd_preprocess_deadline_column <- function(df, date_origin) {
   df
 }
 
+#' Converts the status column of the raw project-plan into multiple columns
+#'
+#' @param df raw project-plan
+#'
+#' @return df with status-column replaced by logical columns waiting, aborted and unscheduled
 h.rd_preprocess_status_column <- function(df) {
   h.log_start()
   
@@ -341,6 +372,12 @@ h.rd_preprocess_status_column <- function(df) {
   df
 }
 
+#' Converts est_duration-column of the raw project-plan into est_days
+#'
+#' @param df raw project-plan
+#'
+#' @return df with est_duration replaced by est_days, where missing est_days
+#'   is set to 1 if est_duration cannot be converted to an integer
 h.rd_preprocess_est_duration_column <- function(df) {
   h.log_start()
   
@@ -365,6 +402,12 @@ h.rd_preprocess_est_duration_column <- function(df) {
 }
 
 
+#' Converts the end column of the raw project-plan into a fixed end date
+#'
+#' @param df raw project-plan
+#' @param date_origin reference date that is represented by the integer zero
+#'
+#' @return df with end column replaced by fixed_end_date
 h.rd_preprocess_end_column <- function(df, date_origin) {
   h.log_start()
   
@@ -387,9 +430,19 @@ h.rd_preprocess_end_column <- function(df, date_origin) {
   df
 }
 
+#' Converts a vector of integers (as strings) into dates
+#'
+#' Excel usually stores dates as number of days since a certain
+#' date_origin
+#' @param v_str strings that can be converted to integers 
+#' @param date_origin date that is represented by the integer zero
+#'
+#' @return vector of dates as a string
 h.convert_numeric_date <- function(v_str, date_origin) {
   v_num <- suppressWarnings(as.numeric(v_str))
   num_idx <- !is.na(v_num)
+  
+  # QUESTION: Why conversion to character?
   v_str[num_idx] <- as.character(as.Date(v_num[num_idx], origin = date_origin))
   v_str
 }
@@ -427,6 +480,16 @@ h.rd_preprocess_start_column <- function(df, date_origin) {
   df
 }
 
+#' Function replaces NA with a default
+#'
+#' @param df data.frame where replacement should happen
+#' @param colname of the column where replacement should happen
+#' @param def value used to replace NAs
+#' @param log_filling TRUE if the replaced entries should be logged
+#' @param create_unique_entries if the def-values should be modified so that
+#'   the replacement is made with unique values
+#'
+#' @return df with NAs in colname replaced by def (may be extended so that new entries are unique)
 h.rd_fill_with_default <- function(df, colname, def, log_filling = TRUE, create_unique_entries = FALSE) {
   h.log_start()
   
@@ -452,12 +515,20 @@ h.rd_fill_with_default <- function(df, colname, def, log_filling = TRUE, create_
   df
 }
 
+#' Remove rows if certain columns of the raw project-plan contain only NAs
+#'
+#' @param df raw project-plan
+#'
+#' @return df with rows removed if project, section, id, start, end, resource
+#'   and task is NA.
 h.rd_remove_unnessary_rows <- function(df) {
   h.log_start()
   
   logger::log_info("Remove rows where project, section, id, start, end, resource, task are empty")
 
-  discard <- with(df, is.na(project) & is.na(section) & is.na(id) & is.na(start) & is.na(end) & is.na(resource) & is.na(task))
+  discard <- with(df, is.na(project) & is.na(section) & is.na(id) & 
+                    is.na(start) & is.na(end) & is.na(resource) & 
+                    is.na(task))
 
   logger::log_debug("Remove {sum(discard)} rows")
 
@@ -468,10 +539,20 @@ h.rd_remove_unnessary_rows <- function(df) {
   ret  
 }
 
+#' Selects certain columns (as character-columns) from the raw project-plan 
+#'
+#' @param df raw project-plan
+#'
+#' @return df but only the columns project, section, id, depends_on, 
+#' start, end, est_duration, status, resource, task, progress, 
+#' deadline are kept. If one of the columns is missing, then it is 
+#' added as a column containing only NAs.
 h.rd_select_cols <- function(df) {
   h.log_start()
   
-  cols <- c("project", "section", "id", "depends_on", "start", "end", "est_duration", "status", "resource", "task", "progress", "deadline")
+  cols <- c("project", "section", "id", "depends_on", "start", "end", 
+            "est_duration", "status", "resource", "task", "progress", 
+            "deadline")
   logger::log_info("Select the necessary columns -{h.comma_list(cols)}-")
 
   missing_cols <- setdiff(cols, names(df))
