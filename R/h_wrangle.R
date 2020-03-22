@@ -125,6 +125,19 @@ h.replace_TAG_PREVIOUS <- function(df, col) {
   ret
 }
 
+#' Replace a referenced section with ALL its ids
+#'
+#' User can specify a complete section as a dependency.
+#' This function replaces this reference by all the
+#' actual ids of the referenced section
+#' 
+#' @param df contains project, section, id and the column col
+#' @param col where the replacement should happen
+#'
+#' @return df but an entry that references a section is replaced by
+#'   ids of the referenced section. Note, this works if the corresponding
+#'   entry consists only of ONE section. This means that only one
+#'   entry is allowed
 h.replace_section_with_ids <- function(df, col) {
   h.log_start()
 
@@ -140,6 +153,11 @@ h.replace_section_with_ids <- function(df, col) {
 }
 
 
+#' Replace TAG_PREVIOUS and section-references by the corresponding ids
+#'
+#' @param df project-plan
+#'
+#' @return dt references in the depends_on column were updated
 h.rd_preprocess_depends_on_column <- function(df) {
   df <- h.replace_TAG_PREVIOUS(df, "depends_on")
   df <- h.replace_section_with_ids(df, "depends_on")
@@ -480,23 +498,39 @@ h.rd_preprocess_end_column <- function(df, date_origin) {
   df
 }
 
-#' Converts a vector of integers (as strings) into dates
+#' Where the vector contains integers they are converted into dates
 #'
 #' Excel usually stores dates as number of days since a certain
-#' date_origin
-#' @param v_str strings that can be converted to integers 
+#' date_origin. But the references to other task are made by ids
+#' so an implicitly defined date is preserved because the integers
+#' which (stored as characters) are converted to dates which then
+#' gets converted again back to character.
+#' 
+#' @param v_str vector of characters
 #' @param date_origin date that is represented by the integer zero
 #'
-#' @return vector of dates as a string
+#' @return v_str where the entries that could be converted to integer are
+#'   converted to "character-dates".
 h.convert_numeric_date <- function(v_str, date_origin) {
   v_num <- suppressWarnings(as.numeric(v_str))
   num_idx <- !is.na(v_num)
   
-  # QUESTION: Why conversion to character?
+  # Use character here because the other entries define references to ids
+  # which should not get lost.
   v_str[num_idx] <- as.character(as.Date(v_num[num_idx], origin = date_origin))
   v_str
 }
 
+#' Replace references to ids and convert explict (numeric) dates to R-dates
+#'
+#' @param df project-plan
+#' @param date_origin date that is represented by the integer zero
+#'
+#' @return df with entries in column start replaced by ids they reference to via
+#'   TAG_PREVIOUS or complete section-references. Furthermore, an integer is
+#'   converted to a date based on the date_origin. Note that character is used
+#'   to be able to keep ids and dates in the same column. If no implicit or 
+#'   explicit start date can be derived it is set to current date.
 h.rd_preprocess_start_column <- function(df, date_origin) {
   h.log_start()
   
@@ -505,6 +539,8 @@ h.rd_preprocess_start_column <- function(df, date_origin) {
   
   TODAY <- as.character(lubridate::as_date(lubridate::now()))
 
+  # no implicit nor explicit definition of the start date for a 
+  # task. Assume that it starts today and inform the user via logger
   idx <- is.na(df$depends_on) & is.na(df$start)
   if (any(idx)) {
     df$start[idx] <- "TODAY"
