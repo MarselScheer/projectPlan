@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y \
     && install2.r --error \
        --deps TRUE \
        data.table \
+       DT \
        logger \
        badgecreatr \
     && ln -sf /usr/share/zoneinfo/Europe/Berlin /etc/localtime \
