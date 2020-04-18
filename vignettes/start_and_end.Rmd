@@ -46,7 +46,9 @@ pA <- dplyr::tibble(
   start = c("2018-12-10", "2018-12-11"),
   end   = c("2018-12-15", "2018-12-12"),
   progress = 0, 
-  resource = "R1")
+  resource = "R1",
+  microtasks = "-",
+  comments = "-")
 DT::datatable(pA)
 ```
 All dates are interpreted as 'begin of business day' (BOB) which is just a conventation made 
@@ -71,7 +73,9 @@ pA <- dplyr::tibble(
   deadline = c(NA_character_, NA_character_),
   status = c("", ""),
   progress = 0, 
-  resource = "R1")
+  resource = "R1",
+  microtasks = "-",
+  comments = "-")
 DT::datatable(pA)
 ```
 

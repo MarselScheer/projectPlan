@@ -41,7 +41,9 @@ pA <- dplyr::tibble(
   progress = 0, 
   resource = "R1",
   status = NA,
-  end = NA)
+  end = NA,
+  microtasks = "-",
+  comments = "-")
 ```
 
 The intrinsic property of an *id* is that it is unique. Note, if *id* is not provided, then entries of the form *NOT_SPECIFIED_#some_digit#*
@@ -153,7 +155,9 @@ pA <- dplyr::tibble(
   progress = 0, 
   resource = "R1",
   status = NA,
-  end = NA)
+  end = NA,
+  microtasks = "-",
+  comments = "-")
 
 pB <- pA
 pB$project = "B"
