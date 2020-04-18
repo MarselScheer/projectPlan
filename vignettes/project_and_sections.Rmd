@@ -43,7 +43,9 @@ pA <- dplyr::tibble(
   progress = 0, 
   resource = "R1", 
   end = "",
-  status = "")
+  status = "",
+  microtasks = "-",
+  comments = "-")
 
 pB <- pA
 pB$project = "B"
@@ -74,7 +76,9 @@ pA <- dplyr::tibble(
   section = c("0_prep", "1_design"), task = paste0("task", 1:2), id = paste0("i", 1:2), start = "TODAY", depends_on = "", deadline = NA,
   est_duration = 1:2,
   progress = 0, 
-  resource = "R1")
+  resource = "R1",
+  microtasks = "-",
+  comments = "-")
 
 DT::datatable(pA)
 ```

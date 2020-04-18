@@ -19,6 +19,8 @@
 #'   \item{resource}{character for the resource that is allocated to the corresponding task}
 #'   \item{progress}{number between 0 and 100, indicating the progress of the task}
 #'   \item{deadline}{NA or a date when the task must be completed}
+#'   \item{microtasks}{character that describes sub-tasks}
+#'   \item{comments}{character with comments for the current task}
 #'   }
 #' @param date_origin Reference date in format YYYY-mm-dd for converting an integer to a date. 
 #'   For dates (post-1901) from Windows Excel origin should by 1899-12-30 (is the default value). 
@@ -35,6 +37,8 @@
 #'   \item{prior_ids}{concatenation of depends_on and start}
 #'   \item{resource}{copy from df where NA's are replaced by 'UNKNOWN'}
 #'   \item{task}{copy from df where NA's are replaced by 'UNKNOWN'}
+#'   \item{microtasks}{copy from df where NA's are replaced by '-'}
+#'   \item{comments}{copy from df where NA's are replaced by '-'}
 #'   \item{progress}{copy from df where NA's are replaced by 0}
 #'   \item{deadline}{'copy' from df as date-object}
 #'   \item{fixed_start_date}{'copy' of start from df as date-object}
@@ -65,6 +69,8 @@ wrangle_raw_plan <- function(df, date_origin = "1899-12-30") {
   df <- h.rd_fill_with_default(df, "resource", "UNKNOWN")
   df <- h.rd_fill_with_default(df, "task", "UNKNOWN")
   df <- h.rd_fill_with_default(df, "progress", "0")
+  df <- h.rd_fill_with_default(df, "microtasks", "-")
+  df <- h.rd_fill_with_default(df, "comments", "-")
   df$progress <- as.numeric(df$progress)
 
   df <- h.rd_preprocess_status_column(df)
@@ -221,7 +227,8 @@ h.rd_check_start_time_available <- function(df) {
 #' 
 #' @param df project-plan with depends_on, start, prior_ids, section,
 #'   resource, task, progress, deadline, fixed_start_date, 
-#'   fixed_end_date, est_days, waiting, aborted, unscheduled
+#'   fixed_end_date, est_days, waiting, aborted, unscheduled,
+#'   microtasks, comments
 #'
 #' @return df where every internal id (project::id) is unique and 
 #'   entries of depends_on, start, prior_ids where extend to follow
@@ -257,6 +264,8 @@ h.rd_make_id_unique_within_project <- function(df) {
     section = h.combine_comma_list_cols(section),
     resource = h.combine_comma_list_cols(resource),
     task = h.combine_comma_list_cols(task),
+    microtasks = h.combine_comma_list_cols(microtasks),
+    comments = h.combine_comma_list_cols(comments),
     progress = mean(progress),
     deadline = date_min(deadline),
     fixed_start_date = date_min(fixed_start_date),
@@ -630,15 +639,15 @@ h.rd_remove_unnessary_rows <- function(df) {
 #' @param df raw project-plan
 #'
 #' @return df but only the columns project, section, id, depends_on, 
-#' start, end, est_duration, status, resource, task, progress, 
-#' deadline are kept. If one of the columns is missing, then it is 
-#' added as a column containing only NAs.
+#' start, end, est_duration, status, resource, task, progress,
+#' deadline, microtasks and comments are kept. If one of the columns is missing, 
+#' then it is added as a column containing only NAs.
 h.rd_select_cols <- function(df) {
   h.log_start()
   
   cols <- c("project", "section", "id", "depends_on", "start", "end", 
             "est_duration", "status", "resource", "task", "progress", 
-            "deadline")
+            "deadline", "microtasks", "comments")
   logger::log_info("Select the necessary columns -{h.comma_list(cols)}-")
 
   missing_cols <- setdiff(cols, names(df))
