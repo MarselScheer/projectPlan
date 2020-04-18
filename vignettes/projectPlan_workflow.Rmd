@@ -73,14 +73,14 @@ A few notes on the columns in the spreadsheet (more details later):
 * resource can be a comma separated list
 * progress is a number between 0 and 100
 * deadline is a date
+* microtask is a column to split up a task in further smaller tasks. For instance, after the installation of the kitchen we want to check the functionality of various things.
+* comments is of course a column for kind of information/documentation.
 * other columns are ignored by *projectPlan*
 
-As you can see the xlsx also has three other columns that will not be used by the package but those columns are
+As you can see the xlsx also has another column that will not be used by the package but the column is
 quite handy in practice:
 
 * now is a column to mark a task somehow that allows to easily find it in the spreadsheet application. For instance, if you plan to work on four tasks over the day this column can contain a string like !NOW! in order to find them quickly with using the search-functionality of the spreadsheet-application
-* microtask is a column to split up a task in further smaller tasks. For instance, after the installation of the kitchen we want to check the functionality of various things.
-* comments is of course a column for kind of information/documentation.
 
 *projectPlan::import_xlsx* will import ALL sheets and use the sheet name as the project name. The sheet name will be ignored if one has 
 a column *project*. 
