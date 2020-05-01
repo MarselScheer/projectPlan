@@ -352,7 +352,9 @@ h.calculate_time_lines_at <- function(dt_ref, row, today) {
 
   with(NULL, dt_ref[row, time_start := earliest_start_time])
   with(NULL, dt_ref[row, time_end := end])
-  with(NULL, dt_ref[row & waiting == TRUE, time_end := pmax(time_end, today)])
+  if (isTRUE(dt_ref$waiting[row])) {
+    with(NULL, dt_ref[row, time_end := pmax(time_end, today)])  
+  }
   
   logger::log_debug("Timelines for the current row -{row}-")
   logger::log_debug(h.capture_table(dt_ref[row]))
