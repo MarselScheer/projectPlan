@@ -44,7 +44,8 @@
 #'   \item{fixed_start_date}{'copy' of start from df as date-object}
 #'   \item{fixed_end_date}{'copy' of end from df as date-object}
 #'   \item{est_days}{copy of est_duration}
-#'   \item{waiting/aborted/unscheduled}{TRUE/FALSE according to the status-column from df}
+#'   \item{waiting/aborted/user_unscheduled}{TRUE/FALSE according to the status-column from df}
+#'   \item{unscheduled}{TRUE. the unscheduled status will be determined during calculation of the time lines}
 #'   \item{nmb_combined_entries}{number of tasks that were combined to one because of the same id}
 #' }
 #'
@@ -227,7 +228,7 @@ h.rd_check_start_time_available <- function(df) {
 #' 
 #' @param df project-plan with depends_on, start, prior_ids, section,
 #'   resource, task, progress, deadline, fixed_start_date, 
-#'   fixed_end_date, est_days, waiting, aborted, unscheduled,
+#'   fixed_end_date, est_days, waiting, aborted, unscheduled, user_unscheduled,
 #'   microtasks, comments
 #'
 #' @return df where every internal id (project::id) is unique and 
@@ -274,6 +275,7 @@ h.rd_make_id_unique_within_project <- function(df) {
     waiting = any(waiting),
     aborted = any(aborted),
     unscheduled = any(unscheduled),
+    user_unscheduled = any(user_unscheduled),
     nmb_combined_entries = .N
   ),
   by = .(project, id)
@@ -434,14 +436,20 @@ h.rd_preprocess_deadline_column <- function(df, date_origin) {
 #'
 #' @param df raw project-plan
 #'
-#' @return df with status-column replaced by logical columns waiting, aborted and unscheduled
+#' @return df with status-column replaced by logical columns waiting, aborted and user_unscheduled.
+#'   Furthermore, the column unscheduled is created (by default all tasks are unscheduled).
+#'   Note, the scheduled status is determined later when the time-lines are calculated,
+#'   see \link{h.calculate_time_lines_at}
 h.rd_preprocess_status_column <- function(df) {
   h.log_start()
   
   df$status <- toupper(df$status)
   df$waiting <- df$status == "AWAIT"
   df$aborted <- df$status == "ABORTED"
-  df$unscheduled <- df$status == "UNSCHEDULED"
+  
+  df$unscheduled <- TRUE
+  df$user_unscheduled <- df$status == "UNSCHEDULED"
+  
   df$status <- NULL
   
   h.log_end()
@@ -542,31 +550,11 @@ h.convert_numeric_date <- function(v_str, date_origin) {
 #'   explicit start date can be derived it is set to current date.
 h.rd_preprocess_start_column <- function(df, date_origin) {
   h.log_start()
-  
+
   df <- h.replace_TAG_PREVIOUS(df, "start")
   df <- h.replace_section_with_ids(df, "start")
   
-  TODAY <- as.character(lubridate::as_date(lubridate::now()))
-
-  # no implicit nor explicit definition of the start date for a 
-  # task. Assume that it starts today and inform the user via logger
-  idx <- is.na(df$depends_on) & is.na(df$start)
-  if (any(idx)) {
-    df$start[idx] <- "TODAY"
-    h.log_rows(
-      df,
-      idx,
-      warn_msg = glue::glue("Some entries have empty -depends_on- AND -start- entries. Set -start- to 'TODAY'")
-    )
-  }
-
-  idx <- df$start == "TODAY"
-  if (any(idx, na.rm = TRUE)) {
-    logger::log_info("Convert 'TODAY' in column -start- to the current date -{TODAY}-")  
-  }
-  
   df$start <- h.convert_numeric_date(df$start, date_origin = date_origin)
-  df$start[idx] <- TODAY
   df$fixed_start_date <- suppressWarnings(lubridate::ymd(df$start))
   df$start[!is.na(df$fixed_start_date)] <- NA
   

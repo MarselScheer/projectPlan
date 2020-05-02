@@ -11,31 +11,12 @@ test_that(
   })
 
 
-d_in <- data.table::data.table(depends_on = c("A"), start = c("TODAY"))
-d_expected <- data.table::data.table(depends_on = c("A"), start = as.character(NA), fixed_start_date = lubridate::as_date(lubridate::now()))
-test_that(
-  "TODAY becomes the current date",
-  expect_equal(h.rd_preprocess_start_column(d_in, date_origin = "1899-12-30"), d_expected)
-)
-
 d_in <- data.table::data.table(depends_on = c("A"), start = c(NA))
 d_expected <- data.table::data.table(depends_on = c("A"), start = as.character(NA), fixed_start_date = lubridate::as_date(NA))
 test_that(
   "start-column contains only NA",
   expect_equal(h.rd_preprocess_start_column(d_in, date_origin = "1899-12-30"), d_expected)
 )
-
-d_in <- data.table::data.table(
-  project = "p", section = "s", id = "i",
-  depends_on = c(NA, "A"), start = c(NA, "B"))
-d_expected <- data.table::data.table(
-  project = "p", section = "s", id = "i",
-  depends_on = c(NA, "A"), start = c(NA, "B"), fixed_start_date = c(lubridate::as_date(lubridate::now()), NA))
-test_that(
-  "Current date is default if no dependency and no start is defined",
-  expect_equal(h.rd_preprocess_start_column(d_in, date_origin = "1899-12-30"), d_expected)
-)
-
 
 d_in <- data.table::data.table(end = c("2018-09-20", "WAIT", "43530"))
 d_expected <- data.table::data.table(
@@ -74,7 +55,8 @@ d_in <- data.table::data.table(
   est_days = c(2, 3),
   waiting = c(F, T),
   aborted = c(T, F),
-  unscheduled = c(T, F)
+  unscheduled = c(T, F),
+  user_unscheduled = c(T, F)
 )
 
 d_expected <- data.table::data.table(
@@ -95,6 +77,7 @@ d_expected <- data.table::data.table(
   waiting = c(T),
   aborted = c(T),
   unscheduled = c(T),
+  user_unscheduled = c(T),
   nmb_combined_entries = 2L
 )
 
@@ -135,12 +118,13 @@ d_expected <- data.table::data.table(
   comments = "-",
   progress = 0,
   deadline = lubridate::as_date(NA),
-  fixed_start_date = lubridate::as_date(lubridate::now()),
+  fixed_start_date = lubridate::as_date(NA),
   fixed_end_date = lubridate::as_date(NA),
   est_days = 1,
   waiting = FALSE,
   aborted = FALSE,
-  unscheduled = FALSE,
+  unscheduled = TRUE,
+  user_unscheduled = FALSE,
   nmb_combined_entries = 1L
 )
 d_out <- wrangle_raw_plan(d_in)
@@ -186,6 +170,7 @@ d_expected <- data.table::data.table(
   waiting = TRUE,
   aborted = TRUE,
   unscheduled = TRUE,
+  user_unscheduled = TRUE,
   nmb_combined_entries = 3L,
   stringsAsFactors = FALSE
 )
@@ -252,3 +237,15 @@ test_that(
 )
 
 
+d_in <- data.table::data.table(status = c("aborted", "AWAIT", "unSCHEDULED", "xyz"))
+d_out <- h.rd_preprocess_status_column(d_in)
+d_expected <- data.table::data.table(
+  waiting = c(F, T, F, F),
+  aborted = c(T, F, F, F),
+  unscheduled = T,
+  user_unscheduled = c(F, F, T, F)
+)
+test_that(
+  "Status column processed correctly",
+  expect_equivalent(d_out, d_expected)
+)
