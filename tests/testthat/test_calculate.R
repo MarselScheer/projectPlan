@@ -90,6 +90,116 @@ test_that(
 )
 
 dt_in <- data.table::data.table(
+  id = c("a"),
+  prior_ids = list(NA),
+  fixed_start_date = c(lubridate::as_date(NA)),
+  fixed_end_date = lubridate::as_date(NA),
+  est_days = c(1),
+  waiting = c(F),
+  deadline = lubridate::as_date(NA)
+)
+dt_out <- calculate_time_lines(dt_in)
+TODAY <- lubridate::as_date(lubridate::now())
+test_that(
+  "Start time for tasks without priors and explicit start date is today with status unscheduled", {
+    expect_equal(dt_out$fixed_start_date, TODAY)
+    expect_equal(dt_out$time_start, TODAY)
+  }
+)
+
+dt_in <- data.table::data.table(
+  id = c("a", "b"),
+  prior_ids = list(NA),
+  fixed_start_date = c(lubridate::ymd("2020-05-01")),
+  fixed_end_date = lubridate::as_date(NA),
+  est_days = c(1),
+  waiting = c(F),
+  user_unscheduled = c(F, T),
+  deadline = lubridate::as_date(NA)
+)
+dt_out <- calculate_time_lines(dt_in)
+test_that(
+  "Explicit start time leads to scheduled status if not explicitly unscheduled by user", {
+    expect_equal(dt_out$unscheduled, c(F, T))
+  }
+)
+
+
+dt_in <- data.table::data.table(
+  id = c("a", "b", "c", "d", "x", "xd"),
+  depends_on = list(NA, NA, c("a", "b"), NA, c("d"), c("a", "b", "d")),
+  start = list(NA),
+  prior_ids = list(NA, NA, c("a", "b"), NA, c("d"), c("a", "b", "d")),
+  unscheduled = TRUE,
+  user_unscheduled = FALSE,
+  fixed_start_date = suppressWarnings(
+    lubridate::ymd(c("2020-05-01", "2020-04-30", NA,
+                     NA, NA, NA))),
+  fixed_end_date = lubridate::as_date(NA),
+  time_start = lubridate::as_date(NA),
+  time_end = lubridate::as_date(NA),
+  deadline = lubridate::as_date(NA),
+  est_days = c(1),
+  waiting = c(F)
+)
+dt_out <- calculate_time_lines(dt_in)
+test_that(
+  "necessary tasks are scheduled only if all necessary tasks are scheduled",
+  expect_equal(dt_out$unscheduled, c(F, F, F, T, T, T))
+)
+
+dt_in <- data.table::data.table(
+  id = c("a", "b", "c", "d", "x", "xd"),
+  start = list(NA, NA, c("a", "b"), NA, c("d"), c("a", "b", "d")),
+  depends_on = list(NA),
+  prior_ids = list(NA, NA, c("a", "b"), NA, c("d"), c("a", "b", "d")),
+  unscheduled = TRUE,
+  user_unscheduled = FALSE,
+  fixed_start_date = suppressWarnings(
+    lubridate::ymd(c(NA, NA, NA,
+                     "2020-05-01", NA, NA))),
+  fixed_end_date = lubridate::as_date(NA),
+  time_start = lubridate::as_date(NA),
+  time_end = lubridate::as_date(NA),
+  deadline = lubridate::as_date(NA),
+  est_days = c(1),
+  waiting = c(F)
+)
+dt_out <- calculate_time_lines(dt_in)
+test_that(
+  "tasks (without necessary priors) are scheduled if any of the prior is scheduled",
+  expect_equal(dt_out$unscheduled, c(T, T, T, F, F, F))
+)
+
+
+
+dt_in <- data.table::data.table(
+  id = c("a", "b", "c", "x", "y", "z", "CZ"),
+  depends_on = list(NA, NA, c("a", "b"), NA, NA, NA, c("a", "b")),
+  start = list(NA, NA, NA, NA, NA, c("x", "y"), c("x", "y")),
+  prior_ids = list(NA, NA, c("a", "b"), NA, NA, c("x", "y"), c("a", "b", "x", "y")),
+  unscheduled = TRUE,
+  user_unscheduled = FALSE,
+  fixed_start_date = suppressWarnings(
+    lubridate::ymd(c("2020-05-01", "2020-04-30", NA,
+                     NA, NA, NA,
+                     NA))),
+  fixed_end_date = lubridate::as_date(NA),
+  time_start = lubridate::as_date(NA),
+  time_end = lubridate::as_date(NA),
+  deadline = lubridate::as_date(NA),
+  est_days = c(1),
+  waiting = c(F)
+)
+dt_out <- calculate_time_lines(dt_in)
+test_that(
+  "only necessary priors are considered for tasks with necessary and non-necessary priors",
+  expect_equal(dt_out$unscheduled, c(F, F, F, T, T, T, F))
+)
+
+
+
+dt_in <- data.table::data.table(
   id = c("a", "b", "c"),
   prior_ids = list(NA, NA, c("a", "b")),
   fixed_start_date = c(lubridate::ymd("2018-10-05"), lubridate::ymd("2018-10-02"), lubridate::as_date(NA)),

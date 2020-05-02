@@ -313,15 +313,25 @@ h.calculate_end_time <- function(earliest_start_time, est_days, fixed_end_date) 
 
 
 h.calculate_time_lines_at <- function(dt_ref, row, today) {
+  
+  # TODO: more comments/debug-statements
   logger::log_debug("Calculate time lines for row -{row}-")
   logger::log_debug(h.capture_table(dt_ref[row, ]))
   if (!is.na(dt_ref$time_start[row]) & !is.na(dt_ref$time_end[row])) {
     return()
   }
-
+  if (!is.na(dt_ref$fixed_start_date[row])) {
+    dt_ref[row, unscheduled := FALSE]
+  }
 
   ids_prior <- unlist(dt_ref$prior_ids[row])
   prior_tasks <- with(NULL, dt_ref[id %in% ids_prior, ])
+  if (nrow(prior_tasks) == 0 && is.na(dt_ref$fixed_start_date[row])) {
+    logger::log_debug("Initialize fixed_start_date because no prior-tasks and no explicit start-date exist.
+                      Furthermore, such a task is assumed to be in status -UNSCHEDULED-")
+    with(NULL, dt_ref[row, fixed_start_date := lubridate::as_date(lubridate::now())])
+    with(NULL, dt_ref[row, unscheduled := TRUE])
+  }
   fsd <- dt_ref$fixed_start_date[row]
 
   # seems to be some bug because is.na(earliest_start_time) returns FALSE?!?
@@ -333,6 +343,7 @@ h.calculate_time_lines_at <- function(dt_ref, row, today) {
 
   logger::log_debug("Try to calculate earliest start time for row -{row}- based on prior tasks")
   logger::log_debug(h.capture_table(prior_tasks))
+  
   while (is.na(earliest_start_time)) {
     prior_tasks <- with(NULL, prior_tasks[is.na(time_end)])
     na_id <- prior_tasks$id[1]
@@ -356,6 +367,14 @@ h.calculate_time_lines_at <- function(dt_ref, row, today) {
     with(NULL, dt_ref[row, time_end := pmax(time_end, today)])  
   }
   
+  if (is.na(dt_ref$fixed_start_date[row])) {
+    dt_ref[row, unscheduled := h.is_unscheduled(dt_ref, dt_ref$depends_on[row], dt_ref$start[row])]  
+  }
+
+  if (isTRUE(dt_ref$user_unscheduled[row])) {
+    dt_ref[row, unscheduled := TRUE]
+  }
+  
   logger::log_debug("Timelines for the current row -{row}-")
   logger::log_debug(h.capture_table(dt_ref[row]))
 
@@ -363,4 +382,45 @@ h.calculate_time_lines_at <- function(dt_ref, row, today) {
     logger::log_warn("-time_start- is before -time_end-")
     logger::log_warn(h.capture_table(dt_ref[row]))
   }
+}
+
+#' Determines if a task is scheduled
+#'
+#' Helperfunction used during calculation of the time lines.
+#' @param dt_ref A \code{data.frame} preprocessed by \link{wrangle_raw_plan}.
+#' @param depends_on_ids ids of necessary task
+#' @param start_ids ids of prior tasks that are not necessary
+#'
+#' @return TRUE if task is considered as unscheduled, otherwise FALSE.
+#'   Note a that if completion of A and B are necessary to start C,
+#'   then C is scheduled only if A and B are scheduled.
+#'   On the other hand, if A and B are only prior tasks of C, but the
+#'   dependency is only formulated via start-column, then C is considered
+#'   as scheduled if A or B is scheduled.
+#'   If C has prior tasks that are necessary and non-necessary, only the
+#'   necessary tasks are used to determin the schedule-status.
+h.is_unscheduled <- function(dt_ref, depends_on_ids, start_ids) {
+  
+  ret <- TRUE
+  
+  depends_on_ids <- unlist(depends_on_ids)
+  necessary_prior_tasks <- with(NULL, dt_ref[id %in% depends_on_ids, ])
+  if (nrow(necessary_prior_tasks) > 0) {
+    logger::log_debug("Necessary prior tasks considered for determining schedule-status.
+                      This are the necessary prior tasks:")
+    logger::log_debug(h.capture_table(necessary_prior_tasks))
+    ret <- ret && any(necessary_prior_tasks$unscheduled)
+  } else {
+    # non-necessary tasks are only considered if no necessary tasks exist
+    start_ids <- unlist(start_ids)
+    prior_tasks <- with(NULL, dt_ref[id %in% start_ids, ])
+    if (nrow(prior_tasks) > 0) {
+      logger::log_debug("Non-necessary prior tasks considered for determining schedule-status. 
+                      This are the dependent prior tasks:")
+      logger::log_debug(h.capture_table(prior_tasks))
+      ret <- ret && all(prior_tasks$unscheduled)
+    }
+  }
+
+  return(ret)
 }
