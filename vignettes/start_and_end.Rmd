@@ -39,7 +39,7 @@ One possible workflow is to set the start date to the actual date when the task 
 This way it is directly documented when the task was started and also to set the
 actual end date once the task was completed. 
 
-```{r}
+```{r, echo = FALSE}
 pA <- dplyr::tibble(
   project = c("A"), 
   section = "prep", task = paste0("task", 1:2), id = paste0("i", 1:2), 
@@ -60,17 +60,16 @@ started on 2018-12-10 and ended on 2018-12-11 was accomplished within one day.
 
 # Implicit start and end dates
 
-Lets look at a simple dependency, where id *i2* depends on id *i1*, which it self is implicitly defined by the *TODAY*-entry 
-in column *start*:
-```{r}
+Lets look at a simple dependency, where id *i2* depends on id *i1*:
+```{r, echo = FALSE}
 pA <- dplyr::tibble(
   project = c("A"), 
   section = "prep", task = paste0("task", 1:2), id = paste0("i", 1:2), 
-  start = c("TODAY", NA_character_),
-  end   = c(NA_character_, NA_character_),
+  start = NA_character_,
+  end   = NA_character_,
   depends_on = c(NA_character_, "i1"),
   est_duration = c(2,4),
-  deadline = c(NA_character_, NA_character_),
+  deadline = NA_character_,
   status = c("", ""),
   progress = 0, 
   resource = "R1",
@@ -89,7 +88,20 @@ pA %>%
   DT::datatable()
 ```
 
-Note that *TODAY* for the start time of id *i1* was subsituted by the date the function *projectPlan::wrangle_raw_plan*
-was executed.
+Note that the start time of id *i1* is subsituted by today by the function 
+*projectPlan::wrangle_raw_plan*.
 
 See the corresponding vignette for more details on id's and dependencies.
+
+# (Un)scheduled tasks
+
+The package has a logic to determine if a task is unscheduled or not.
+This is just a flag that helps to filter the tasks. The user can always
+explicitly specify that a task as unscheduled (just write "unscheduled" 
+into the status-column of the spreadsheet). However, it is a bit
+cumbersome to maintain this status. Therefore the package automatically
+flags a task as (un)scheduled if:
+
+* no explicit start date is given and no prior task is defined, then the task is flagged as unscheduled 
+* only if all ids given in the depends_on-column are flagged as scheduled, then the task is flagged as scheduled (irrespective of the status of the ids specified in the start-column)
+* if any id in start-column is flagged as scheduled and the depends_on-column is empty, then the task is flagged as scheduled

@@ -36,7 +36,7 @@ under considerations.
 ```{r, echo=FALSE}
 pA <- dplyr::tibble(
   project = c("A"), 
-  section = c("0_prep", "1_design"), task = paste0("task", 1:2), id = paste0("i", 1:2), start = "TODAY", depends_on = "", deadline = NA,
+  section = c("0_prep", "1_design"), task = paste0("task", 1:2), id = paste0("i", 1:2), start = NA, depends_on = "", deadline = NA,
   est_duration = 1:2,
   progress = 0, 
   resource = "R1",
@@ -121,7 +121,7 @@ pA$start[2] <- "i1"
 DT::datatable(pA)
 ```
 
-In this case the gantt chart do not show an an arrow even if the parameter *show_dependencies* is set to *TRUE*:
+In this case the gantt chart do not show an arrow even if the parameter *show_dependencies* is set to *TRUE*:
 
 ```{r, fig.height=5, fig.width=10}
 pA %>% 
@@ -150,7 +150,7 @@ project one has to specify the 'whole' id, that is *projectname::id*.
 ```{r, echo=FALSE}
 pA <- dplyr::tibble(
   project = c("A"), 
-  section = "prep", task = paste0("task", 1:2), id = paste0("i", 1:2), start = "TODAY", depends_on = "", deadline = NA,
+  section = "prep", task = paste0("task", 1:2), id = paste0("i", 1:2), start = NA, depends_on = "", deadline = NA,
   est_duration = 1:2,
   progress = 0, 
   resource = "R1",

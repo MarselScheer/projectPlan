@@ -64,7 +64,6 @@ A few notes on the columns in the spreadsheet (more details later):
 * task is clear
 * depends_on defines dependencies, for instance we need to measure the kitchen before we make a (rough) plan for the kitchen
 * start can be 
-    - TODAY (this is substitute by the current date) or 
     - an id (for instance, we can ask our friends at any time but we decided to do this after we made our rough plan. So this is not a dependency! We just planned to do it after a certain task)
     - a hardcoded date (yyyy-mm-dd), for instance when the task actually was started
 * est_duration is the estimated duration in days. 
@@ -111,6 +110,11 @@ We can also easily visualize the timelines.
 timelines %>% 
   projectPlan::gantt_by_sections(show_dependencies = TRUE)
 ```
+
+Note the yellow "U" for every tasks. This indicates that the current task
+has the label unscheduled. The reason is that we not explicitly defined
+a start date. Hence, the plan was calculated assuming that it starts today.
+See vignett for "Start and End" for more details.
 
 ## Work in progress
 
@@ -278,3 +282,7 @@ tmp_time_lines %>%
 The gantt-chart now easily reveals that if the project *sell_kitchen* goes as planned,
 then we can inform *Life&Cook* `r as.numeric(tmp_time_lines[id == "kitchen::dispose_note"]$dist_end_to_deadline)` days 
 before we reach the last time when we can hire Life&Cook to dispose our kitchen.
+Note that "get paid and pick up of the kitchen" was forced by us to be in status unscheduled,
+by placing the tag "unscheduled" in the status-column in the spreadsheet. This automatically
+puts "note to Life&Cook (1 week before installation) ..." also into unscheduled. 
+See vignette "Start and End" for more details.
