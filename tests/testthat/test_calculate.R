@@ -118,9 +118,30 @@ dt_in <- data.table::data.table(
   deadline = lubridate::as_date(NA)
 )
 dt_out <- calculate_time_lines(dt_in)
+now <- h.turn_weekend_day_to_monday(lubridate::as_date(lubridate::now()))
 test_that(
-  "Explicit start time leads to scheduled status if not explicitly unscheduled by user", {
+  "Explicit start time leads to scheduled status if not explicitly unscheduled by user
+and the explicit start time is overwritten by explicitily unscheduled tasks", {
     expect_equal(dt_out$unscheduled, c(F, T))
+    expect_equal(dt_out$time_start[2], now)
+  }
+)
+
+dt_in <- data.table::data.table(
+  id = c("a", "b"),
+  prior_ids = list(NA, "a"),
+  fixed_start_date = c(lubridate::ymd("2020-05-01", NA_character_)),
+  fixed_end_date = lubridate::as_date(NA),
+  est_days = c(1),
+  waiting = c(F),
+  user_unscheduled = c(F, T),
+  deadline = lubridate::as_date(NA)
+)
+dt_out <- calculate_time_lines(dt_in)
+now <- h.turn_weekend_day_to_monday(lubridate::as_date(lubridate::now()))
+test_that(
+  "Implicit start time is overwritten if explicitly unscheduled by user", {
+    expect_equal(dt_out$time_start[2], now)
   }
 )
 

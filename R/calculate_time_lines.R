@@ -326,10 +326,11 @@ h.calculate_time_lines_at <- function(dt_ref, row, today) {
 
   ids_prior <- unlist(dt_ref$prior_ids[row])
   prior_tasks <- with(NULL, dt_ref[id %in% ids_prior, ])
+  TODAY <- lubridate::as_date(lubridate::now())
   if (nrow(prior_tasks) == 0 && is.na(dt_ref$fixed_start_date[row])) {
     logger::log_debug("Initialize fixed_start_date because no prior-tasks and no explicit start-date exist.
                       Furthermore, such a task is assumed to be in status -UNSCHEDULED-")
-    with(NULL, dt_ref[row, fixed_start_date := lubridate::as_date(lubridate::now())])
+    with(NULL, dt_ref[row, fixed_start_date := TODAY])
     with(NULL, dt_ref[row, unscheduled := TRUE])
   }
   fsd <- dt_ref$fixed_start_date[row]
@@ -358,6 +359,26 @@ h.calculate_time_lines_at <- function(dt_ref, row, today) {
     earliest_start_time <- max(prior_tasks$time_end)
   }
   logger::log_debug("Earliest start time found for row -{row}-: {earliest_start_time}")
+
+  if (isTRUE(dt_ref$user_unscheduled[row])) {
+
+    logger::log_debug("User explicitly requested that this task is
+unscheduled. Such tasks are always assigned to today.")
+    ## Assume you have 2 tasks and today is 2020-01-01
+    ## the 1. task was completed in 2019-01-02
+    ## the 2. task depends on the first and therefore has the implicit start date 2019-01-02
+    ## in this scenario task 2 is probably delayed for some reasons
+    ## So "explicit unscheduled" has a higher priority than an implicit start date
+    ## In general it can be assumed that a task that was explicitly
+    ## marked as unscheduled somehow does breaks out of the plan made so far.
+    ## So such a task is assigned to today to not get lost when plotting a gantt-chart of the
+    ## current time-frame.
+
+    ## note that we must correct earlist_start_time AFTER the recursive
+    ## while-loop because this might otherwise prevent the calculation
+    ## of other start-time of other tasks but.
+    earliest_start_time <- TODAY
+  }
 
   end <- h.calculate_end_time(earliest_start_time, dt_ref$est_days[row], dt_ref$fixed_end_date[row])
 

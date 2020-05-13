@@ -557,7 +557,14 @@ h.rd_preprocess_start_column <- function(df, date_origin) {
   df$start <- h.convert_numeric_date(df$start, date_origin = date_origin)
   df$fixed_start_date <- suppressWarnings(lubridate::ymd(df$start))
   df$start[!is.na(df$fixed_start_date)] <- NA
-  
+
+  idx <- !is.na(df$fixed_start_date) & df$user_unscheduled
+  h.log_rows(
+    df = df,
+    idx = idx,
+    warn_msg = "A fixed start is specified but the task is also explicitly
+marked as unscheduled. Assume the task is unscheduled.")
+ 
   h.log_end()
   
   df

@@ -105,3 +105,8 @@ flags a task as (un)scheduled if:
 * no explicit start date is given and no prior task is defined, then the task is flagged as unscheduled 
 * only if all ids given in the depends_on-column are flagged as scheduled, then the task is flagged as scheduled (irrespective of the status of the ids specified in the start-column)
 * if any id in start-column is flagged as scheduled and the depends_on-column is empty, then the task is flagged as scheduled
+
+Note that if the user explicitly marks a task as "unscheduled", then the
+start-date of such task is always set to today. This means it overwrites 
+start-dates that might be implicitly given due to (non-)logic dependencies
+or even explicitly defined start date. 
