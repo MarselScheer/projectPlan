@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        r-version: [3.6, 4.0]
+        r-version: [4.0]
 
     steps:
       - uses: actions/checkout@v2
@@ -29,9 +29,11 @@ jobs:
           r-version: ${{ matrix.r-version }}
       - name: Install dependencies
         run: |
-          install.packages(c("remotes", "covr"))
+          install.packages(c("remotes"))
           remotes::install_deps(dependencies = TRUE)
         shell: Rscript {0}
       - name: Check
-        run: covr::codecov()#rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "error")
+        run: |
+          install.packages(c("covr"))
+          covr::codecov()#rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "error")
         shell: Rscript {0}
