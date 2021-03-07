@@ -31,11 +31,9 @@ jobs:
           r-version: ${{ matrix.r-version }}
       - name: Install dependencies
         run: |
-          install.packages(c("remotes"))
+          install.packages(c("remotes", "covr"))
           remotes::install_deps(dependencies = TRUE)
         shell: Rscript {0}
       - name: Check
-        run: |
-          install.packages(c("covr"))
-          covr::codecov()#rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "error")
+        run: covr::codecov()#rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "error")
         shell: Rscript {0}
