@@ -33,7 +33,7 @@ jobs:
           
       - name: Query dependencies
         run: |
-          install.packages(c("remotes", "covr"))
+          install.packages("remotes")
           saveRDS(remotes::dev_package_deps(dependencies = TRUE), ".github/depends.Rds", version = 2)
         shell: Rscript {0}
 
@@ -44,6 +44,13 @@ jobs:
           key: ubuntu-r-4-${{ hashFiles('.github/depends.Rds') }}
           restore-keys: ubuntu-r-4
           
+      - name: Install dependencies
+        run: |
+          install.packages(c("remotes"))
+          remotes::install_deps(dependencies = TRUE)
+          remotes::install_cran("covr")
+        shell: Rscript {0}          
+        
       - name: Check
         run: covr::codecov()
         shell: Rscript {0}
